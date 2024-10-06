@@ -6,12 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import java.io.FileReader
 
 @SpringBootTest
-class CSVReaderTest {
-
-    @Test
-    fun contextLoads() {
-    }
-
+class LoadTitanicCSV {
 
     @Test
     fun canReadFirstFiveLines() {
