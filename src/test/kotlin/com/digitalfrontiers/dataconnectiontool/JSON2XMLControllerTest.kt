@@ -1,12 +1,9 @@
 package com.digitalfrontiers.dataconnectiontool
 
-import com.digitalfrontiers.dataconnectiontool.datamapping.MappingService
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -23,9 +20,6 @@ class JSON2XMLControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    @MockBean
-    private lateinit var mappingService: MappingService
-
     @Test
     fun `test convertJsonToXml endpoint`() {
         // Given
@@ -33,12 +27,6 @@ class JSON2XMLControllerTest {
         val inputJsonNode = objectMapper.readTree(inputJsonText)
 
         val expectedXml = File("dummy_data/xml/john_doe.xml").readText()
-
-        Mockito.`when`(mappingService.applyMapping(
-            inputJsonNode,
-            emptyList()
-        )
-        ).thenReturn(inputJsonNode)
 
         // When/Then
         mockMvc.perform(post("/convert")
