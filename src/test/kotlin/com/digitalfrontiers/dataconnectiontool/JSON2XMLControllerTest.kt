@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.io.File
 
 @WebMvcTest(JSON2XMLController::class)
 class JSON2XMLControllerTest {
@@ -28,15 +29,10 @@ class JSON2XMLControllerTest {
     @Test
     fun `test convertJsonToXml endpoint`() {
         // Given
-        val inputJson = """{"name": "John Doe", "age": 30}"""
-        val inputJsonNode = objectMapper.readTree(inputJson)
+        val inputJsonText = File("dummy_data/json/john_doe.json").readText()
+        val inputJsonNode = objectMapper.readTree(inputJsonText)
 
-        val expectedXml = """
-            <ObjectNode>
-                <name>John Doe</name>
-                <age>30</age>
-            </ObjectNode>
-        """.trimIndent()
+        val expectedXml = File("dummy_data/xml/john_doe.xml").readText()
 
         Mockito.`when`(mappingService.applyMapping(
             inputJsonNode,
@@ -47,7 +43,7 @@ class JSON2XMLControllerTest {
         // When/Then
         mockMvc.perform(post("/convert")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(inputJson))
+            .content(inputJsonText))
             .andExpect(status().isOk)
             .andExpect(content().contentType(MediaType.APPLICATION_XML))
             .andExpect(content().xml(expectedXml))
