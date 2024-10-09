@@ -1,4 +1,8 @@
 <ObjectNode>
     <name>John Doe</name>
     <age>30</age>
+    <dad>
+        <name>Michael Doe</name>
+        <age>60</age>
+    </dad>
 </ObjectNode>
