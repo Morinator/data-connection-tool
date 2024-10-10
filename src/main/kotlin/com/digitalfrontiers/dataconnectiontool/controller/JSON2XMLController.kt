@@ -1,5 +1,7 @@
-package com.digitalfrontiers.dataconnectiontool
+package com.digitalfrontiers.dataconnectiontool.controller
 
+import com.digitalfrontiers.dataconnectiontool.service.JSONModificationService
+import com.digitalfrontiers.dataconnectiontool.service.Modification
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -18,7 +20,7 @@ class JSON2XMLController {
             Modification.RenameField("father", "dad"),
         )
 
-        val modifiedJson = JSONModifier.applyModifications(jsonNode, modifications)
+        val modifiedJson = JSONModificationService.applyModifications(jsonNode, modifications)
 
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_XML)

@@ -1,6 +1,6 @@
 package com.digitalfrontiers.dataconnectiontool
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.digitalfrontiers.dataconnectiontool.controller.JSON2XMLController
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -17,15 +17,11 @@ class JSON2XMLControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    @Autowired
-    private lateinit var objectMapper: ObjectMapper
-
     @Test
     fun `test convertJsonToXml endpoint`() {
+
         // Given
         val inputJsonText = File("dummy_data/json/john_doe.json").readText()
-        val inputJsonNode = objectMapper.readTree(inputJsonText)
-
         val expectedXml = File("dummy_data/xml/john_doe.xml").readText()
 
         // When/Then
