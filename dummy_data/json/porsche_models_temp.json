@@ -1,0 +1,62 @@
+[
+  {
+    "Model": "911 GT3 RS",
+    "Type": "Sports Car",
+    "Cylinders": 6,
+    "Horsepower": 518,
+    "0-60 mph (seconds)": 3,
+    "Top Speed (mph)": 184,
+    "Fuel Efficiency (mpg)": 14,
+    "Price (USD)": 223500,
+    "Electric Range (miles)": "N/A",
+    "Weight (lbs)": 3268
+  },
+  {
+    "Model": "Taycan Turbo S",
+    "Type": "Electric Sedan",
+    "Cylinders": "N/A",
+    "Horsepower": 750,
+    "0-60 mph (seconds)": 2.6,
+    "Top Speed (mph)": 161,
+    "Fuel Efficiency (mpg)": "68 MPGe",
+    "Price (USD)": 187400,
+    "Electric Range (miles)": 201,
+    "Weight (lbs)": 5101
+  },
+  {
+    "Model": "Macan S",
+    "Type": "Compact SUV",
+    "Cylinders": 4,
+    "Horsepower": 375,
+    "0-60 mph (seconds)": 4.6,
+    "Top Speed (mph)": 160,
+    "Fuel Efficiency (mpg)": 19,
+    "Price (USD)": 72300,
+    "Electric Range (miles)": "N/A",
+    "Weight (lbs)": 4293
+  },
+  {
+    "Model": "718 Cayman GT4 RS",
+    "Type": "Sports Car",
+    "Cylinders": 6,
+    "Horsepower": 493,
+    "0-60 mph (seconds)": 3.2,
+    "Top Speed (mph)": 196,
+    "Fuel Efficiency (mpg)": 16,
+    "Price (USD)": 149100,
+    "Electric Range (miles)": "N/A",
+    "Weight (lbs)": 3227
+  },
+  {
+    "Model": "Panamera 4 E-Hybrid",
+    "Type": "Plug-in Hybrid Sedan",
+    "Cylinders": 6,
+    "Horsepower": 455,
+    "0-60 mph (seconds)": 4.2,
+    "Top Speed (mph)": 174,
+    "Fuel Efficiency (mpg)": "51 MPGe",
+    "Price (USD)": 103800,
+    "Electric Range (miles)": 30,
+    "Weight (lbs)": 4967
+  }
+]

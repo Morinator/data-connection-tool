@@ -1,0 +1,20 @@
+[
+  {
+    "name": "drop cheap cars",
+    "description": "only keep cars with price over $100,000",
+    "stepType": "filter",
+    "args": {
+      "column": "Price (USD)",
+      "condition": "> 100000"
+    }
+  },
+  {
+    "name": "rename horsepower",
+    "description": "rename column 'Horsepower' into 'HP'",
+    "stepType": "rename",
+    "args": {
+      "oldName": "Horsepower",
+      "newName": "HP"
+    }
+  }
+]

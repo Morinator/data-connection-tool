@@ -21,6 +21,7 @@ repositories {
 dependencies {
     implementation("com.opencsv:opencsv:5.9")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlinx:dataframe:0.14.1")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2")

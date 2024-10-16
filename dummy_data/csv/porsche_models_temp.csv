@@ -1,0 +1,6 @@
+Model,Type,Cylinders,Horsepower,0-60 mph (seconds),Top Speed (mph),Fuel Efficiency (mpg),Price (USD),Electric Range (miles),Weight (lbs)
+911 GT3 RS,Sports Car,6,518,3.0,184,14,223500,N/A,3268
+Taycan Turbo S,Electric Sedan,N/A,750,2.6,161,68 MPGe,187400,201,5101
+Macan S,Compact SUV,4,375,4.6,160,19,72300,N/A,4293
+718 Cayman GT4 RS,Sports Car,6,493,3.2,196,16,149100,N/A,3227
+Panamera 4 E-Hybrid,Plug-in Hybrid Sedan,6,455,4.2,174,51 MPGe,103800,30,4967

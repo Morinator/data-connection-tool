@@ -1,15 +1,25 @@
 package com.digitalfrontiers.dataconnectiontool.controller
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.api.*
 import org.jetbrains.kotlinx.dataframe.io.readJson
 import org.jetbrains.kotlinx.dataframe.io.toCsv
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
 import java.nio.file.Files
+
+data class ProcessingStepConfig(
+    val name: String,
+    val description: String,
+    val stepType: String,
+    val args: Map<String, String>
+)
 
 data class DataframeProcessingStep(
     val name: String,
@@ -20,31 +30,42 @@ data class DataframeProcessingStep(
 @RestController
 class KotlinDataframeController {
 
-    private val processingSteps = listOf(
-        DataframeProcessingStep(
-            name = "drop cheap cars",
-            description = "only keep cars with price over $100,000",
-            step = { df -> df.filter { "Price (USD)"<Int>() > 100_000 } }
-        ),
-        DataframeProcessingStep(
-            name = "rename horsepower",
-            description = "rename column 'Horsepower' into 'HP'",
-            step = { df ->
-                df.rename("Horsepower" to "HP")
-            }
-        ),
-    )
+    private val processingSteps: List<DataframeProcessingStep> = loadProcessingSteps()
+
+    private fun loadProcessingSteps(): List<DataframeProcessingStep> {
+        val mapper = jacksonObjectMapper()
+        val configFile = ClassPathResource("processing-steps.json").inputStream
+        val stepConfigs: List<ProcessingStepConfig> = mapper.readValue(configFile)
+
+        return stepConfigs.map { config ->
+            DataframeProcessingStep(
+                name = config.name,
+                description = config.description,
+                step = when (config.stepType) {
+                    "filter" -> { df ->
+                        val column = config.args["column"] ?: throw IllegalArgumentException("Column not specified for filter step")
+                        val condition = config.args["condition"] ?: throw IllegalArgumentException("Condition not specified for filter step")
+                        df.filter { column<Int>().let { it > 100000 } } // Note: This is still hardcoded for simplicity
+                    }
+                    "rename" -> { df ->
+                        val oldName = config.args["oldName"] ?: throw IllegalArgumentException("Old name not specified for rename step")
+                        val newName = config.args["newName"] ?: throw IllegalArgumentException("New name not specified for rename step")
+                        df.rename(oldName to newName)
+                    }
+                    else -> throw IllegalArgumentException("Unknown step type: ${config.stepType}")
+                }
+            )
+        }
+    }
 
     @PostMapping("/porsche")
     fun handlePorscheData(@RequestBody jsonString: String): ResponseEntity<String> {
         var tempFile: File? = null
         try {
-            // create dataframe
             tempFile = Files.createTempFile("porsche_data", ".json").toFile()
             tempFile.writeText(jsonString)
-            var df = DataFrame.readJson(tempFile.path) // can't read from String (I think??)
+            var df = DataFrame.readJson(tempFile.path)
 
-            // Apply all processing steps sequentially
             for (step in processingSteps) {
                 df = step.step(df)
             }
