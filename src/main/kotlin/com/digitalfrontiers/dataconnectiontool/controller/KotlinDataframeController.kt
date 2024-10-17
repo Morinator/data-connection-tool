@@ -68,8 +68,7 @@ class KotlinDataframeController {
     fun handlePorscheData(@RequestBody jsonString: String): ResponseEntity<String> {
 
         // parse input JSON using JsonPath
-        var extractedJson = JsonPath.read<Any>(jsonString, "$.porsche.models.v1")
-        extractedJson = extractedJson.toString()
+        val extractedJson = JsonPath.read<Any>(jsonString, "$.porsche.models.v1").toString()
 
         var tempFile: File? = null
         try {
