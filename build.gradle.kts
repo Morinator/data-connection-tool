@@ -20,6 +20,7 @@ repositories {
 
 dependencies {
     implementation("com.opencsv:opencsv:5.9")
+    implementation("com.jayway.jsonpath:json-path:2.9.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:dataframe:0.14.1")
     implementation("org.springframework.boot:spring-boot-starter-web")

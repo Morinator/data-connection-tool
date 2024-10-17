@@ -8,12 +8,13 @@ import org.jetbrains.kotlinx.dataframe.io.readJson
 import org.jetbrains.kotlinx.dataframe.io.toCsv
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
 import java.nio.file.Files
-
+import com.jayway.jsonpath.JsonPath
 data class ProcessingStepConfig(
     val name: String,
     val description: String,
@@ -24,32 +25,37 @@ data class ProcessingStepConfig(
 data class DataframeProcessingStep(
     val name: String,
     val description: String,
+    val stepType: String,
     val step: (DataFrame<*>) -> DataFrame<*>
 )
 
 @RestController
 class KotlinDataframeController {
 
-    private val processingSteps: List<DataframeProcessingStep> = loadProcessingSteps()
+    private val processingStepConfigs: List<ProcessingStepConfig> = loadProcessingStepConfigs()
+    private val processingSteps: List<DataframeProcessingStep> = createProcessingSteps(processingStepConfigs)
 
-    private fun loadProcessingSteps(): List<DataframeProcessingStep> {
+    private fun loadProcessingStepConfigs(): List<ProcessingStepConfig> {
         val mapper = jacksonObjectMapper()
         val configFile = ClassPathResource("processing-steps.json").inputStream
-        val stepConfigs: List<ProcessingStepConfig> = mapper.readValue(configFile)
+        return mapper.readValue(configFile)
+    }
 
-        return stepConfigs.map { config ->
+    private fun createProcessingSteps(configs: List<ProcessingStepConfig>): List<DataframeProcessingStep> {
+        return configs.map { config ->
             DataframeProcessingStep(
                 name = config.name,
                 description = config.description,
+                stepType = config.stepType,
                 step = when (config.stepType) {
                     "filter" -> { df ->
-                        val column = config.args["column"] ?: throw IllegalArgumentException("Column not specified for filter step")
-                        val condition = config.args["condition"] ?: throw IllegalArgumentException("Condition not specified for filter step")
-                        df.filter { column<Int>().let { it > 100000 } } // Note: This is still hardcoded for simplicity
+                        val column = config.args["column"]!!
+                        val condition = config.args["condition"]!!
+                        df.filter { column<Int>().let { it > 100000 } }
                     }
                     "rename" -> { df ->
-                        val oldName = config.args["oldName"] ?: throw IllegalArgumentException("Old name not specified for rename step")
-                        val newName = config.args["newName"] ?: throw IllegalArgumentException("New name not specified for rename step")
+                        val oldName = config.args["oldName"]!!
+                        val newName = config.args["newName"]!!
                         df.rename(oldName to newName)
                     }
                     else -> throw IllegalArgumentException("Unknown step type: ${config.stepType}")
@@ -60,10 +66,15 @@ class KotlinDataframeController {
 
     @PostMapping("/porsche")
     fun handlePorscheData(@RequestBody jsonString: String): ResponseEntity<String> {
+
+        // parse input JSON using JsonPath
+        var extractedJson = JsonPath.read<Any>(jsonString, "$.porsche.models.v1")
+        extractedJson = extractedJson.toString()
+
         var tempFile: File? = null
         try {
             tempFile = Files.createTempFile("porsche_data", ".json").toFile()
-            tempFile.writeText(jsonString)
+            tempFile.writeText(extractedJson)
             var df = DataFrame.readJson(tempFile.path)
 
             for (step in processingSteps) {
@@ -77,5 +88,10 @@ class KotlinDataframeController {
         } finally {
             tempFile?.delete()
         }
+    }
+
+    @GetMapping("/processing-steps")
+    fun getProcessingSteps(): ResponseEntity<List<ProcessingStepConfig>> {
+        return ResponseEntity.ok(processingStepConfigs)
     }
 }
