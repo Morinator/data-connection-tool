@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.io.File
 
 @WebMvcTest(JSON2XMLController::class)
-class JSON2XMLControllerTest {
+class JsonUtils2XMLControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
