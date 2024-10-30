@@ -5,7 +5,7 @@ import com.digitalfrontiers.datatransformlang.transform.Specification
 import org.springframework.stereotype.Service
 
 @Service
-class JSONTransformationService: TransformationService<String, String> {
+class JSONTransformationService: ITransformationService<String, String> {
 
     override fun transform(data: String, spec: Specification): String {
         return Transform()
