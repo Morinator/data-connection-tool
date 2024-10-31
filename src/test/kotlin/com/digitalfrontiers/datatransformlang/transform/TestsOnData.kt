@@ -61,37 +61,6 @@ class TestsOnData {
     }
 
     @Test
-    fun `get constant value along selected values`() {
-
-        // given
-        TODO()
-        val spec = Compose()
-
-        // when
-        val result = applyTransform(sights, spec)
-
-        // then
-        val expected = listOf(
-            mapOf(
-                "name" to "Eiffel Tower",
-                "height" to 300,
-                "unit" to "meters"
-            ),
-            mapOf(
-                "name" to "Statue of Liberty",
-                "height" to 93,
-                "unit" to "meters"
-            ),
-            mapOf(
-                "name" to "Big Ben",
-                "height" to 96,
-                "unit" to "meters"
-            )
-        )
-        assertEquals(expected, result)
-    }
-
-    @Test
     fun `get first 2 names`() {
 
         // given
