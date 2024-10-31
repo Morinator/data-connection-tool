@@ -3,24 +3,26 @@ package com.digitalfrontiers.dataconnectiontool.service
 import com.digitalfrontiers.dataconnectiontool.extension.Formats
 import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.Specification
+import com.digitalfrontiers.datatransformlang.transform.convert.IParser
+import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVParser
 import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVSerializer
 import org.springframework.stereotype.Service
 
 @Service
-class DefaultTransformationService: ITransformationService<String, String> {
-
-    init {
-        Formats.setParserFor("CSV", CSVParser())
-        Formats.setSerializerFor("CSV", CSVSerializer())
-    }
+class DefaultTransformationService(
+    private val parsers: Map<String, IParser<Any>>, // Injection der Parser-Map
+    private val serializers: Map<String, ISerializer<Any>> // Analog für Serializer
+): ITransformationService<String, String> {
 
     override fun transform(data: String, spec: Specification, inputFormat: String?, outputFormat: String?): String {
 
         val transform = Transform().withSpecification(spec)
 
+        // TODO: Find more elegant way of handling map keys/names
         if (inputFormat != null) {
-            val parser = Formats.getParserFor<Any>(inputFormat)
+
+            val parser = parsers[inputFormat + "Parser"]
 
             require(parser != null) {"No parser set for Format: $inputFormat"}
 
@@ -28,7 +30,7 @@ class DefaultTransformationService: ITransformationService<String, String> {
         }
 
         if (outputFormat != null) {
-            val serializer = Formats.getSerializerFor<Any>(outputFormat)
+            val serializer = serializers[outputFormat + "Serializer"]
 
             require(serializer != null) {"No serializer set for Format: $outputFormat"}
 
