@@ -1,6 +1,5 @@
 package com.digitalfrontiers.dataconnectiontool.controller
 
-import com.digitalfrontiers.dataconnectiontool.service.IConversionService
 import com.digitalfrontiers.dataconnectiontool.service.IStorageService
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
 import com.digitalfrontiers.dataconnectiontool.util.JsonUtils
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController
 class JSONTransformController(
     @Autowired private val storage: IStorageService<String>,
     @Autowired private val transformer: ITransformationService<String, String>,
-    @Autowired private val converter: IConversionService
 ) {
     private val keyPrefix: String = "specs/"
 
@@ -38,17 +36,9 @@ class JSONTransformController(
             if (body.data !is String)
                 JsonUtils.toJsonString(body.data)
             else
-                if (body.inputFormat != null)
-                    JsonUtils.toJsonString(
-                        converter.parse(
-                            body.inputFormat,
-                            body. data
-                        )
-                    )
-                else
-                    body.data
+                body.data
 
-        return transformer.transform(data, spec)
+        return transformer.transform(data, spec, body.inputFormat, body.outputFormat)
     }
 }
 

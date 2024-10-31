@@ -18,13 +18,13 @@ class Transform {
         return this
     }
 
-    fun <T> withParser(parser: IParser<T>): Transform {
+    fun withParser(parser: IParser<Any>): Transform {
         this.parser = parser
 
         return this
     }
 
-    fun <T> withSerializer(serializer: ISerializer<T>): Transform {
+    fun withSerializer(serializer: ISerializer<Any>): Transform {
         this.serializer = serializer
 
         return this
