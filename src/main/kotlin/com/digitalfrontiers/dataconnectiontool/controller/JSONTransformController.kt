@@ -28,7 +28,7 @@ class JSONTransformController(
     fun applyTransform(@PathVariable id: String, @RequestBody body: TransformationRequestBody): String {
         val specString = storage.load("$keyPrefix$id")
 
-        check(specString != null) {"Failed to load transfomration specification"}
+        check(specString != null) {"Failed to load transformation specification"}
 
         val spec = parseTransformConfig(specString)
 
