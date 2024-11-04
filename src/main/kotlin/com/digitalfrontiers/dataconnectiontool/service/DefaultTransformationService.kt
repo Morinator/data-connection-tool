@@ -7,19 +7,19 @@ import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVParser
 import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVSerializer
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
 class DefaultTransformationService(
-    private val parsers: Map<String, IParser<Any>>, // Injection der Parser-Map
-    private val serializers: Map<String, ISerializer<Any>> // Analog für Serializer
+    @Autowired private val parsers: Map<String, IParser<Any>>, // Injection der Parser-Map
+    @Autowired private val serializers: Map<String, ISerializer<Any>> // Analog für Serializer
 ): ITransformationService<String, String> {
 
     override fun transform(data: String, spec: Specification, inputFormat: String?, outputFormat: String?): String {
 
         val transform = Transform().withSpecification(spec)
 
-        // TODO: Find more elegant way of handling map keys/names
         if (inputFormat != null) {
 
             val parser = parsers[inputFormat + "Parser"]
