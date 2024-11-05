@@ -1,12 +1,10 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-import com.networknt.schema.ValidationMessage
-
 //TODO idk if the is a better name for this
-object FacebookAutomotiveInventoryAdValidator {
+class FacebookAutomotiveInventoryAdValidator : OutputValidator() {
 
     // this schema was manually created based on the description at https://developers.facebook.com/docs/marketing-api/auto-ads/reference#vehicle
-    private val facebook_schema : String = """
+    override val schema : String = """
         {
           "title": "Automotive Inventory Ads - Supported Fields - Vehicle",
           "description": "See https://developers.facebook.com/docs/marketing-api/auto-ads/reference#vehicle",
@@ -207,11 +205,4 @@ object FacebookAutomotiveInventoryAdValidator {
         }
     """.trimIndent()
 
-    fun getValidationMessages(obj: Any): List<ValidationMessage> {
-        return OutputValidationService.getValidationMessages(obj, facebook_schema)
-    }
-
-    fun isValid(obj: Any): Boolean {
-        return OutputValidationService.getValidationMessages(obj, facebook_schema).isNotEmpty()
-    }
 }

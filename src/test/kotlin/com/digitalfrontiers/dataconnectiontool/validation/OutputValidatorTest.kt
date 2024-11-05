@@ -4,7 +4,7 @@ import com.networknt.schema.ValidationMessage
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class OutputValidationServiceTest {
+class OutputValidatorTest {
 
     private val valid1 = mapOf(
         "vehicle_id" to "1234",
@@ -50,29 +50,32 @@ class OutputValidationServiceTest {
     }
 """.trimIndent()
 
+    private val validator = OutputValidator(schema = carSchema)
+
+
     @Test
     fun `successful validation 1`() {
-        assertTrue(OutputValidationService.isValid(valid1, carSchema))
+        assertTrue(validator.isValid(valid1))
     }
 
     @Test
     fun `successful validation 2`() {
-        assertTrue(OutputValidationService.isValid(valid2, carSchema))
+        assertTrue(validator.isValid(valid2))
     }
 
     @Test
     fun `failed validation 1`() {
-        assertFalse(OutputValidationService.isValid(invalid1, carSchema))
+        assertFalse(validator.isValid(invalid1))
     }
 
     @Test
     fun `failed validation 2`() {
-        assertFalse(OutputValidationService.isValid(invalid2, carSchema))
+        assertFalse(validator.isValid(invalid2))
     }
 
     @Test
     fun `validation messages fail 1`() {
-        val messages: List<ValidationMessage> = OutputValidationService.getValidationMessages(invalid1, carSchema)
+        val messages: List<ValidationMessage> = validator.getValidationMessages(invalid1)
         assertEquals(1, messages.size)
         assertEquals("\$.vehicle_id: may only be 100 characters long", messages.toList()[0].message)
     }

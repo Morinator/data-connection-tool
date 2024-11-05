@@ -6,21 +6,20 @@ import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
 import com.networknt.schema.ValidationMessage
 
-object OutputValidationService {
-
+open class OutputValidator(open val schema : String = "") {
 
     /**
      * True if the object conforms to the schema
      */
-    fun isValid(obj: Any, schema: String): Boolean {
+    fun isValid(obj: Any): Boolean {
 
-        return getValidationMessages(obj, schema).isNotEmpty()
+        return getValidationMessages(obj).isEmpty()
     }
 
     /**
      * Get a list of validation messages. If the list is empty, the object conforms to the schema.
      */
-    fun getValidationMessages(obj: Any, schema: String): List<ValidationMessage> {
+    fun getValidationMessages(obj: Any): List<ValidationMessage> {
 
         val objectMapper = ObjectMapper()
         val jsonSchemaFactory= JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)

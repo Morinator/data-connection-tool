@@ -8,13 +8,15 @@ import kotlin.test.assertEquals
 class FacebookAutomotiveInventoryAdValidatorTest {
 
 
-    private lateinit var car1 : MutableMap<String, Any>
+    private lateinit var car1: MutableMap<String, Any>
+
+    private val validator = FacebookAutomotiveInventoryAdValidator()
 
     // reset before each unit test
     @BeforeEach
     fun setup() {
         // not real data
-         car1 = mutableMapOf(
+        car1 = mutableMapOf(
             "body_style" to "CONVERTIBLE",
             "description" to "Porsche 718 Boxster, Porsche Approved Gebrauchtwagen",
             "exterior_color" to "Grau",
@@ -47,20 +49,26 @@ class FacebookAutomotiveInventoryAdValidatorTest {
     @Test
     fun `test valid input`() {
 
-        println(FacebookAutomotiveInventoryAdValidator.getValidationMessages(car1))
-        assertEquals(0, FacebookAutomotiveInventoryAdValidator.getValidationMessages(car1).size)
-        assertTrue(FacebookAutomotiveInventoryAdValidator.isValid(car1))
+        println(validator.getValidationMessages(car1))
+        assertEquals(0, validator.getValidationMessages(car1).size)
+        assertTrue(validator.isValid(car1))
     }
 
     @Test
     fun `missing field`() {
         car1.remove("body_style")
-        assertEquals("\$.body_style: is missing but it is required", FacebookAutomotiveInventoryAdValidator.getValidationMessages(car1)[0].message)
+        assertEquals(
+            "\$.body_style: is missing but it is required",
+            validator.getValidationMessages(car1)[0].message
+        )
     }
 
     @Test
     fun `invalid drivetrain`() {
         car1["drivetrain"] = "Rentierschlitten"
-        assertEquals("\$.drivetrain: does not have a value in the enumeration [4X2, 4X4, AWD, FWD, RWD, Other]", FacebookAutomotiveInventoryAdValidator.getValidationMessages(car1)[0].message)
+        assertEquals(
+            "\$.drivetrain: does not have a value in the enumeration [4X2, 4X4, AWD, FWD, RWD, Other]",
+            validator.getValidationMessages(car1)[0].message
+        )
     }
 }
