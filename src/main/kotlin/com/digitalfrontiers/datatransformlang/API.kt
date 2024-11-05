@@ -45,10 +45,4 @@ class Transform {
         // TODO: Figure out how to avoid cast
         return (this.serializer as ISerializer<Any>).serialize(result)
     }
-
-    fun apply(file: File): String {
-        val contents = file.inputStream().readBytes().toString(Charsets.UTF_8)
-
-        return this.apply(contents)
-    }
 }

@@ -23,10 +23,14 @@ class CSVParser: IParser<Any> {
 
 class CSVSerializer: ISerializer<Any> {
     override fun serialize(data: Any?): String {
-        require(data is List<*>) {"Only Arrays or Lists can be serialized as CSV"}
+        val list =
+            if (data !is List<*>)
+                listOf(data)
+            else
+                data
 
         val flattenedData: List<MutableMap<String, Any?>> =
-            data.map {
+            list.map {
                 val flattened: MutableMap<String, Any?> = mutableMapOf();
                 flattenData(it, "", flattened)
 
