@@ -2,15 +2,15 @@ package com.digitalfrontiers.datatransformlang
 
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import com.digitalfrontiers.datatransformlang.transform.applyTransform
-import com.digitalfrontiers.datatransformlang.util.convert.JSON
-import com.digitalfrontiers.datatransformlang.util.convert.Parser
-import com.digitalfrontiers.datatransformlang.util.convert.Serializer
+import com.digitalfrontiers.datatransformlang.util.JSON
+import com.digitalfrontiers.datatransformlang.transform.convert.IParser
+import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 import java.io.File
 
 class Transform {
     private var spec: Specification? = null
-    private var parser: Parser<*> = JSON
-    private var serializer: Serializer<*> = JSON
+    private var parser: IParser<*> = JSON
+    private var serializer: ISerializer<*> = JSON
 
     fun withSpecification(spec: Specification): Transform {
         this.spec = spec
@@ -18,13 +18,13 @@ class Transform {
         return this
     }
 
-    fun <T> withParser(parser: Parser<T>): Transform {
+    fun withParser(parser: IParser<Any>): Transform {
         this.parser = parser
 
         return this
     }
 
-    fun <T> withSerializer(serializer: Serializer<T>): Transform {
+    fun withSerializer(serializer: ISerializer<Any>): Transform {
         this.serializer = serializer
 
         return this
@@ -43,7 +43,7 @@ class Transform {
         val result: Any? = applyTransform(parsed, this.spec!!)
 
         // TODO: Figure out how to avoid cast
-        return (this.serializer as Serializer<Any>).serialize(result)
+        return (this.serializer as ISerializer<Any>).serialize(result)
     }
 
     fun apply(file: File): String {

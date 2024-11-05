@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/transforms", consumes = [MediaType.APPLICATION_JSON_VALUE])
 class JSONTransformController(
     @Autowired private val storage: IStorageService<String>,
-    @Autowired private val transformer: ITransformationService<String, String>
+    @Autowired private val transformer: ITransformationService<String, String>,
 ) {
     private val keyPrefix: String = "specs/"
 
@@ -28,22 +28,22 @@ class JSONTransformController(
     fun applyTransform(@PathVariable id: String, @RequestBody body: TransformationRequestBody): String {
         val specString = storage.load("$keyPrefix$id")
 
-        check(specString != null) {"Failed to load transfomration specification"}
+        check(specString != null) {"Failed to load transformation specification"}
 
         val spec = parseTransformConfig(specString)
 
-        val data =
+        val data: String =
             if (body.data !is String)
                 JsonUtils.toJsonString(body.data)
             else
                 body.data
 
-        return transformer.transform(data, spec)
+        return transformer.transform(data, spec, body.inputFormat, body.outputFormat)
     }
 }
 
 data class TransformationRequestBody(
-    val inputFormat: String,
-    val outputFormat: String,
+    val inputFormat: String?,
+    val outputFormat: String?,
     val data: Any
 )

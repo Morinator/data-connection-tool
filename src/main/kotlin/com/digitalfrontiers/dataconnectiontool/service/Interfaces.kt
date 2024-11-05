@@ -9,5 +9,5 @@ interface IStorageService<I> {
 }
 
 interface ITransformationService<I, O> {
-    fun transform(data: I, spec: Specification): O
+    fun transform(data: I, spec: Specification, inputFormat: String? = null, outputFormat: String? = null): O
 }
