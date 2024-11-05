@@ -33,7 +33,7 @@ class TestsOnData {
 
         // given
         val spec = ToObject(
-            "heights" to Fetch("$[*].height"),
+            "heights" to ToInput("$[*].height"),
         )
 
         // when
@@ -50,7 +50,7 @@ class TestsOnData {
     fun `get single entry`() {
 
         // given
-        val spec = Fetch("$[0].name")
+        val spec = ToInput("$[0].name")
 
         // when
         val result = applyTransform(sights, spec)
@@ -65,10 +65,10 @@ class TestsOnData {
 
         // given
         val spec = Compose(
-            Fetch("\$[0:2]"),
+            ToInput("\$[0:2]"),
             ForEach(
                 ToObject(
-                    "name" to Fetch("name")
+                    "name" to ToInput("name")
                 )
             )
         )
@@ -88,7 +88,7 @@ class TestsOnData {
     fun `error on invalid path`() {
 
         // given
-        val spec = Fetch("$[0].qewqrwettcnbvcn")
+        val spec = ToInput("$[0].qewqrwettcnbvcn")
 
         // when & then
         assertThrows<PathNotFoundException> {
@@ -104,7 +104,7 @@ class TestsOnData {
 
         // given
         val spec = ForEach(
-            Fetch("josh"), // no effect
+            ToInput("josh"), // no effect
         )
 
         // when

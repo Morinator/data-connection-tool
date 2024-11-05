@@ -11,20 +11,20 @@ class SimpleTests {
     private val emptyMap: Data = emptyMap<String, Any>()
 
     @Test
-    fun testConstTransform() {
-        val constTransform = Const(42)
+    fun testToConstTransform() {
+        val toConstTransform = ToConst(42)
 
-        val result = applyTransform(emptyMap, constTransform)
+        val result = applyTransform(emptyMap, toConstTransform)
 
         assertEquals(42, result)
     }
 
     @Test
-    fun testFetchTransform() {
+    fun testToInputTransform() {
         val jsonDocument = mapOf("name" to "josh")
-        val fetchTransform = Fetch("$.name")
+        val toInputTransform = ToInput("$.name")
 
-        val result = applyTransform(jsonDocument, fetchTransform)
+        val result = applyTransform(jsonDocument, toInputTransform)
 
         assertEquals("josh", result)
     }
@@ -32,9 +32,9 @@ class SimpleTests {
     @Test
     fun testToArrayTransform() {
         val toArrayTransform = ToArray(
-            Const(1),
-            Const(2),
-            Const(3)
+            ToConst(1),
+            ToConst(2),
+            ToConst(3)
         )
 
         val result = applyTransform(emptyMap, toArrayTransform)
@@ -45,8 +45,8 @@ class SimpleTests {
     @Test
     fun testToObjectTransform() {
         val toObjectTransform = ToObject(
-            "a" to Const(1),
-            "b" to Const(2)
+            "a" to ToConst(1),
+            "b" to ToConst(2)
         )
 
         val result = applyTransform(emptyMap, toObjectTransform)
@@ -56,12 +56,24 @@ class SimpleTests {
 
     @Test
     fun testForEachTransform() {
-        val forEachTransform = ForEach(Const(42))
+        val forEachTransform = ForEach(ToConst(42))
         val data: Data = listOf(1, 2, 3)
 
         val result = applyTransform(data, forEachTransform)
 
         assertEquals(listOf(42, 42, 42), result)
+    }
+
+    @Test
+    fun testExtendTransform() {
+        val extendTransform = Extend(
+            "c" to ToConst(3),
+            "d" to ToConst(4)
+        )
+
+        val result = applyTransform(mapOf("a" to 1, "b" to 2), extendTransform)
+
+        assertEquals(mapOf("a" to 1, "b" to 2, "c" to 3, "d" to 4), result)
     }
 
     @Test
@@ -71,7 +83,7 @@ class SimpleTests {
             args: List<Any> -> (args[0] as Int) + (args[1] as Int)
         }
 
-        val callTransform = Call("sum", Const(5), Const(10))
+        val callTransform = Call("sum", ToConst(5), ToConst(10))
 
         val result = applyTransform(emptyMap, callTransform)
 
@@ -81,9 +93,9 @@ class SimpleTests {
     @Test
     fun testComposeTransform() {
         val composeTransform = Compose(
-            Const(1),
-            Const(2),
-            Const(3)
+            ToConst(1),
+            ToConst(2),
+            ToConst(3)
         )
 
         val result = applyTransform(emptyMap, composeTransform)

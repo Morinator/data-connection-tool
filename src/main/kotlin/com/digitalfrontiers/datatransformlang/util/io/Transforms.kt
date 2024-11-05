@@ -13,8 +13,8 @@ fun parseTransformConfig(filePath: String): Specification {
 
 private fun parseTransformNode(node: JsonNode): Specification {
     return when (val type = node.get("type").asText()) {
-        "Const" -> Const(node.get("value"))
-        "Fetch" -> Specification.Fetch(node.get("path").asText())
+        "Const" -> ToConst(node.get("value"))
+        "Fetch" -> Specification.ToInput(node.get("path").asText())
         "ToArray" -> {
             val items = node.get("items").map { parseTransformNode(it) }
             ToArray(items)

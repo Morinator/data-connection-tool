@@ -8,9 +8,12 @@ internal typealias Data = Any?; // Semantic(TM) Code
 internal typealias Dict<T> = Map<String, T>;
 
 sealed class Specification {
-    data class Const(val value: Data): Specification()
 
-    data class Fetch(val path: String): Specification()
+    // Basic Transformations
+
+    data class ToConst(val value: Data): Specification()
+
+    data class ToInput(val path: String): Specification()
 
     data class ToArray(val items: List<Specification>): Specification() {
         constructor(vararg items: Specification) : this(items.toList())
@@ -20,7 +23,13 @@ sealed class Specification {
         constructor(vararg entries: Pair<String, Specification>): this(mapOf(*entries))
     }
 
+    // Advanced Transformations
+
     data class ForEach(val mapping: Specification): Specification()
+
+    data class Extend(val entries: Dict<Specification>): Specification() {
+        constructor(vararg entries: Pair<String, Specification>): this(mapOf(*entries))
+    }
 
     data class Call(val fid: String, val args: List<Specification>): Specification() {
         constructor(fid: String, vararg args: Specification): this(fid, args.toList())
@@ -33,23 +42,25 @@ sealed class Specification {
 
 // Shorthands
 
-typealias Const = Specification.Const
-typealias Fetch = Specification.Fetch
-typealias Call = Specification.Call
+typealias ToConst = Specification.ToConst
+typealias ToInput = Specification.ToInput
 typealias ToArray = Specification.ToArray
 typealias ToObject = Specification.ToObject
 typealias ForEach = Specification.ForEach
+typealias Extend = Specification.Extend
+typealias Call = Specification.Call
 typealias Compose = Specification.Compose
 
 // Evaluation
 
 fun applyTransform(data: Data, spec: Specification): Data {
     return when (spec) {
-        is Specification.Const -> spec.value
-        is Specification.Fetch -> handleFetch(data, spec)
+        is Specification.ToConst -> spec.value
+        is Specification.ToInput -> handleToInput(data, spec)
         is Specification.ToArray -> handleToArray(data, spec)
         is Specification.ToObject -> handleToObject(data, spec)
         is Specification.ForEach -> handleForEach(data, spec)
+        is Specification.Extend -> handleExtend(data, spec)
         is Specification.Call -> handleCall(data, spec)
         is Specification.Compose -> handleCompose(data, spec)
     }
@@ -57,8 +68,8 @@ fun applyTransform(data: Data, spec: Specification): Data {
 
 // Helper-Functions
 
-private inline fun handleFetch(data: Data, fetchSpec: Specification.Fetch): Data {
-    return  JsonPath.read(data, fetchSpec.path)
+private inline fun handleToInput(data: Data, toInputSpec: Specification.ToInput): Data {
+    return  JsonPath.read(data, toInputSpec.path)
 }
 
 
@@ -79,6 +90,16 @@ private inline fun handleForEach(data: Data, forEachSpec: Specification.ForEach)
                 null
         }
     else emptyList()
+}
+
+private inline fun handleExtend(data: Data, extendSpec: Specification.Extend): Dict<Data> {
+    if (data is Map<*, *>) {
+        val toObjectSpec = ToObject(extendSpec.entries)
+
+        return (data as Dict<Any>) + handleToObject(data, toObjectSpec)
+    } else {
+        return mapOf()
+    }
 }
 
 private inline fun handleCall(data: Data, callSpec: Specification.Call): Data {
