@@ -19,6 +19,8 @@ repositories {
 }
 
 dependencies {
+    implementation("com.networknt:json-schema-validator:1.0.76")
+
     implementation("com.opencsv:opencsv:5.9")
     implementation("com.jayway.jsonpath:json-path:2.9.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
