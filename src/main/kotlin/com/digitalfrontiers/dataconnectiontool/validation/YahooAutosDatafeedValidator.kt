@@ -49,7 +49,7 @@ class YahooAutosDatafeedValidator : OutputValidator() {
               "area_show": {
                 "type": "string",
                 "maxLength": 50,
-                "description": "Format: free text, limited to 50 Chinese characters, and wrapped in CDATA."
+                "description": "Format: free text, limited to 50 Chinese characters, and wrapped in CDATA. Optional field"
               },
               "desc": {
                 "type": "string",
@@ -84,7 +84,7 @@ class YahooAutosDatafeedValidator : OutputValidator() {
               "certificate": {
                 "type": "string",
                 "enum": ["Y", "N"],
-                "description": "Certified used car status. Y: Yes, N: No."
+                "description": "Certified used car status. Y: Yes, N: No.  Optional field"
               },
               "show_status": {
                 "type": "string",
