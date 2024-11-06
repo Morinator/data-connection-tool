@@ -9,7 +9,6 @@ fun main() {
         "c" from "$[*].y"
         "d" (
             1,
-            2,
             ToObject {
                 "p" from "$.q"
             }

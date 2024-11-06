@@ -1,7 +1,9 @@
 package com.digitalfrontiers.datatransformlang.transform
 
+import com.digitalfrontiers.datatransformlang.transform.Specification.ToArray
+import com.digitalfrontiers.datatransformlang.transform.Specification.ToConst
+import com.digitalfrontiers.datatransformlang.transform.Specification.ToInput
 import com.jayway.jsonpath.JsonPath
-import kotlin.reflect.KFunction
 
 // Types
 
@@ -30,33 +32,7 @@ sealed class Specification {
     }
 
     data class ToObject(val entries: Dict<Specification>): Specification() {
-        constructor(vararg entries: Pair<String, Specification>): this(mapOf(*entries))
-        constructor(setup: DSL.() -> Unit): this(DSL().apply(setup).getEntries())
-
-        class DSL {
-            private val entries = mutableMapOf<String, Specification>()
-
-            infix fun String.to(value: Any?) {
-                if (value !is Specification)
-                    entries[this] = ToConst(value)
-                else
-                    entries[this] = value
-            }
-
-            infix fun String.from(path: String){
-                entries[this] = ToInput(path)
-            }
-
-            operator fun String.invoke(setup: DSL.() -> Unit) {
-                entries[this] = ToObject(setup)
-            }
-
-            operator fun String.invoke(vararg args: Any?) {
-                entries[this] = ToArray(*args as Array<Any?>)
-            }
-
-            fun getEntries(): Dict<Specification> = entries.toMap()
-        }
+        constructor(setup: ObjectDSL.() -> Unit): this(ObjectDSL().apply(setup).getEntries())
     }
 
     // Advanced Transformations
@@ -74,6 +50,31 @@ sealed class Specification {
     data class Compose(val steps: List<Specification>): Specification() {
         constructor(vararg steps: Specification): this(steps.toList())
     }
+}
+
+class ObjectDSL {
+    private val entries = mutableMapOf<String, Specification>()
+
+    infix fun String.to(value: Any?) {
+        if (value !is Specification)
+            entries[this] = ToConst(value)
+        else
+            entries[this] = value
+    }
+
+    infix fun String.from(path: String){
+        entries[this] = ToInput(path)
+    }
+
+    operator fun String.invoke(setup: ObjectDSL.() -> Unit) {
+        entries[this] = Specification.ToObject(setup)
+    }
+
+    operator fun String.invoke(vararg args: Any?) {
+        entries[this] = ToArray(*args as Array<Any?>)
+    }
+
+    fun getEntries(): Dict<Specification> = entries.toMap()
 }
 
 // Shorthands
