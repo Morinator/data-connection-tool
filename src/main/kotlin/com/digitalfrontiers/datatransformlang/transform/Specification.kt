@@ -3,6 +3,7 @@ package com.digitalfrontiers.datatransformlang.transform
 import com.digitalfrontiers.datatransformlang.transform.Specification.ToArray
 import com.digitalfrontiers.datatransformlang.transform.Specification.ToConst
 import com.digitalfrontiers.datatransformlang.transform.Specification.ToInput
+import com.digitalfrontiers.datatransformlang.util.JSON
 import com.jayway.jsonpath.JsonPath
 
 // Types
@@ -37,14 +38,29 @@ sealed class Specification {
 
     // Advanced Transformations
 
-    data class ForEach(val mapping: Specification): Specification()
+    data class ForEach(val mapping: Specification): Specification() {
+        constructor(setup: () -> Specification): this(setup())
+    }
 
     data class Extend(val entries: Dict<Specification>): Specification() {
-        constructor(vararg entries: Pair<String, Specification>): this(mapOf(*entries))
+        constructor(setup: ObjectDSL.() -> Unit): this(ObjectDSL().apply(setup).getEntries())
     }
 
     data class Call(val fid: String, val args: List<Specification>): Specification() {
-        constructor(fid: String, vararg args: Specification): this(fid, args.toList())
+        constructor(fid: String, vararg args: Any?): this(
+            fid,
+            args
+                .toList()
+                .map {
+                    if (it !is Specification)
+                        if (it is String && JSON.isJSONPath(it))
+                            ToInput(it)
+                        else
+                            ToConst(it)
+                    else
+                        it
+                }
+        )
     }
 
     data class Compose(val steps: List<Specification>): Specification() {
@@ -74,7 +90,22 @@ class ObjectDSL {
         entries[this] = ToArray(*args as Array<Any?>)
     }
 
+    infix fun String.forEach(setup: () -> Specification) {
+        entries[this] = ForEach(setup())
+    }
+
+    infix fun String.yield(setup: CallDSL.() -> Call) {
+        entries[this] = CallDSL().setup()
+    }
+
     fun getEntries(): Dict<Specification> = entries.toMap()
+}
+
+class CallDSL {
+
+    operator fun String.invoke(vararg args: Any?): Call {
+        return Call(this, *args)
+    }
 }
 
 // Shorthands
