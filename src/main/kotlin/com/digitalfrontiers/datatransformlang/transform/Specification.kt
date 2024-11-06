@@ -1,6 +1,7 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.jayway.jsonpath.JsonPath
+import kotlin.reflect.KFunction
 
 // Types
 
@@ -16,11 +17,46 @@ sealed class Specification {
     data class ToInput(val path: String): Specification()
 
     data class ToArray(val items: List<Specification>): Specification() {
-        constructor(vararg items: Specification) : this(items.toList())
+        constructor(vararg items: Any?) : this(
+            items
+                .toList()
+                .map {
+                    if (it !is Specification)
+                        ToConst(it)
+                    else
+                        it
+                }
+        )
     }
 
     data class ToObject(val entries: Dict<Specification>): Specification() {
         constructor(vararg entries: Pair<String, Specification>): this(mapOf(*entries))
+        constructor(setup: DSL.() -> Unit): this(DSL().apply(setup).getEntries())
+
+        class DSL {
+            private val entries = mutableMapOf<String, Specification>()
+
+            infix fun String.to(value: Any?) {
+                if (value !is Specification)
+                    entries[this] = ToConst(value)
+                else
+                    entries[this] = value
+            }
+
+            infix fun String.from(path: String){
+                entries[this] = ToInput(path)
+            }
+
+            operator fun String.invoke(setup: DSL.() -> Unit) {
+                entries[this] = ToObject(setup)
+            }
+
+            operator fun String.invoke(vararg args: Any?) {
+                entries[this] = ToArray(*args as Array<Any?>)
+            }
+
+            fun getEntries(): Dict<Specification> = entries.toMap()
+        }
     }
 
     // Advanced Transformations
