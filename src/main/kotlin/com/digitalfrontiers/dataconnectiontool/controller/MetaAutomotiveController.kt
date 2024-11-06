@@ -57,57 +57,55 @@ class MetaAutomotiveController(
         ForEach {
             ToObject {
                 "body_style" from "$listing.vehicle.bodyType.value"
-                "description" yield {
+                "description" call {
                     "interpolate"("{} ({})", "$listing.title.localized", "$listing.subtitle.localized")
                 }
                 "exterior_color" from "$listing.vehicle.exteriorColor.colorGroup.localized"
                 "interior_color" from "$listing.vehicle.interior.name.localized"
-                "image" yield {
+                "image" call {
                     "mapImages"("eu", listing, "16-9", "de")
                 }
                 "make" to "Porsche"
-                "mileage" yield {
+                "mileage" call {
                     "interpolate"("{} {}", "$listing.vehicle.mileage.value", "$listing.vehicle.mileage.unit")
                 }
                 "model" from "$listing.vehicle.modelSeries.localized"
-                "state_of_vehicle" yield {
-                    "branchOnEquals"("$listing.vehicle.condition.value", "new", "NEW",
-                        Call(
-                            "branchOnEquals",
-                            ToInput("$listing.warranty.porscheApproved"),
-                            ToConst(true),
-                            ToConst("CPO"),
-                            ToConst("USED")
-                        )
+                "state_of_vehicle" call {
+                    "branchOnEquals"(
+                        "$listing.vehicle.condition.value",
+                        "new",
+                        "NEW",
+                        Call {
+                            "branchOnEquals"("$listing.warranty.porscheApproved", true, "CPO", "USED")
+                        }
                     )
                 }
                 "title" from "$listing.title.localized"
-                "url" yield {
+                "url" call {
                     "interpolate"("https://finder.porsche.com/{}/{}/details/{}", "eu", "de", "$listing.id")
                 }
                 "vehicle_id" from "$listing.id"
                 "vin" from "$listing.vehicle.vin"
                 "year" from "$listing.vehicle.modelYear"
-                "condition" yield {
+                "condition" call {
                     "branchOnEquals"("$listing.vehicle.condition.value", "new", "EXCELLENT", "GOOD")
                 }
-                "drivetrain" yield {
-                    "branchOnEquals"("$listing.vehicle.drivetrain.value", "ALL_WHEEL_DRIVE", "AWD",
-                        Call(
-                            "branchOnEquals",
-                            ToInput("$listing.vehicle.drivetrain.value"),
-                            ToConst("REAR_WHEEL_DRIVE"),
-                            ToConst("RWD"),
-                            ToConst(null)
-                        )
+                "drivetrain" call {
+                    "branchOnEquals"(
+                        "$listing.vehicle.drivetrain.value",
+                        "ALL_WHEEL_DRIVE",
+                        "AWD",
+                        Call {
+                            "branchOnEquals"("$listing.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
+                        }
                     )
                 }
                 "fuel_type" from "$listing.vehicle.engineType.value"
-                "transmission" yield {
+                "transmission" call {
                     "branchOnEquals"("$listing.vehicle.transmission.value", "MANUAL", "MANUAL", "AUTOMATIC")
                 }
                 "trim" from "$listing.vehicle.modelCategory.localized"
-                "price" yield {
+                "price" call {
                     "interpolate"("{} {}", "$listing.price.value", "$listing.price.currencyCode")
                 }
                 "latitude" from "$listing.location.latitude"

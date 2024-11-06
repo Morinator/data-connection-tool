@@ -47,6 +47,12 @@ sealed class Specification {
     }
 
     data class Call(val fid: String, val args: List<Specification>): Specification() {
+        companion object {
+            operator fun invoke(setup: CallDSL.() -> Call): Call {
+                return CallDSL().setup()
+            }
+        }
+
         constructor(fid: String, vararg args: Any?): this(
             fid,
             args
@@ -94,7 +100,7 @@ class ObjectDSL {
         entries[this] = ForEach(setup())
     }
 
-    infix fun String.yield(setup: CallDSL.() -> Call) {
+    infix fun String.call(setup: CallDSL.() -> Call) {
         entries[this] = CallDSL().setup()
     }
 
