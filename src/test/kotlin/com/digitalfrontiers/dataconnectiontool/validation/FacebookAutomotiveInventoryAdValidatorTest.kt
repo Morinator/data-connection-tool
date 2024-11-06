@@ -12,7 +12,7 @@ class FacebookAutomotiveInventoryAdValidatorTest {
 
     private val validator = FacebookAutomotiveInventoryAdValidator()
 
-    // reset before each unit test
+    // resets before each unit test
     @BeforeEach
     fun setup() {
         // not real data
