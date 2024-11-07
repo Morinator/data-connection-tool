@@ -5,44 +5,66 @@ import com.digitalfrontiers.datatransformlang.transform.applyTransform
 import com.digitalfrontiers.datatransformlang.util.JSON
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
-import java.io.File
 
-class Transform {
-    private var spec: Specification? = null
-    private var parser: IParser<*> = JSON
-    private var serializer: ISerializer<*> = JSON
+class Transform(val spec: Specification) {
+    private val parsers: MutableMap<String, IParser<*>> = mutableMapOf( "JSON" to JSON)
+    private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf( "JSON" to JSON)
+    private val functions: MutableMap<String, Function<*>> = mutableMapOf()
 
-    fun withSpecification(spec: Specification): Transform {
-        this.spec = spec
+    companion object {
+        infix fun to(specProvider: () -> Specification): Transform {
+            return Transform(specProvider())
+        }
+    }
+
+    infix fun Transform.with(setup: ConfigDSL.() -> Unit): Transform {
+        ConfigDSL(this).setup()
 
         return this
     }
 
-    fun withParser(parser: IParser<Any>): Transform {
-        this.parser = parser
+    fun withParserFor(format: String, parser: IParser<Any>): Transform {
+        this.parsers[format] = parser
 
         return this
     }
 
-    fun withSerializer(serializer: ISerializer<Any>): Transform {
-        this.serializer = serializer
+    fun withSerializerFor(format: String, serializer: ISerializer<Any>): Transform {
+        this.serializers[format] = serializer
 
         return this
     }
 
-    fun apply(string: String): String {
+    fun withFunction(fid: String, impl: (args: List<Any>) -> Any?): Transform {
+        this.functions[fid] = impl
+
+        return this
+    }
+
+    fun apply(string: String, inputFormat: String = "JSON", outputFormat: String = "JSON"): String {
 
         require(this.spec != null) {"No transformation spec given"}
 
-        var parsed = this.parser.parse(string)
-
-        if (this.parser != JSON) {
-            parsed = JSON.toJSONLike(parsed)
-        }
+        val parsed = this.parsers[inputFormat]?.parse(string)
 
         val result: Any? = applyTransform(parsed, this.spec!!)
 
         // TODO: Figure out how to avoid cast
-        return (this.serializer as ISerializer<Any>).serialize(result)
+        return (this.serializers[outputFormat] as ISerializer<Any>).serialize(result)
+    }
+}
+
+class ConfigDSL(private val transform: Transform) {
+
+    fun parserFor(format: String, provider: () -> IParser<Any>) {
+        this.transform.withParserFor(format, provider())
+    }
+
+    fun serializerFor(format: String, provider: () -> ISerializer<Any>) {
+        this.transform.withSerializerFor(format, provider())
+    }
+
+    fun function(fid: String, impl: (args: List<Any>) -> Any?) {
+        this.transform.withFunction(fid, impl)
     }
 }
