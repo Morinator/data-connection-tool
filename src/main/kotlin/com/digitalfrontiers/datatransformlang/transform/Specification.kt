@@ -1,5 +1,6 @@
 package com.digitalfrontiers.datatransformlang.transform
 
+import com.digitalfrontiers.datatransformlang.CustomFunction
 import com.digitalfrontiers.datatransformlang.transform.Specification.ToArray
 import com.digitalfrontiers.datatransformlang.transform.Specification.ToConst
 import com.digitalfrontiers.datatransformlang.transform.Specification.ToInput
@@ -128,6 +129,18 @@ class ComposeDSL {
     }
 }
 
+// Helper-Functions
+
+private fun argToSpec(arg: Any?): Specification {
+    return if (arg !is Specification)
+        if (arg is String && JSON.isJSONPath(arg))
+            ToInput(arg)
+        else
+            ToConst(arg)
+    else
+        arg
+}
+
 // Shorthands
 
 typealias ToConst = Specification.ToConst
@@ -141,75 +154,71 @@ typealias Compose = Specification.Compose
 
 // Evaluation
 
-fun applyTransform(data: Data, spec: Specification): Data {
-    return when (spec) {
-        is Specification.ToConst -> spec.value
-        is Specification.ToInput -> handleToInput(data, spec)
-        is Specification.ToArray -> handleToArray(data, spec)
-        is Specification.ToObject -> handleToObject(data, spec)
-        is Specification.ForEach -> handleForEach(data, spec)
-        is Specification.Extend -> handleExtend(data, spec)
-        is Specification.Call -> handleCall(data, spec)
-        is Specification.Compose -> handleCompose(data, spec)
-    }
+fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
+    return Handler(customFunctions).handle(data, spec)
 }
 
-// Helper-Functions
-
-private fun argToSpec(arg: Any?): Specification {
-    return if (arg !is Specification)
-        if (arg is String && JSON.isJSONPath(arg))
-            ToInput(arg)
-        else
-            ToConst(arg)
-    else
-        arg
-}
-
-private inline fun handleToInput(data: Data, toInputSpec: Specification.ToInput): Data {
-    return  JsonPath.read(data, toInputSpec.path)
-}
-
-
-private inline fun handleToArray(data: Data, toArraySpec: Specification.ToArray): List<Data> {
-    return toArraySpec.items.mapNotNull { applyTransform(data, it) }
-}
-
-private inline fun handleToObject(data: Data, toObjectSpec: Specification.ToObject): Dict<Data> {
-    return toObjectSpec.entries.mapValues { (_, value) -> applyTransform(data, value) }.filterValues { it != null } as Dict<Any>
-}
-
-private inline fun handleForEach(data: Data, forEachSpec: Specification.ForEach): List<Data> {
-    return if (data is List<*>)
-        data.mapNotNull {
-            if (it != null)
-                applyTransform(it, forEachSpec.mapping)
-            else
-                null
+private class Handler(
+    private val functions: Map<String, CustomFunction>
+) {
+    fun handle(data: Data, spec: Specification): Data {
+        return when (spec) {
+            is Specification.ToConst -> spec.value
+            is Specification.ToInput -> handleToInput(data, spec)
+            is Specification.ToArray -> handleToArray(data, spec)
+            is Specification.ToObject -> handleToObject(data, spec)
+            is Specification.ForEach -> handleForEach(data, spec)
+            is Specification.Extend -> handleExtend(data, spec)
+            is Specification.Call -> handleCall(data, spec)
+            is Specification.Compose -> handleCompose(data, spec)
         }
-    else emptyList()
-}
-
-private inline fun handleExtend(data: Data, extendSpec: Specification.Extend): Dict<Data> {
-    if (data is Map<*, *>) {
-        val toObjectSpec = ToObject(extendSpec.entries)
-
-        return (data as Dict<Any>) + handleToObject(data, toObjectSpec)
-    } else {
-        return mapOf()
     }
-}
 
-private inline fun handleCall(data: Data, callSpec: Specification.Call): Data {
-    val f = getFunction<Any, Any>(callSpec.fid)
-    val args = callSpec.args.map { applyTransform(data, it) }
+    private inline fun handleToInput(data: Data, toInputSpec: Specification.ToInput): Data {
+        return  JsonPath.read(data, toInputSpec.path)
+    }
 
-    return if (f != null)
-        f(args)
-    else
-        null
-}
 
-private inline fun handleCompose(data: Data, composeSpec: Specification.Compose): Data {
-    return composeSpec.steps.fold(data) { doc, step -> applyTransform(doc, step) }
+    private inline fun handleToArray(data: Data, toArraySpec: Specification.ToArray): List<Data> {
+        return toArraySpec.items.mapNotNull { handle(data, it) }
+    }
+
+    private inline fun handleToObject(data: Data, toObjectSpec: Specification.ToObject): Dict<Data> {
+        return toObjectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
+    }
+
+    private inline fun handleForEach(data: Data, forEachSpec: Specification.ForEach): List<Data> {
+        return if (data is List<*>)
+            data.mapNotNull {
+                if (it != null)
+                    handle(it, forEachSpec.mapping)
+                else
+                    null
+            }
+        else emptyList()
+    }
+
+    private inline fun handleExtend(data: Data, extendSpec: Specification.Extend): Dict<Data> {
+        if (data is Map<*, *>) {
+            val toObjectSpec = ToObject(extendSpec.entries)
+
+            return (data as Dict<Any>) + handleToObject(data, toObjectSpec)
+        } else {
+            return mapOf()
+        }
+    }
+
+    private inline fun handleCall(data: Data, callSpec: Specification.Call): Data {
+        val f = functions.getOrDefault(callSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
+        val args = callSpec.args.map { handle(data, it) }
+
+        return if (f != null)
+            f(args)
+        else
+            null
+    }
+
+    private inline fun handleCompose(data: Data, composeSpec: Specification.Compose): Data {
+        return composeSpec.steps.fold(data) { doc, step -> handle(doc, step) }
+    }
 }

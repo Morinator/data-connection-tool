@@ -6,21 +6,17 @@ import com.digitalfrontiers.datatransformlang.util.JSON
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 
-class Transform(val spec: Specification) {
+typealias CustomFunction = (input: List<Any?>) -> Any?
+
+class Transform(private val spec: Specification) {
     private val parsers: MutableMap<String, IParser<*>> = mutableMapOf( "JSON" to JSON)
     private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf( "JSON" to JSON)
-    private val functions: MutableMap<String, Function<*>> = mutableMapOf()
+    private val functions: MutableMap<String, CustomFunction> = mutableMapOf()
 
     companion object {
         infix fun to(specProvider: () -> Specification): Transform {
             return Transform(specProvider())
         }
-    }
-
-    infix fun Transform.with(setup: ConfigDSL.() -> Unit): Transform {
-        ConfigDSL(this).setup()
-
-        return this
     }
 
     fun withParserFor(format: String, parser: IParser<Any>): Transform {
@@ -35,7 +31,7 @@ class Transform(val spec: Specification) {
         return this
     }
 
-    fun withFunction(fid: String, impl: (args: List<Any>) -> Any?): Transform {
+    fun withFunction(fid: String, impl: (input: List<Any?>) -> Any?): Transform {
         this.functions[fid] = impl
 
         return this
@@ -43,15 +39,19 @@ class Transform(val spec: Specification) {
 
     fun apply(string: String, inputFormat: String = "JSON", outputFormat: String = "JSON"): String {
 
-        require(this.spec != null) {"No transformation spec given"}
-
         val parsed = this.parsers[inputFormat]?.parse(string)
 
-        val result: Any? = applyTransform(parsed, this.spec!!)
+        val result: Any? = applyTransform(parsed, this.spec, this.functions.toMap())
 
         // TODO: Figure out how to avoid cast
         return (this.serializers[outputFormat] as ISerializer<Any>).serialize(result)
     }
+}
+
+infix fun Transform.with(setup: ConfigDSL.() -> Unit): Transform {
+    ConfigDSL(this).setup()
+
+    return this
 }
 
 class ConfigDSL(private val transform: Transform) {
@@ -64,7 +64,7 @@ class ConfigDSL(private val transform: Transform) {
         this.transform.withSerializerFor(format, provider())
     }
 
-    fun function(fid: String, impl: (args: List<Any>) -> Any?) {
+    fun function(fid: String, impl: CustomFunction) {
         this.transform.withFunction(fid, impl)
     }
 }
