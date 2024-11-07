@@ -94,11 +94,11 @@ class SimpleTests {
 
     @Test
     fun testComposeTransform() {
-        val composeTransform = Compose(
-            ToConst(1),
-            ToConst(2),
+        val composeTransform = Compose {
+            ToConst(1) then
+            ToConst(2) then
             ToConst(3)
-        )
+        }
 
         val result = applyTransform(emptyMap, composeTransform)
 

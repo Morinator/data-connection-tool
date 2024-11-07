@@ -61,8 +61,16 @@ sealed class Specification {
 
     data class Compose(val steps: List<Specification>): Specification() {
         constructor(vararg steps: Specification): this(steps.toList())
+
+        companion object {
+            operator fun invoke(setup: ComposeDSL.() -> Compose): Compose {
+                return ComposeDSL().setup()
+            }
+        }
     }
 }
+
+// Construction-DSLs
 
 class ObjectDSL {
     private val entries = mutableMapOf<String, Specification>()
@@ -106,6 +114,17 @@ class CallDSL {
                 .map { argToSpec(it) }
 
         return Call(this, mappedArgs)
+    }
+}
+
+class ComposeDSL {
+
+    infix fun Specification.then(next: Specification): Compose {
+        return if (this is Compose) {
+            Compose(this.steps + listOf(next))
+        } else {
+            Compose(listOf(this, next))
+        }
     }
 }
 

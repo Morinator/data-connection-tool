@@ -64,14 +64,14 @@ class TestsOnData {
     fun `get first 2 names`() {
 
         // given
-        val spec = Compose(
-            ToInput("\$[0:2]"),
+        val spec = Compose {
+            ToInput("\$[0:2]") then
             ForEach {
                 ToObject {
                     "name" from "name"
                 }
             }
-        )
+        }
 
         // when
         val result = applyTransform(sights, spec)
