@@ -23,8 +23,8 @@ class MetaAutomotiveController(
         val listing = "\$.node"
         this.transform =
             Transform to {
-                ForEach {
-                    ToObject {
+                ListOf {
+                    Object {
                         "body_style" from "$listing.vehicle.bodyType.value"
                         "description" call {
                             "interpolate"("{} ({})", "$listing.title.localized", "$listing.subtitle.localized")

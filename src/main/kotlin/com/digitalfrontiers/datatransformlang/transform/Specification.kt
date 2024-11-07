@@ -1,9 +1,9 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
-import com.digitalfrontiers.datatransformlang.transform.Specification.ToArray
-import com.digitalfrontiers.datatransformlang.transform.Specification.ToConst
-import com.digitalfrontiers.datatransformlang.transform.Specification.ToInput
+import com.digitalfrontiers.datatransformlang.transform.Specification.Array
+import com.digitalfrontiers.datatransformlang.transform.Specification.Const
+import com.digitalfrontiers.datatransformlang.transform.Specification.Input
 import com.digitalfrontiers.datatransformlang.util.JSON
 import com.jayway.jsonpath.JsonPath
 
@@ -16,11 +16,11 @@ sealed class Specification {
 
     // Basic Transformations
 
-    data class ToConst(val value: Data): Specification()
+    data class Const(val value: Data): Specification()
 
-    data class ToInput(val path: String): Specification()
+    data class Input(val path: String): Specification()
 
-    data class ToArray(val items: List<Specification>): Specification() {
+    data class Array(val items: List<Specification>): Specification() {
         constructor(vararg items: Any?) : this(
             items
                 .toList()
@@ -28,9 +28,9 @@ sealed class Specification {
         )
     }
 
-    data class ToObject(val entries: Dict<Specification>): Specification() {
+    data class Object(val entries: Dict<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: ObjectDSL.() -> Unit): ToObject {
+            operator fun invoke(setup: ObjectDSL.() -> Unit): Object {
                 return ObjectDSL().apply(setup).getToObject()
             }
         }
@@ -38,16 +38,16 @@ sealed class Specification {
 
     // Advanced Transformations
 
-    data class ForEach(val mapping: Specification): Specification() {
+    data class ListOf(val mapping: Specification): Specification() {
         constructor(setup: () -> Specification): this(setup())
     }
 
-    data class Extend(val entries: Dict<Specification>): Specification() {
+    data class Extension(val entries: Dict<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: ObjectDSL.() -> Unit): Extend {
+            operator fun invoke(setup: ObjectDSL.() -> Unit): Extension {
                 val obj = ObjectDSL().apply(setup).getToObject()
 
-                return Extend(obj.entries)
+                return Extension(obj.entries)
             }
         }
     }
@@ -78,32 +78,32 @@ class ObjectDSL {
 
     infix fun String.to(value: Any?) {
         if (value !is Specification)
-            entries[this] = ToConst(value)
+            entries[this] = Const(value)
         else
             entries[this] = value
     }
 
     infix fun String.from(path: String){
-        entries[this] = ToInput(path)
+        entries[this] = Input(path)
     }
 
     operator fun String.invoke(setup: ObjectDSL.() -> Unit) {
-        entries[this] = Specification.ToObject(setup)
+        entries[this] = Specification.Object(setup)
     }
 
     operator fun String.invoke(vararg args: Any?) {
-        entries[this] = ToArray(*args as Array<Any?>)
+        entries[this] = Array(*args as kotlin.Array<Any?>)
     }
 
-    infix fun String.forEach(setup: () -> Specification) {
-        entries[this] = ForEach(setup())
+    infix fun String.listOf(setup: () -> Specification) {
+        entries[this] = ListOf(setup())
     }
 
     infix fun String.call(setup: CallDSL.() -> Call) {
         entries[this] = CallDSL().setup()
     }
 
-    fun getToObject(): ToObject = ToObject(this.entries)
+    fun getToObject(): Object = Object(this.entries)
 }
 
 class CallDSL {
@@ -134,21 +134,21 @@ class ComposeDSL {
 private fun argToSpec(arg: Any?): Specification {
     return if (arg !is Specification)
         if (arg is String && JSON.isJSONPath(arg))
-            ToInput(arg)
+            Input(arg)
         else
-            ToConst(arg)
+            Const(arg)
     else
         arg
 }
 
 // Shorthands
 
-typealias ToConst = Specification.ToConst
-typealias ToInput = Specification.ToInput
-typealias ToArray = Specification.ToArray
-typealias ToObject = Specification.ToObject
-typealias ForEach = Specification.ForEach
-typealias Extend = Specification.Extend
+typealias Const = Specification.Const
+typealias Input = Specification.Input
+typealias Array = Specification.Array
+typealias Object = Specification.Object
+typealias ListOf = Specification.ListOf
+typealias Extension = Specification.Extension
 typealias Call = Specification.Call
 typealias Compose = Specification.Compose
 
@@ -163,46 +163,46 @@ private class Handler(
 ) {
     fun handle(data: Data, spec: Specification): Data {
         return when (spec) {
-            is Specification.ToConst -> spec.value
-            is Specification.ToInput -> handleToInput(data, spec)
-            is Specification.ToArray -> handleToArray(data, spec)
-            is Specification.ToObject -> handleToObject(data, spec)
-            is Specification.ForEach -> handleForEach(data, spec)
-            is Specification.Extend -> handleExtend(data, spec)
+            is Specification.Const -> spec.value
+            is Specification.Input -> handleToInput(data, spec)
+            is Array -> handleToArray(data, spec)
+            is Specification.Object -> handleToObject(data, spec)
+            is Specification.ListOf -> handleListOf(data, spec)
+            is Specification.Extension -> handleExtend(data, spec)
             is Specification.Call -> handleCall(data, spec)
             is Specification.Compose -> handleCompose(data, spec)
         }
     }
 
-    private inline fun handleToInput(data: Data, toInputSpec: Specification.ToInput): Data {
-        return  JsonPath.read(data, toInputSpec.path)
+    private inline fun handleToInput(data: Data, inputSpec: Specification.Input): Data {
+        return  JsonPath.read(data, inputSpec.path)
     }
 
 
-    private inline fun handleToArray(data: Data, toArraySpec: Specification.ToArray): List<Data> {
-        return toArraySpec.items.mapNotNull { handle(data, it) }
+    private inline fun handleToArray(data: Data, arraySpec: Array): List<Data> {
+        return arraySpec.items.mapNotNull { handle(data, it) }
     }
 
-    private inline fun handleToObject(data: Data, toObjectSpec: Specification.ToObject): Dict<Data> {
-        return toObjectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
+    private inline fun handleToObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
+        return objectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
-    private inline fun handleForEach(data: Data, forEachSpec: Specification.ForEach): List<Data> {
+    private inline fun handleListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
         return if (data is List<*>)
             data.mapNotNull {
                 if (it != null)
-                    handle(it, forEachSpec.mapping)
+                    handle(it, listOfSpec.mapping)
                 else
                     null
             }
         else emptyList()
     }
 
-    private inline fun handleExtend(data: Data, extendSpec: Specification.Extend): Dict<Data> {
+    private inline fun handleExtend(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
-            val toObjectSpec = ToObject(extendSpec.entries)
+            val objectSpec = Object(extensionSpec.entries)
 
-            return (data as Dict<Any>) + handleToObject(data, toObjectSpec)
+            return (data as Dict<Any>) + handleToObject(data, objectSpec)
         } else {
             return mapOf()
         }

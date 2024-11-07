@@ -32,7 +32,7 @@ class TestsOnData {
     fun `get list of entries by field-name`() {
 
         // given
-        val spec = ToObject {
+        val spec = Object {
             "heights" from "$[*].height"
         }
 
@@ -50,7 +50,7 @@ class TestsOnData {
     fun `get single entry`() {
 
         // given
-        val spec = ToInput("$[0].name")
+        val spec = Input("$[0].name")
 
         // when
         val result = applyTransform(sights, spec)
@@ -65,9 +65,9 @@ class TestsOnData {
 
         // given
         val spec = Compose {
-            ToInput("\$[0:2]") then
-            ForEach {
-                ToObject {
+            Input("\$[0:2]") then
+            ListOf {
+                Object {
                     "name" from "name"
                 }
             }
@@ -88,7 +88,7 @@ class TestsOnData {
     fun `error on invalid path`() {
 
         // given
-        val spec = ToInput("$[0].qewqrwettcnbvcn")
+        val spec = Input("$[0].qewqrwettcnbvcn")
 
         // when & then
         assertThrows<PathNotFoundException> {
@@ -103,8 +103,8 @@ class TestsOnData {
     fun `foreach on non-list returns empty list`() {
 
         // given
-        val spec = ForEach(
-            ToInput("josh"), // no effect
+        val spec = ListOf(
+            Input("josh"), // no effect
         )
 
         // when

@@ -12,9 +12,9 @@ class SimpleTests {
 
     @Test
     fun testToConstTransform() {
-        val toConstTransform = ToConst(42)
+        val constTransform = Const(42)
 
-        val result = applyTransform(emptyMap, toConstTransform)
+        val result = applyTransform(emptyMap, constTransform)
 
         assertEquals(42, result)
     }
@@ -22,56 +22,56 @@ class SimpleTests {
     @Test
     fun testToInputTransform() {
         val jsonDocument = mapOf("name" to "josh")
-        val toInputTransform = ToInput("$.name")
+        val inputTransform = Input("$.name")
 
-        val result = applyTransform(jsonDocument, toInputTransform)
+        val result = applyTransform(jsonDocument, inputTransform)
 
         assertEquals("josh", result)
     }
 
     @Test
     fun testToArrayTransform() {
-        val toArrayTransform = ToArray(
-            ToConst(1),
-            ToConst(2),
-            ToConst(3)
+        val arrayTransform = Array(
+            Const(1),
+            Const(2),
+            Const(3)
         )
 
-        val result = applyTransform(emptyMap, toArrayTransform)
+        val result = applyTransform(emptyMap, arrayTransform)
 
         assertEquals(listOf(1, 2, 3), result)
     }
 
     @Test
     fun testToObjectTransform() {
-        val toObjectTransform = ToObject {
+        val objectTransform = Object {
             "a" to 1
             "b" to 2
         }
 
-        val result = applyTransform(emptyMap, toObjectTransform)
+        val result = applyTransform(emptyMap, objectTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2), result)
     }
 
     @Test
     fun testForEachTransform() {
-        val forEachTransform = ForEach { ToConst(42) }
+        val listOfTransform = ListOf { Const(42) }
         val data: Data = listOf(1, 2, 3)
 
-        val result = applyTransform(data, forEachTransform)
+        val result = applyTransform(data, listOfTransform)
 
         assertEquals(listOf(42, 42, 42), result)
     }
 
     @Test
     fun testExtendTransform() {
-        val extendTransform = Extend {
+        val extensionTransform = Extension {
             "c" to 3
             "d" to 4
         }
 
-        val result = applyTransform(mapOf("a" to 1, "b" to 2), extendTransform)
+        val result = applyTransform(mapOf("a" to 1, "b" to 2), extensionTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2, "c" to 3, "d" to 4), result)
     }
@@ -95,9 +95,9 @@ class SimpleTests {
     @Test
     fun testComposeTransform() {
         val composeTransform = Compose {
-            ToConst(1) then
-            ToConst(2) then
-            ToConst(3)
+            Const(1) then
+            Const(2) then
+            Const(3)
         }
 
         val result = applyTransform(emptyMap, composeTransform)
