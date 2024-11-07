@@ -44,10 +44,10 @@ class SimpleTests {
 
     @Test
     fun testToObjectTransform() {
-        val toObjectTransform = ToObject(
-            "a" to ToConst(1),
-            "b" to ToConst(2)
-        )
+        val toObjectTransform = ToObject {
+            "a" to 1
+            "b" to 2
+        }
 
         val result = applyTransform(emptyMap, toObjectTransform)
 
@@ -56,7 +56,7 @@ class SimpleTests {
 
     @Test
     fun testForEachTransform() {
-        val forEachTransform = ForEach(ToConst(42))
+        val forEachTransform = ForEach { ToConst(42) }
         val data: Data = listOf(1, 2, 3)
 
         val result = applyTransform(data, forEachTransform)
@@ -66,10 +66,10 @@ class SimpleTests {
 
     @Test
     fun testExtendTransform() {
-        val extendTransform = Extend(
-            "c" to ToConst(3),
-            "d" to ToConst(4)
-        )
+        val extendTransform = Extend {
+            "c" to 3
+            "d" to 4
+        }
 
         val result = applyTransform(mapOf("a" to 1, "b" to 2), extendTransform)
 
@@ -83,7 +83,9 @@ class SimpleTests {
             args: List<Any> -> (args[0] as Int) + (args[1] as Int)
         }
 
-        val callTransform = Call("sum", ToConst(5), ToConst(10))
+        val callTransform = Call {
+            "sum"(5, 10)
+        }
 
         val result = applyTransform(emptyMap, callTransform)
 

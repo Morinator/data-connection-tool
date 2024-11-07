@@ -23,17 +23,16 @@ sealed class Specification {
         constructor(vararg items: Any?) : this(
             items
                 .toList()
-                .map {
-                    if (it !is Specification)
-                        ToConst(it)
-                    else
-                        it
-                }
+                .map { argToSpec(it) }
         )
     }
 
     data class ToObject(val entries: Dict<Specification>): Specification() {
-        constructor(setup: ObjectDSL.() -> Unit): this(ObjectDSL().apply(setup).getEntries())
+        companion object {
+            operator fun invoke(setup: ObjectDSL.() -> Unit): ToObject {
+                return ObjectDSL().apply(setup).getToObject()
+            }
+        }
     }
 
     // Advanced Transformations
@@ -43,7 +42,13 @@ sealed class Specification {
     }
 
     data class Extend(val entries: Dict<Specification>): Specification() {
-        constructor(setup: ObjectDSL.() -> Unit): this(ObjectDSL().apply(setup).getEntries())
+        companion object {
+            operator fun invoke(setup: ObjectDSL.() -> Unit): Extend {
+                val obj = ObjectDSL().apply(setup).getToObject()
+
+                return Extend(obj.entries)
+            }
+        }
     }
 
     data class Call(val fid: String, val args: List<Specification>): Specification() {
@@ -52,21 +57,6 @@ sealed class Specification {
                 return CallDSL().setup()
             }
         }
-
-        constructor(fid: String, vararg args: Any?): this(
-            fid,
-            args
-                .toList()
-                .map {
-                    if (it !is Specification)
-                        if (it is String && JSON.isJSONPath(it))
-                            ToInput(it)
-                        else
-                            ToConst(it)
-                    else
-                        it
-                }
-        )
     }
 
     data class Compose(val steps: List<Specification>): Specification() {
@@ -104,13 +94,18 @@ class ObjectDSL {
         entries[this] = CallDSL().setup()
     }
 
-    fun getEntries(): Dict<Specification> = entries.toMap()
+    fun getToObject(): ToObject = ToObject(this.entries)
 }
 
 class CallDSL {
 
     operator fun String.invoke(vararg args: Any?): Call {
-        return Call(this, *args)
+        val mappedArgs =
+            args
+                .toList()
+                .map { argToSpec(it) }
+
+        return Call(this, mappedArgs)
     }
 }
 
@@ -141,6 +136,16 @@ fun applyTransform(data: Data, spec: Specification): Data {
 }
 
 // Helper-Functions
+
+private fun argToSpec(arg: Any?): Specification {
+    return if (arg !is Specification)
+        if (arg is String && JSON.isJSONPath(arg))
+            ToInput(arg)
+        else
+            ToConst(arg)
+    else
+        arg
+}
 
 private inline fun handleToInput(data: Data, toInputSpec: Specification.ToInput): Data {
     return  JsonPath.read(data, toInputSpec.path)

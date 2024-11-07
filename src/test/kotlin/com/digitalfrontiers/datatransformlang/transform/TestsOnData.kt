@@ -32,9 +32,9 @@ class TestsOnData {
     fun `get list of entries by field-name`() {
 
         // given
-        val spec = ToObject(
-            "heights" to ToInput("$[*].height"),
-        )
+        val spec = ToObject {
+            "heights" from "$[*].height"
+        }
 
         // when
         val result = applyTransform(sights, spec)
@@ -66,11 +66,11 @@ class TestsOnData {
         // given
         val spec = Compose(
             ToInput("\$[0:2]"),
-            ForEach(
-                ToObject(
-                    "name" to ToInput("name")
-                )
-            )
+            ForEach {
+                ToObject {
+                    "name" from "name"
+                }
+            }
         )
 
         // when
