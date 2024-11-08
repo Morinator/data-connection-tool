@@ -4,6 +4,7 @@ import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
+import com.digitalfrontiers.datatransformlang.with
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -23,7 +24,9 @@ class DefaultTransformationService(
 
             require(parser != null) {"No parser set for Format: $inputFormat"}
 
-            transform.withParserFor(inputFormat, parser)
+            transform with {
+                parserFor(inputFormat) {parser}
+            }
         }
 
         if (outputFormat != null) {
@@ -31,9 +34,11 @@ class DefaultTransformationService(
 
             require(serializer != null) {"No serializer set for Format: $outputFormat"}
 
-            transform.withSerializerFor(outputFormat, serializer)
+            transform with {
+                serializerFor(outputFormat) {serializer}
+            }
         }
 
-        return transform.apply(data)
+        return transform.apply(data, inputFormat ?: "JSON", outputFormat ?: "JSON")
     }
 }
