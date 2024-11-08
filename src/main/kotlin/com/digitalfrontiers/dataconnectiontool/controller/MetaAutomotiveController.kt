@@ -20,73 +20,73 @@ class MetaAutomotiveController(
     private final val transform: Transform
 
     init {
-        val listing = "\$.node"
         this.transform =
             Transform to {
+                Input("$[*].node") then 
                 ListOf {
                     Object {
-                        "body_style" from "$listing.vehicle.bodyType.value"
+                        "body_style" from "$.vehicle.bodyType.value"
                         "description" call {
-                            "interpolate"("{} ({})", "$listing.title.localized", "$listing.subtitle.localized")
+                            "interpolate"("{} ({})", "$.title.localized", "$.subtitle.localized")
                         }
-                        "exterior_color" from "$listing.vehicle.exteriorColor.colorGroup.localized"
-                        "interior_color" from "$listing.vehicle.interior.name.localized"
+                        "exterior_color" from "$.vehicle.exteriorColor.colorGroup.localized"
+                        "interior_color" from "$.vehicle.interior.name.localized"
                         "image" call {
-                            "mapImages"("eu", listing, "16-9", "de")
+                            "mapImages"("eu", "$", "16-9", "de")
                         }
                         "make" to "Porsche"
                         "mileage" call {
-                            "interpolate"("{} {}", "$listing.vehicle.mileage.value", "$listing.vehicle.mileage.unit")
+                            "interpolate"("{} {}", "$.vehicle.mileage.value", "$.vehicle.mileage.unit")
                         }
-                        "model" from "$listing.vehicle.modelSeries.localized"
+                        "model" from "$.vehicle.modelSeries.localized"
                         "state_of_vehicle" call {
                             "branchOnEquals"(
-                                "$listing.vehicle.condition.value",
+                                "$.vehicle.condition.value",
                                 "new",
                                 "NEW",
                                 Call {
-                                    "branchOnEquals"("$listing.warranty.porscheApproved", true, "CPO", "USED")
+                                    "branchOnEquals"("$.warranty.porscheApproved", true, "CPO", "USED")
                                 }
                             )
                         }
-                        "title" from "$listing.title.localized"
+                        "title" from "$.title.localized"
                         "url" call {
-                            "interpolate"("https://finder.porsche.com/{}/{}/details/{}", "eu", "de", "$listing.id")
+                            "interpolate"("https://finder.porsche.com/{}/{}/details/{}", "eu", "de", "$.id")
                         }
-                        "vehicle_id" from "$listing.id"
-                        "vin" from "$listing.vehicle.vin"
-                        "year" from "$listing.vehicle.modelYear"
+                        "vehicle_id" from "$.id"
+                        "vin" from "$.vehicle.vin"
+                        "year" from "$.vehicle.modelYear"
                         "condition" call {
-                            "branchOnEquals"("$listing.vehicle.condition.value", "new", "EXCELLENT", "GOOD")
+                            "branchOnEquals"("$.vehicle.condition.value", "new", "EXCELLENT", "GOOD")
                         }
                         "drivetrain" call {
                             "branchOnEquals"(
-                                "$listing.vehicle.drivetrain.value",
+                                "$.vehicle.drivetrain.value",
                                 "ALL_WHEEL_DRIVE",
                                 "AWD",
                                 Call {
-                                    "branchOnEquals"("$listing.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
+                                    "branchOnEquals"("$.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
                                 }
                             )
                         }
-                        "fuel_type" from "$listing.vehicle.engineType.value"
+                        "fuel_type" from "$.vehicle.engineType.value"
                         "transmission" call {
-                            "branchOnEquals"("$listing.vehicle.transmission.value", "MANUAL", "MANUAL", "AUTOMATIC")
+                            "branchOnEquals"("$.vehicle.transmission.value", "MANUAL", "MANUAL", "AUTOMATIC")
                         }
-                        "trim" from "$listing.vehicle.modelCategory.localized"
+                        "trim" from "$.vehicle.modelCategory.localized"
                         "price" call {
-                            "interpolate"("{} {}", "$listing.price.value", "$listing.price.currencyCode")
+                            "interpolate"("{} {}", "$.price.value", "$.price.currencyCode")
                         }
-                        "latitude" from "$listing.location.latitude"
-                        "longitude" from "$listing.location.longitude"
+                        "latitude" from "$.location.latitude"
+                        "longitude" from "$.location.longitude"
                         "address" {
-                            "addr1" from "$listing.seller.addressComponents.localized.street"
-                            "city" from "$listing.seller.addressComponents.localized.city"
-                            "region" from "$listing.seller.addressComponents.localized.state"
+                            "addr1" from "$.seller.addressComponents.localized.street"
+                            "city" from "$.seller.addressComponents.localized.city"
+                            "region" from "$.seller.addressComponents.localized.state"
                             "country" to "Deutschland"
                         }
-                        "dealer_name" from "$listing.seller.name.localized"
-                        "custom_label_0" from "$listing.vehicle.modelYear"
+                        "dealer_name" from "$.seller.name.localized"
+                        "custom_label_0" from "$.vehicle.modelYear"
                     }
                 }
             } with {

@@ -1,5 +1,7 @@
 package com.digitalfrontiers.datatransformlang
 
+import com.digitalfrontiers.datatransformlang.transform.Compose
+import com.digitalfrontiers.datatransformlang.transform.ComposeDSL
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import com.digitalfrontiers.datatransformlang.transform.applyTransform
 import com.digitalfrontiers.datatransformlang.util.JSON
@@ -14,8 +16,8 @@ class Transform(private val spec: Specification) {
     private val functions: MutableMap<String, CustomFunction> = mutableMapOf()
 
     companion object {
-        infix fun to(specProvider: () -> Specification): Transform {
-            return Transform(specProvider())
+        infix fun to(specProvider: ComposeDSL.() -> Specification): Transform {
+            return Transform(ComposeDSL().specProvider())
         }
     }
 
