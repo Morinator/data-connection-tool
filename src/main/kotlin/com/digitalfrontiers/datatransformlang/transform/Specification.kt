@@ -4,8 +4,8 @@ import com.jayway.jsonpath.JsonPath
 
 // Types
 
-internal typealias Data = Any?; // Semantic(TM) Code
-internal typealias Dict<T> = Map<String, T>;
+internal typealias Data = Any? // Semantic(TM) Code
+internal typealias Dict<T> = Map<String, T>
 
 sealed class Specification {
     data class Const(val value: Data): Specification()
@@ -57,20 +57,21 @@ fun applyTransform(data: Data, spec: Specification): Data {
 
 // Helper-Functions
 
-private inline fun handleFetch(data: Data, fetchSpec: Specification.Fetch): Data {
-    return  JsonPath.read(data, fetchSpec.path)
+private fun handleFetch(data: Data, fetchSpec: Specification.Fetch): Data {
+    return JsonPath.read(data, fetchSpec.path)
 }
 
 
-private inline fun handleToArray(data: Data, toArraySpec: Specification.ToArray): List<Data> {
+private fun handleToArray(data: Data, toArraySpec: Specification.ToArray): List<Data> {
     return toArraySpec.items.mapNotNull { applyTransform(data, it) }
 }
 
-private inline fun handleToObject(data: Data, toObjectSpec: Specification.ToObject): Dict<Data> {
-    return toObjectSpec.entries.mapValues { (_, value) -> applyTransform(data, value) }.filterValues { it != null } as Dict<Any>
+private fun handleToObject(data: Data, toObjectSpec: Specification.ToObject): Dict<Data> {
+    return toObjectSpec.entries.mapValues { (_, value) -> applyTransform(data, value) }
+        .filterValues { it != null } as Dict<Any>
 }
 
-private inline fun handleForEach(data: Data, forEachSpec: Specification.ForEach): List<Data> {
+private fun handleForEach(data: Data, forEachSpec: Specification.ForEach): List<Data> {
     return if (data is List<*>)
         data.mapNotNull {
             if (it != null)
@@ -81,7 +82,7 @@ private inline fun handleForEach(data: Data, forEachSpec: Specification.ForEach)
     else emptyList()
 }
 
-private inline fun handleCall(data: Data, callSpec: Specification.Call): Data {
+private fun handleCall(data: Data, callSpec: Specification.Call): Data {
     val f = getFunction<Any, Any>(callSpec.fid)
     val args = callSpec.args.map { applyTransform(data, it) }
 
@@ -91,6 +92,6 @@ private inline fun handleCall(data: Data, callSpec: Specification.Call): Data {
         null
 }
 
-private inline fun handleCompose(data: Data, composeSpec: Specification.Compose): Data {
+private fun handleCompose(data: Data, composeSpec: Specification.Compose): Data {
     return composeSpec.steps.fold(data) { doc, step -> applyTransform(doc, step) }
 }
