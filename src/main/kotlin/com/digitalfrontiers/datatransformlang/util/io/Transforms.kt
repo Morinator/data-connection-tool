@@ -11,7 +11,7 @@ fun parseTransformConfig(filePath: String): Specification {
     return parseTransformNode(configNode)
 }
 
-private fun parseTransformNode(node: JsonNode): Specification {
+ fun parseTransformNode(node: JsonNode): Specification {
     return when (val type = node.get("type").asText()) {
         "Const" -> Const(node.get("value"))
         "Fetch" -> Specification.Fetch(node.get("path").asText())
