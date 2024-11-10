@@ -5,7 +5,6 @@ import com.digitalfrontiers.datatransformlang.transform.applyTransform
 import com.digitalfrontiers.datatransformlang.util.JSON
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
-import java.io.File
 
 class Transform {
     private var spec: Specification? = null
