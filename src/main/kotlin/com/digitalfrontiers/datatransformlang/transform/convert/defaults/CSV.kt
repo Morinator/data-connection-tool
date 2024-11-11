@@ -9,6 +9,17 @@ import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 
 internal val csvMapper = CsvMapper()
 
+/**
+ * Reads in the content of a CSV file as String.
+ *
+ * TODO What is return type?? Always a list with a map per row??
+ *
+ * TODO the first row is not treated differently because it normally is the header of the CSV??
+ *
+ * TODO Is it correct that `CsvReadException` is thrown for empty input??
+ *
+ * TODO when is result null??
+ */
 class CSVParser: IParser<Any> {
 
     override fun parse(string: String): Any? {
