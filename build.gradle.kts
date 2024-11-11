@@ -47,4 +47,6 @@ kotlin {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    systemProperty("user.language", "en")
+    systemProperty("user.country", "US")
 }
