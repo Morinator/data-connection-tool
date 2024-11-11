@@ -154,6 +154,28 @@ typealias Compose = Specification.Compose
 
 // Evaluation
 
+/**
+ * Applies a [Specification], which potentially uses [customFunctions] defined by the user, to given [Data].
+ * This method does most of the heavy lifting of this library.
+ *
+ * Example usage:
+ * ```kotlin
+ * val grades: Data = mapOf(
+ *   "michael" to 3,
+ *   "hillary" to 5,
+ *   "josh" to 1
+ * )
+ * val spec = Input("josh") // get grade for "josh"
+ * val result = applyTransform(grades, spec) // equals 1
+ * ```
+ *
+ * @param data Some input of arbitrary type
+ * @param spec The [Specification] that defines what should be applied to the [data]
+ * @param customFunctions A map that defines a custom function for each string identifier used as key.
+ * An example might be the key "checkIfPalindrome", along with a function implementing this functionality.
+ *
+ * @return The result after the evaluation is done.
+ */
 fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
     return Evaluator(customFunctions).handle(data, spec)
 }
