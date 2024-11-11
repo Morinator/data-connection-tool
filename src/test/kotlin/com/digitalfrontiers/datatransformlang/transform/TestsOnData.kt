@@ -46,9 +46,9 @@ class TestsOnData {
     fun `get list of entries by field-name`() {
 
         // given
-        val spec = ToObject(
-            "heights" to Fetch("$[*].height"),
-        )
+        val spec = Object {
+            "heights" from "$[*].height"
+        }
 
         // when
         val result = applyTransform(sights, spec)
@@ -64,7 +64,7 @@ class TestsOnData {
     fun `get single entry`() {
 
         // given
-        val spec = Fetch("$[0].name")
+        val spec = Input("$[0].name")
 
         // when
         val result = applyTransform(sights, spec)
@@ -78,14 +78,14 @@ class TestsOnData {
     fun `get first 2 names`() {
 
         // given
-        val spec = Compose(
-            Fetch("\$[0:2]"),
-            ForEach(
-                ToObject(
-                    "name" to Fetch("name")
-                )
-            )
-        )
+        val spec = Compose {
+            Input("\$[0:2]") then
+            ListOf {
+                Object {
+                    "name" from "name"
+                }
+            }
+        }
 
         // when
         val result = applyTransform(sights, spec)
@@ -102,7 +102,7 @@ class TestsOnData {
     fun `error on invalid path`() {
 
         // given
-        val spec = Fetch("$[0].qewqrwettcnbvcn")
+        val spec = Input("$[0].qewqrwettcnbvcn")
 
         // when & then
         assertThrows<PathNotFoundException> {
@@ -117,8 +117,8 @@ class TestsOnData {
     fun `foreach on non-list returns empty list`() {
 
         // given
-        val spec = ForEach(
-            Fetch("josh"), // no effect
+        val spec = ListOf(
+            Input("josh"), // no effect
         )
 
         // when

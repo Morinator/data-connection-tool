@@ -3,7 +3,6 @@ package com.digitalfrontiers.dataconnectiontool.util
 import com.digitalfrontiers.datatransformlang.transform.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.io.File
 
 fun parseTransformConfig(specString: String): Specification {
     val mapper = ObjectMapper()
@@ -12,24 +11,26 @@ fun parseTransformConfig(specString: String): Specification {
 }
 
 fun parseTransformNode(node: JsonNode): Specification {
-    return when (val type = node.get("type").asText()) {
-        "Const" -> Const(node.get("value"))
-        "Fetch" -> Specification.Fetch(node.get("path").asText())
-        "ToArray" -> {
+    val type = node.get("type").asText()
+
+    return when (type) {
+        "Const" -> Const(JsonUtils.unbox(node.get("value")))
+        "Input" -> Specification.Input(node.get("path").asText())
+        "Array" -> {
             val items = node.get("items").map { parseTransformNode(it) }
-            ToArray(items)
+            Array(items)
         }
-        "ToObject" -> {
+        "Object" -> {
             val entries = node.get("entries").fields().asSequence()
                 .map { (key, value) -> key to parseTransformNode(value) }
                 .toMap()
-            ToObject(entries)
+            Object(entries)
         }
-        "ForEach" -> ForEach(parseTransformNode(node.get("mapping")))
-        "Call" -> {
+        "ListOf" -> ListOf(parseTransformNode(node.get("mapping")))
+        "ResultOf" -> {
             val fid = node.get("fid").asText()
             val args = node.get("args").map { parseTransformNode(it) }
-            Call(fid, args)
+            ResultOf(fid, args)
         }
         "Compose" -> {
             val steps = node.get("steps").map { parseTransformNode(it) }
