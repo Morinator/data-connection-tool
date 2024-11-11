@@ -3,9 +3,7 @@ package com.digitalfrontiers.dataconnectiontool.controller
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
 import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.*
-import com.digitalfrontiers.datatransformlang.transform.Specification
-import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVSerializer
-import com.digitalfrontiers.datatransformlang.transform.registerFunction
+import com.digitalfrontiers.datatransformlang.with
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PostMapping
@@ -19,144 +17,109 @@ import java.time.Instant
 class MetaAutomotiveController(
     @Autowired private val transformer: ITransformationService<String, String>
 ) {
-
-    private val spec: Specification
+    private final val transform: Transform
 
     init {
+        this.transform =
+            Transform to {
+                Input("$[*].node") then 
+                ListOf {
+                    Object {
+                        "body_style" from "$.vehicle.bodyType.value"
+                        "description" resultOf {
+                            "interpolate"("{} ({})", "$.title.localized", "$.subtitle.localized")
+                        }
+                        "exterior_color" from "$.vehicle.exteriorColor.colorGroup.localized"
+                        "interior_color" from "$.vehicle.interior.name.localized"
+                        "image" resultOf {
+                            "mapImages"("eu", "$", "16-9", "de")
+                        }
+                        "make" to "Porsche"
+                        "mileage" resultOf {
+                            "interpolate"("{} {}", "$.vehicle.mileage.value", "$.vehicle.mileage.unit")
+                        }
+                        "model" from "$.vehicle.modelSeries.localized"
+                        "state_of_vehicle" resultOf {
+                            "branchOnEquals"(
+                                "$.vehicle.condition.value",
+                                "new",
+                                "NEW",
+                                ResultOf {
+                                    "branchOnEquals"("$.warranty.porscheApproved", true, "CPO", "USED")
+                                }
+                            )
+                        }
+                        "title" from "$.title.localized"
+                        "url" resultOf {
+                            "interpolate"("https://finder.porsche.com/{}/{}/details/{}", "eu", "de", "$.id")
+                        }
+                        "vehicle_id" from "$.id"
+                        "vin" from "$.vehicle.vin"
+                        "year" from "$.vehicle.modelYear"
+                        "condition" resultOf {
+                            "branchOnEquals"("$.vehicle.condition.value", "new", "EXCELLENT", "GOOD")
+                        }
+                        "drivetrain" resultOf {
+                            "branchOnEquals"(
+                                "$.vehicle.drivetrain.value",
+                                "ALL_WHEEL_DRIVE",
+                                "AWD",
+                                ResultOf {
+                                    "branchOnEquals"("$.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
+                                }
+                            )
+                        }
+                        "fuel_type" from "$.vehicle.engineType.value"
+                        "transmission" resultOf {
+                            "branchOnEquals"("$.vehicle.transmission.value", "MANUAL", "MANUAL", "AUTOMATIC")
+                        }
+                        "trim" from "$.vehicle.modelCategory.localized"
+                        "price" resultOf {
+                            "interpolate"("{} {}", "$.price.value", "$.price.currencyCode")
+                        }
+                        "latitude" from "$.location.latitude"
+                        "longitude" from "$.location.longitude"
+                        "address" {
+                            "addr1" from "$.seller.addressComponents.localized.street"
+                            "city" from "$.seller.addressComponents.localized.city"
+                            "region" from "$.seller.addressComponents.localized.state"
+                            "country" to "Deutschland"
+                        }
+                        "dealer_name" from "$.seller.name.localized"
+                        "custom_label_0" from "$.vehicle.modelYear"
+                    }
+                }
+            } with {
+                function("interpolate") {
+                    args ->
+                    args.drop(1).fold(args[0] as String) { acc, arg -> acc.replaceFirst("{}", arg.toString()) }
+                }
 
-        registerFunction<List<Any>, String>(
-            "interpolate",
-            {args -> args.drop(1).fold(args[0] as String) { acc, arg -> acc.replaceFirst("{}", arg.toString()) }}
-        )
+                function("mapImages") {
+                    args ->
+                    val marketplaceId = args[0] as String;
+                    val listing = args[1] as Map<*, *>;
+                    val imageType = args[2] as String;
+                    val languageTag = args[3] as String;
 
-        registerFunction<List<Any>, String>(
-            "mapImages",
-            {args ->
-                val marketplaceId = args[0] as String;
-                val listing = args[1] as Map<*, *>;
-                val imageType = args[2] as String;
-                val languageTag = args[3] as String;
+                    val id = listing["id"] as String;
+                    val updatedAt = listing["updatedAt"] as String;
+                    val updateTimestamp = Instant.parse(updatedAt).toEpochMilli()
+                    "https://social-media-images.slfinpub.aws.porsche.cloud/$marketplaceId/$id/$imageType/$languageTag?updated=$updateTimestamp"
+                }
 
-                val id = listing["id"] as String;
-                val updatedAt = listing["updatedAt"] as String;
-                val updateTimestamp = Instant.parse(updatedAt).toEpochMilli()
-                "https://social-media-images.slfinpub.aws.porsche.cloud/$marketplaceId/$id/$imageType/$languageTag?updated=$updateTimestamp"
+                function("branchOnEquals") {
+                    args ->
+                    if (args[0] == args[1])
+                        args[2]
+                    else
+                        args[3]
+                }
             }
-        )
-
-        registerFunction<List<Any?>, Any?>(
-            "branchOnEquals",
-            {args ->
-                if (args[0] == args[1])
-                    args[2]
-                else
-                    args[3]
-            }
-        )
-
-        val listing = "\$.node"
-        this.spec =
-        ForEach(
-            ToObject(
-                "body_style" to Fetch("$listing.vehicle.bodyType.value"),
-                "description" to Call(
-                    "interpolate",
-                    Const("{} ({})"),
-                    Fetch("$listing.title.localized"),
-                    Fetch("$listing.subtitle.localized")
-                ),
-                "exterior_color" to Fetch("$listing.vehicle.exteriorColor.colorGroup.localized"),
-                "interior_color" to Fetch("$listing.vehicle.interior.name.localized"),
-                "image" to Call(
-                    "mapImages",
-                    Const("eu"),
-                    Fetch(listing),
-                    Const("16-9"),
-                    Const("de")
-                ),
-                "make" to Const("Porsche"),
-                "mileage" to Call(
-                    "interpolate",
-                    Const("{} {}"),
-                    Fetch("$listing.vehicle.mileage.value"),
-                    Fetch("$listing.vehicle.mileage.unit")
-                ),
-                "model" to Fetch("$listing.vehicle.modelSeries.localized"),
-                "state_of_vehicle" to Call(
-                    "branchOnEquals",
-                    Fetch("$listing.vehicle.condition.value"),
-                    Const("new"),
-                    Const("NEW"),
-                    Call(
-                        "branchOnEquals",
-                        Fetch("$listing.warranty.porscheApproved"),
-                        Const(true),
-                        Const("CPO"),
-                        Const("USED")
-                    )
-                ),
-                "title" to Fetch("$listing.title.localized"),
-                "url" to Call(
-                    "interpolate",
-                    Const("https://finder.porsche.com/{}/{}/details/{}"),
-                    Const("eu"),
-                    Const("de"),
-                    Fetch("$listing.id")
-                ),
-                "vehicle_id" to Fetch("$listing.id"),
-                "vin" to Fetch("$listing.vehicle.vin"),
-                "year" to Fetch("$listing.vehicle.modelYear"),
-                "condition" to Call(
-                    "branchOnEquals",
-                    Fetch("$listing.vehicle.condition.value"),
-                    Const("new"),
-                    Const("EXCELLENT"),
-                    Const("GOOD")
-                ),
-                "drivetrain" to Call(
-                    "branchOnEquals",
-                    Fetch("$listing.vehicle.drivetrain.value"),
-                    Const("ALL_WHEEL_DRIVE"),
-                    Const("AWD"),
-                    Call(
-                        "branchOnEquals",
-                        Fetch("$listing.vehicle.drivetrain.value"),
-                        Const("REAR_WHEEL_DRIVE"),
-                        Const("RWD"),
-                        Const(null)
-                    )
-                ),
-                "fuel_type" to Fetch("$listing.vehicle.engineType.value"),
-                "transmission" to Call(
-                    "branchOnEquals",
-                    Fetch("$listing.vehicle.transmission.value"),
-                    Const("MANUAL"),
-                    Const("MANUAL"),
-                    Const("AUTOMATIC")
-                ),
-                "trim" to Fetch("$listing.vehicle.modelCategory.localized"),
-                "price" to Call(
-                    "interpolate",
-                    Const("{} {}"),
-                    Fetch("$listing.price.value"),
-                    Fetch("$listing.price.currencyCode")
-                ),
-                "latitude" to Fetch("$listing.location.latitude"),
-                "longitude" to Fetch("$listing.location.longitude"),
-                "address" to ToObject(
-                    "addr1" to Fetch("$listing.seller.addressComponents.localized.street"),
-                    "city" to Fetch("$listing.seller.addressComponents.localized.city"),
-                    "region" to Fetch("$listing.seller.addressComponents.localized.state"),
-                    "country" to Const("Deutschland")
-                ),
-                "dealer_name" to Fetch("$listing.seller.name.localized"),
-                "custom_label_0" to Fetch("$listing.vehicle.modelYear")
-            )
-        )
     }
 
     @PostMapping("/meta-auto")
     fun process(@RequestBody body: String): String {
-        return this.transformer.transform(body, this.spec)
+        return this.transform.apply(body)
     }
 }

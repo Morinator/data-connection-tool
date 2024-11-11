@@ -1,5 +1,6 @@
 package com.digitalfrontiers.datatransformlang.transform
 
+import com.digitalfrontiers.datatransformlang.CustomFunction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -11,7 +12,7 @@ class SimpleTests {
     private val emptyMap: Data = emptyMap<String, Any>()
 
     @Test
-    fun testConstTransform() {
+    fun testToConstTransform() {
         val constTransform = Const(42)
 
         val result = applyTransform(emptyMap, constTransform)
@@ -20,71 +21,94 @@ class SimpleTests {
     }
 
     @Test
-    fun testFetchTransform() {
+    fun testToInputTransform() {
         val jsonDocument = mapOf("name" to "josh")
-        val fetchTransform = Fetch("$.name")
+        val inputTransform = Input("$.name")
 
-        val result = applyTransform(jsonDocument, fetchTransform)
+        val result = applyTransform(jsonDocument, inputTransform)
 
         assertEquals("josh", result)
     }
 
     @Test
     fun testToArrayTransform() {
-        val toArrayTransform = ToArray(
+        val arrayTransform = Array(
             Const(1),
             Const(2),
             Const(3)
         )
 
-        val result = applyTransform(emptyMap, toArrayTransform)
+        val result = applyTransform(emptyMap, arrayTransform)
 
         assertEquals(listOf(1, 2, 3), result)
     }
 
     @Test
     fun testToObjectTransform() {
-        val toObjectTransform = ToObject(
-            "a" to Const(1),
-            "b" to Const(2)
-        )
+        val objectTransform = Object {
+            "a" to 1
+            "b" to 2
+        }
 
-        val result = applyTransform(emptyMap, toObjectTransform)
+        val result = applyTransform(emptyMap, objectTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2), result)
     }
 
     @Test
     fun testForEachTransform() {
-        val forEachTransform = ForEach(Const(42))
+        val listOfTransform = ListOf { Const(42) }
         val data: Data = listOf(1, 2, 3)
 
-        val result = applyTransform(data, forEachTransform)
+        val result = applyTransform(data, listOfTransform)
 
         assertEquals(listOf(42, 42, 42), result)
     }
 
     @Test
-    fun testCallTransform() {
-        // Register a dummy function
-        registerFunction("sum") {
-            args: List<Any> -> (args[0] as Int) + (args[1] as Int)
+    fun testExtendTransform() {
+        val extensionTransform = Extension {
+            "c" to 3
+            "d" to 4
         }
 
-        val callTransform = Call("sum", Const(5), Const(10))
+        val result = applyTransform(mapOf("a" to 1, "b" to 2), extensionTransform)
 
-        val result = applyTransform(emptyMap, callTransform)
+        assertEquals(mapOf("a" to 1, "b" to 2, "c" to 3, "d" to 4), result)
+    }
+
+    @Test
+    fun testCallTransform() {
+        // Register a dummy function
+
+        val sum: CustomFunction = {
+                args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
+        }
+
+//        registerFunction("sum") {
+//            args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
+//        }
+
+        val resultOfTransform = ResultOf {
+            "sum"(5, 10)
+        }
+
+        val result = applyTransform(
+            emptyMap,
+            resultOfTransform,
+            mapOf("sum" to sum)
+        )
 
         assertEquals(15, result)
     }
 
     @Test
     fun testComposeTransform() {
-        val composeTransform = Compose(
-            Const(1),
-            Const(2),
+        val composeTransform = Compose {
+            Const(1) then
+            Const(2) then
             Const(3)
-        )
+        }
 
         val result = applyTransform(emptyMap, composeTransform)
 

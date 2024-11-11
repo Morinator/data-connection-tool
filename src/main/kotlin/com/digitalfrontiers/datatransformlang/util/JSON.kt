@@ -10,6 +10,9 @@ internal val mapper = jacksonObjectMapper()
 
 object JSON : IParser<Any>, ISerializer<Any> {
 
+    private val jsonPathREx = """^(\$|\@)(\.\w+|\[\d+\]|\.\[\d+\]|\[\*\]|\.\.\w+)*$""".toRegex()
+
+
     override fun parse(string: String): Any? {
         return Configuration
             .defaultConfiguration()
@@ -29,5 +32,7 @@ object JSON : IParser<Any>, ISerializer<Any> {
         else
             mapper.convertValue(data, Map::class.java)
     }
+
+    fun isJSONPath(string: String): Boolean = jsonPathREx.matches(string)
 
 }

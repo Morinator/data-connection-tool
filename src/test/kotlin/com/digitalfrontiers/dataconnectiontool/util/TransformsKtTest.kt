@@ -1,8 +1,8 @@
 package com.digitalfrontiers.dataconnectiontool.util
 
 import com.digitalfrontiers.datatransformlang.transform.Const
-import com.digitalfrontiers.datatransformlang.transform.Fetch
-import com.digitalfrontiers.datatransformlang.transform.ToArray
+import com.digitalfrontiers.datatransformlang.transform.Input
+import com.digitalfrontiers.datatransformlang.transform.Array
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -30,7 +30,7 @@ class TransformsKtTest {
     fun `test parse fetch transform`() {
         val json = """
             {
-                "type": "Fetch",
+                "type": "Input",
                 "path": "data.user.name"
             }
         """.trimIndent()
@@ -38,15 +38,15 @@ class TransformsKtTest {
 
         val result = parseTransformNode(node)
 
-        assertTrue(result is Fetch)
-        assertEquals("data.user.name", (result as Fetch).path)
+        assertTrue(result is Input)
+        assertEquals("data.user.name", (result as Input).path)
     }
 
     @Test
     fun `test parse toArray transform`() {
         val json = """
             {
-                "type": "ToArray",
+                "type": "Array",
                 "items": [
                     {
                         "type": "Const",
@@ -67,8 +67,8 @@ class TransformsKtTest {
 
         val result = parseTransformNode(node)
 
-        assertTrue(result is ToArray)
-        assertEquals(3, (result as ToArray).items.size)
+        assertTrue(result is Array)
+        assertEquals(3, (result as Array).items.size)
 
         assertTrue(result.items[0] is Const)
         assertTrue(result.items[1] is Const)
