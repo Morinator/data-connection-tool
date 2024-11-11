@@ -83,11 +83,11 @@ class SimpleTests {
             args: List<Any> -> (args[0] as Int) + (args[1] as Int)
         }
 
-        val callTransform = Call {
+        val resultOfTransform = ResultOf {
             "sum"(5, 10)
         }
 
-        val result = applyTransform(emptyMap, callTransform)
+        val result = applyTransform(emptyMap, resultOfTransform)
 
         assertEquals(15, result)
     }

@@ -28,7 +28,7 @@ fun parseTransformNode(node: JsonNode): Specification {
         "Call" -> {
             val fid = node.get("fid").asText()
             val args = node.get("args").map { parseTransformNode(it) }
-            Call(fid, args)
+            ResultOf(fid, args)
         }
         "Compose" -> {
             val steps = node.get("steps").map { parseTransformNode(it) }

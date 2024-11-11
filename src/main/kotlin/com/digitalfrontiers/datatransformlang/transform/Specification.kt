@@ -52,10 +52,10 @@ sealed class Specification {
         }
     }
 
-    data class Call(val fid: String, val args: List<Specification>): Specification() {
+    data class ResultOf(val fid: String, val args: List<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: CallDSL.() -> Call): Call {
-                return CallDSL().setup()
+            operator fun invoke(setup: ResultOfDSL.() -> ResultOf): ResultOf {
+                return ResultOfDSL().setup()
             }
         }
     }
@@ -99,22 +99,22 @@ class ObjectDSL {
         entries[this] = ListOf(setup())
     }
 
-    infix fun String.call(setup: CallDSL.() -> Call) {
-        entries[this] = CallDSL().setup()
+    infix fun String.resultOf(setup: ResultOfDSL.() -> ResultOf) {
+        entries[this] = ResultOfDSL().setup()
     }
 
     fun getToObject(): Object = Object(this.entries)
 }
 
-class CallDSL {
+class ResultOfDSL {
 
-    operator fun String.invoke(vararg args: Any?): Call {
+    operator fun String.invoke(vararg args: Any?): ResultOf {
         val mappedArgs =
             args
                 .toList()
                 .map { argToSpec(it) }
 
-        return Call(this, mappedArgs)
+        return ResultOf(this, mappedArgs)
     }
 }
 
@@ -149,45 +149,45 @@ typealias Array = Specification.Array
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
-typealias Call = Specification.Call
+typealias ResultOf = Specification.ResultOf
 typealias Compose = Specification.Compose
 
 // Evaluation
 
 fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
-    return Handler(customFunctions).handle(data, spec)
+    return Evaluator(customFunctions).handle(data, spec)
 }
 
-private class Handler(
+private class Evaluator(
     private val functions: Map<String, CustomFunction>
 ) {
     fun handle(data: Data, spec: Specification): Data {
         return when (spec) {
             is Specification.Const -> spec.value
-            is Specification.Input -> handleToInput(data, spec)
-            is Array -> handleToArray(data, spec)
-            is Specification.Object -> handleToObject(data, spec)
-            is Specification.ListOf -> handleListOf(data, spec)
-            is Specification.Extension -> handleExtend(data, spec)
-            is Specification.Call -> handleCall(data, spec)
-            is Specification.Compose -> handleCompose(data, spec)
+            is Specification.Input -> evaluateInput(data, spec)
+            is Array -> evaluateArray(data, spec)
+            is Specification.Object -> evaluateObject(data, spec)
+            is Specification.ListOf -> evaluateListOf(data, spec)
+            is Specification.Extension -> evaluateExtension(data, spec)
+            is Specification.ResultOf -> evaluateResultOf(data, spec)
+            is Specification.Compose -> evaluateCompose(data, spec)
         }
     }
 
-    private inline fun handleToInput(data: Data, inputSpec: Specification.Input): Data {
+    private inline fun evaluateInput(data: Data, inputSpec: Specification.Input): Data {
         return  JsonPath.read(data, inputSpec.path)
     }
 
 
-    private inline fun handleToArray(data: Data, arraySpec: Array): List<Data> {
+    private inline fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
         return arraySpec.items.mapNotNull { handle(data, it) }
     }
 
-    private inline fun handleToObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
+    private inline fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
         return objectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
-    private inline fun handleListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
+    private inline fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
         return if (data is List<*>)
             data.mapNotNull {
                 if (it != null)
@@ -198,19 +198,19 @@ private class Handler(
         else emptyList()
     }
 
-    private inline fun handleExtend(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
+    private inline fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
             val objectSpec = Object(extensionSpec.entries)
 
-            return (data as Dict<Any>) + handleToObject(data, objectSpec)
+            return (data as Dict<Any>) + evaluateObject(data, objectSpec)
         } else {
             return mapOf()
         }
     }
 
-    private inline fun handleCall(data: Data, callSpec: Specification.Call): Data {
-        val f = functions.getOrDefault(callSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
-        val args = callSpec.args.map { handle(data, it) }
+    private inline fun evaluateResultOf(data: Data, resultOfSpec: Specification.ResultOf): Data {
+        val f = functions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
+        val args = resultOfSpec.args.map { handle(data, it) }
 
         return if (f != null)
             f(args)
@@ -218,7 +218,7 @@ private class Handler(
             null
     }
 
-    private inline fun handleCompose(data: Data, composeSpec: Specification.Compose): Data {
+    private inline fun evaluateCompose(data: Data, composeSpec: Specification.Compose): Data {
         return composeSpec.steps.fold(data) { doc, step -> handle(doc, step) }
     }
 }

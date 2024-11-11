@@ -26,55 +26,55 @@ class MetaAutomotiveController(
                 ListOf {
                     Object {
                         "body_style" from "$.vehicle.bodyType.value"
-                        "description" call {
+                        "description" resultOf {
                             "interpolate"("{} ({})", "$.title.localized", "$.subtitle.localized")
                         }
                         "exterior_color" from "$.vehicle.exteriorColor.colorGroup.localized"
                         "interior_color" from "$.vehicle.interior.name.localized"
-                        "image" call {
+                        "image" resultOf {
                             "mapImages"("eu", "$", "16-9", "de")
                         }
                         "make" to "Porsche"
-                        "mileage" call {
+                        "mileage" resultOf {
                             "interpolate"("{} {}", "$.vehicle.mileage.value", "$.vehicle.mileage.unit")
                         }
                         "model" from "$.vehicle.modelSeries.localized"
-                        "state_of_vehicle" call {
+                        "state_of_vehicle" resultOf {
                             "branchOnEquals"(
                                 "$.vehicle.condition.value",
                                 "new",
                                 "NEW",
-                                Call {
+                                ResultOf {
                                     "branchOnEquals"("$.warranty.porscheApproved", true, "CPO", "USED")
                                 }
                             )
                         }
                         "title" from "$.title.localized"
-                        "url" call {
+                        "url" resultOf {
                             "interpolate"("https://finder.porsche.com/{}/{}/details/{}", "eu", "de", "$.id")
                         }
                         "vehicle_id" from "$.id"
                         "vin" from "$.vehicle.vin"
                         "year" from "$.vehicle.modelYear"
-                        "condition" call {
+                        "condition" resultOf {
                             "branchOnEquals"("$.vehicle.condition.value", "new", "EXCELLENT", "GOOD")
                         }
-                        "drivetrain" call {
+                        "drivetrain" resultOf {
                             "branchOnEquals"(
                                 "$.vehicle.drivetrain.value",
                                 "ALL_WHEEL_DRIVE",
                                 "AWD",
-                                Call {
+                                ResultOf {
                                     "branchOnEquals"("$.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
                                 }
                             )
                         }
                         "fuel_type" from "$.vehicle.engineType.value"
-                        "transmission" call {
+                        "transmission" resultOf {
                             "branchOnEquals"("$.vehicle.transmission.value", "MANUAL", "MANUAL", "AUTOMATIC")
                         }
                         "trim" from "$.vehicle.modelCategory.localized"
-                        "price" call {
+                        "price" resultOf {
                             "interpolate"("{} {}", "$.price.value", "$.price.currencyCode")
                         }
                         "latitude" from "$.location.latitude"
