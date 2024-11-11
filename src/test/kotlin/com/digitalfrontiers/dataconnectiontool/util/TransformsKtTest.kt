@@ -46,7 +46,7 @@ class TransformsKtTest {
     fun `test parse toArray transform`() {
         val json = """
             {
-                "type": "ToArray",
+                "type": "Array",
                 "items": [
                     {
                         "type": "Const",
