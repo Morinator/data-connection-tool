@@ -1,5 +1,6 @@
 package com.digitalfrontiers.datatransformlang.transform
 
+import com.digitalfrontiers.datatransformlang.CustomFunction
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -79,15 +80,24 @@ class SimpleTests {
     @Test
     fun testCallTransform() {
         // Register a dummy function
-        registerFunction("sum") {
-            args: List<Any> -> (args[0] as Int) + (args[1] as Int)
+
+        val sum: CustomFunction = {
+                args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
         }
+
+//        registerFunction("sum") {
+//            args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
+//        }
 
         val resultOfTransform = ResultOf {
             "sum"(5, 10)
         }
 
-        val result = applyTransform(emptyMap, resultOfTransform)
+        val result = applyTransform(
+            emptyMap,
+            resultOfTransform,
+            mapOf("sum" to sum)
+        )
 
         assertEquals(15, result)
     }
