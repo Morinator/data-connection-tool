@@ -9,8 +9,8 @@ import com.jayway.jsonpath.JsonPath
 
 // Types
 
-internal typealias Data = Any?; // Semantic(TM) Code
-internal typealias Dict<T> = Map<String, T>;
+internal typealias Data = Any? // Semantic(TM) Code
+internal typealias Dict<T> = Map<String, T>
 
 sealed class Specification {
 
@@ -174,20 +174,20 @@ private class Evaluator(
         }
     }
 
-    private inline fun evaluateInput(data: Data, inputSpec: Specification.Input): Data {
+    private fun evaluateInput(data: Data, inputSpec: Specification.Input): Data {
         return  JsonPath.read(data, inputSpec.path)
     }
 
 
-    private inline fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
+    private fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
         return arraySpec.items.mapNotNull { handle(data, it) }
     }
 
-    private inline fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
+    private fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
         return objectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
-    private inline fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
+    private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
         return if (data is List<*>)
             data.mapNotNull {
                 if (it != null)
@@ -198,7 +198,7 @@ private class Evaluator(
         else emptyList()
     }
 
-    private inline fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
+    private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
             val objectSpec = Object(extensionSpec.entries)
 
@@ -208,17 +208,14 @@ private class Evaluator(
         }
     }
 
-    private inline fun evaluateResultOf(data: Data, resultOfSpec: Specification.ResultOf): Data {
+    private fun evaluateResultOf(data: Data, resultOfSpec: Specification.ResultOf): Data {
         val f = functions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
         val args = resultOfSpec.args.map { handle(data, it) }
 
-        return if (f != null)
-            f(args)
-        else
-            null
+        return f(args)
     }
 
-    private inline fun evaluateCompose(data: Data, composeSpec: Specification.Compose): Data {
+    private fun evaluateCompose(data: Data, composeSpec: Specification.Compose): Data {
         return composeSpec.steps.fold(data) { doc, step -> handle(doc, step) }
     }
 }
