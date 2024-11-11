@@ -1,16 +1,14 @@
 package com.digitalfrontiers.datatransformlang.transform.convert.defaults
 
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 class YAMLParserTest {
 
     private val yamlParser = YAMLParser()
 
     @Test
-    fun `test simple example`() {
+    fun `test different data types`() {
 
         val input = """
             ---  # Document start marker
@@ -18,6 +16,7 @@ class YAMLParserTest {
             string_value: "Hello, YAML!"
             unquoted_string: Hello, YAML!
             number: 42
+            my_bool: true
             
         """.trimIndent()
 
@@ -26,13 +25,25 @@ class YAMLParserTest {
         assertEquals("Hello, YAML!", x["string_value"])
         assertEquals("Hello, YAML!", x["unquoted_string"])
         assertEquals(42, x["number"])
+        assertEquals(true, x["my_bool"])
     }
 
     @Test
-    fun `test empty input`() {
+    fun `empty input produces null`() {
 
-        assertThrows<MismatchedInputException> {
-            yamlParser.parse("")
-        }
+        // also prints stacktrace for com.fasterxml.jackson.databind.exc.MismatchedInputException
+        assertEquals(null, yamlParser.parse(""))
+    }
+
+    @Test
+    fun `test simple list`() {
+
+        val input = """
+            - apple
+            - banana
+            - orange
+        """.trimIndent()
+
+        assertEquals(listOf("apple", "banana", "orange"), yamlParser.parse(input))
     }
 }
