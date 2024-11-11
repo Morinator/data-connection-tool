@@ -32,7 +32,7 @@ class TestsOnData {
     fun `copy with no change`() {
 
         // given
-        val spec = Fetch("$")
+        val spec = Input("$")
 
         // when
         val result = applyTransform(sights, spec)
