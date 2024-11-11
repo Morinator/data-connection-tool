@@ -29,6 +29,20 @@ class TestsOnData {
     )
 
     @Test
+    fun `copy with no change`() {
+
+        // given
+        val spec = Input("$")
+
+        // when
+        val result = applyTransform(sights, spec)
+
+        // then
+        println(result)
+        assertEquals(sights, result)
+    }
+
+    @Test
     fun `get list of entries by field-name`() {
 
         // given
