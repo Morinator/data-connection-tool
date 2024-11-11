@@ -155,8 +155,10 @@ typealias Compose = Specification.Compose
 // Evaluation
 
 /**
- * Applies a [Specification], which potentially uses [customFunctions] defined by the user, to given [Data].
- * This method does most of the heavy lifting of this library.
+ * Applies a [Specification] to given [Data], potentially using [customFunctions] that have to be manually defined.
+ *
+ * This method does most of the heavy lifting of this library, the most effort lies in defining the [Specification],
+ * potentially with its [customFunctions].
  *
  * Example usage:
  * ```kotlin
