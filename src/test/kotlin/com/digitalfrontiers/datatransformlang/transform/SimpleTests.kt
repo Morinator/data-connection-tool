@@ -1,6 +1,7 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
+import com.digitalfrontiers.datatransformlang.Transform
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -71,7 +72,6 @@ class SimpleTests {
             "c" to 3
             "d" to 4
         }
-
         val result = applyTransform(mapOf("a" to 1, "b" to 2), extensionTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2, "c" to 3, "d" to 4), result)
@@ -84,10 +84,6 @@ class SimpleTests {
         val sum: CustomFunction = {
                 args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
         }
-
-//        registerFunction("sum") {
-//            args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
-//        }
 
         val resultOfTransform = ResultOf {
             "sum"(5, 10)
