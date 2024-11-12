@@ -52,6 +52,9 @@ sealed class Specification {
         }
     }
 
+    /**
+     * Apply a function, identified by the function id [fid].
+     */
     data class ResultOf(val fid: String, val args: List<Specification>): Specification() {
         companion object {
             operator fun invoke(setup: ResultOfDSL.() -> ResultOf): ResultOf {
@@ -60,6 +63,9 @@ sealed class Specification {
         }
     }
 
+    /**
+     * Compose multiple functions in the provided order, given by [steps]
+     */
     data class Compose(val steps: List<Specification>): Specification() {
         constructor(vararg steps: Specification): this(steps.toList())
 
@@ -131,16 +137,11 @@ class ComposeDSL {
 
 // Helper-Functions
 
-private fun argToSpec(arg: Any?): Specification {
-    return if (arg !is Specification)
-        if (arg is String && JSON.isJSONPath(arg))
-            Input(arg)
-        else
-            Const(arg)
-    else
-        arg
+private fun argToSpec(arg: Any?): Specification = when {
+    arg is Specification -> arg
+    arg is String && JSON.isJSONPath(arg) -> Input(arg)
+    else -> Const(arg)
 }
-
 // Shorthands
 
 typealias Const = Specification.Const
@@ -179,48 +180,58 @@ typealias Compose = Specification.Compose
  * @return The result after the evaluation is done.
  */
 fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
-    return Evaluator(customFunctions).handle(data, spec)
+    return Evaluator(customFunctions).evaluate(data, spec)
 }
 
+/**
+ * Groups all functions used for evaluation together. This class is primarily used in [applyTransform].
+ *
+ * @param customFunctions The custom functions used for evaluation, usually taken from [applyTransform].
+ */
 private class Evaluator(
-    private val functions: Map<String, CustomFunction>
+    private val customFunctions: Map<String, CustomFunction>
 ) {
-    fun handle(data: Data, spec: Specification): Data {
+    fun evaluate(data: Data, spec: Specification): Data {
         return when (spec) {
-            is Specification.Const -> spec.value
-            is Specification.Input -> evaluateInput(data, spec)
+            is Const -> spec.value
+            is Input -> evaluateInput(data, spec)
             is Array -> evaluateArray(data, spec)
-            is Specification.Object -> evaluateObject(data, spec)
-            is Specification.ListOf -> evaluateListOf(data, spec)
-            is Specification.Extension -> evaluateExtension(data, spec)
-            is Specification.ResultOf -> evaluateResultOf(data, spec)
-            is Specification.Compose -> evaluateCompose(data, spec)
+            is Object -> evaluateObject(data, spec)
+            is ListOf -> evaluateListOf(data, spec)
+            is Extension -> evaluateExtension(data, spec)
+            is ResultOf -> evaluateResultOf(data, spec)
+            is Compose -> evaluateCompose(data, spec)
         }
     }
 
-    private fun evaluateInput(data: Data, inputSpec: Specification.Input): Data {
+    /**
+     * @return The part of [data] specified by the JSON path given by [inputSpec].
+     */
+    private fun evaluateInput(data: Data, inputSpec: Input): Data {
         return  JsonPath.read(data, inputSpec.path)
     }
 
 
     private fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
-        return arraySpec.items.mapNotNull { handle(data, it) }
+        return arraySpec.items.mapNotNull { evaluate(data, it) }
     }
 
     private fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
-        return objectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
+        return objectSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
-    private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
-        return if (data is List<*>)
-            data.mapNotNull {
-                if (it != null)
-                    handle(it, listOfSpec.mapping)
-                else
-                    null
-            }
-        else emptyList()
-    }
+    /**
+     * A specification of type [ListOf] that is evaluated on [data].
+     *
+     * Elements that are null will get filtered out.
+     *
+     * If [data] is not a list, an empty list will be returned.
+     */
+    private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> =
+        (data as? List<*>)
+            ?.filterNotNull()
+            ?.map { evaluate(it, listOfSpec.mapping) }
+            ?: emptyList()
 
     private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
@@ -233,13 +244,13 @@ private class Evaluator(
     }
 
     private fun evaluateResultOf(data: Data, resultOfSpec: Specification.ResultOf): Data {
-        val f = functions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
-        val args = resultOfSpec.args.map { handle(data, it) }
+        val f = customFunctions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
+        val args = resultOfSpec.args.map { evaluate(data, it) }
 
         return f(args)
     }
 
     private fun evaluateCompose(data: Data, composeSpec: Specification.Compose): Data {
-        return composeSpec.steps.fold(data) { doc, step -> handle(doc, step) }
+        return composeSpec.steps.fold(data) { doc, step -> evaluate(doc, step) }
     }
 }
