@@ -183,6 +183,7 @@ typealias Array = Specification.Array
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
+typealias Remap = Specification.Remap
 typealias ResultOf = Specification.ResultOf
 typealias Compose = Specification.Compose
 
@@ -226,12 +227,14 @@ private class Evaluator(
 ) {
     fun evaluate(data: Data, spec: Specification): Data {
         return when (spec) {
+            is Self -> data
             is Const -> spec.value
             is Input -> evaluateInput(data, spec)
             is Array -> evaluateArray(data, spec)
             is Object -> evaluateObject(data, spec)
             is ListOf -> evaluateListOf(data, spec)
             is Extension -> evaluateExtension(data, spec)
+            is Remap -> evaluateRemap(data, spec)
             is ResultOf -> evaluateResultOf(data, spec)
             is Compose -> evaluateCompose(data, spec)
         }
