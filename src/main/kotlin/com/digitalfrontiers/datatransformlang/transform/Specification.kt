@@ -225,6 +225,13 @@ private class Evaluator(
         return objectSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
+    /**
+     * A specification of type [ListOf] that is evaluated on [data].
+     *
+     * Elements that are null will get filtered out.
+     *
+     * If [data] is not a list, an empty list will be returned.
+     */
     private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> =
         (data as? List<*>)
             ?.filterNotNull()
