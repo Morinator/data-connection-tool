@@ -150,8 +150,8 @@ private fun argToSpec(arg: Any?): Specification {
 // Shorthands
 
 typealias Const = Specification.Const
-typealias Array = Specification.Array
 typealias Input = Specification.Input
+typealias Array = Specification.Array
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
