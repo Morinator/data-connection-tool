@@ -225,16 +225,11 @@ private class Evaluator(
         return objectSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
-    private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
-        return if (data is List<*>)
-            data.mapNotNull {
-                if (it != null)
-                    evaluate(it, listOfSpec.mapping)
-                else
-                    null
-            }
-        else emptyList()
-    }
+    private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> =
+        (data as? List<*>)
+            ?.filterNotNull()
+            ?.map { evaluate(it, listOfSpec.mapping) }
+            ?: emptyList()
 
     private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {

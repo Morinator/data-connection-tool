@@ -56,13 +56,23 @@ class SimpleTests {
     }
 
     @Test
-    fun testForEachTransform() {
-        val listOfTransform = ListOf { Const(42) }
+    fun `test list transform`() {
         val data: Data = listOf(1, 2, 3)
+        val spec = ListOf { Const(42) }
 
-        val result = applyTransform(data, listOfTransform)
+        val result = applyTransform(data, spec)
 
         assertEquals(listOf(42, 42, 42), result)
+    }
+
+    @Test
+    fun `list transform on unfitting data`() {
+        val data: Data = mapOf(1 to "a", 2 to "b")
+        val spec = ListOf { Const(3) }
+
+        val result = applyTransform(data, spec) // returns empty list as data is not a list type
+
+        assertEquals(emptyList<Any>(), result)
     }
 
     @Test
