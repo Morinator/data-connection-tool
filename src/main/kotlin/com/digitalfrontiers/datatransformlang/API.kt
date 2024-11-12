@@ -38,13 +38,30 @@ class Transform(private val spec: Specification) {
         return this
     }
 
-    fun apply(string: String, inputFormat: String = "JSON", outputFormat: String = "JSON"): String {
+    fun apply(data: Any): Any? {
+        return applyTransform(data, this.spec, this.functions.toMap())
+    }
 
-        val parsed = this.parsers[inputFormat]?.parse(string)
+    fun apply(data: Any, outputFormat: String): String {
+        val result = applyTransform(data, this.spec, this.functions.toMap())
+
+        // TODO: Figure out how to avoid cast
+        return (this.serializers[outputFormat] as ISerializer<Any>).serialize(result)
+    }
+
+    fun apply(data: String, inputFormat: String): Any? {
+        val parsed = this.parsers[inputFormat]?.parse(data)
+
+        return applyTransform(parsed, this.spec, this.functions.toMap())
+    }
+
+    fun apply(data: String, inputFormat: String, outputFormat: String): String {
+
+        val parsed = this.parsers[inputFormat]?.parse(data)
 
         val result: Any? = applyTransform(parsed, this.spec, this.functions.toMap())
 
-        // TODO: Figure out how to avoid cast
+        // TODO: see above
         return (this.serializers[outputFormat] as ISerializer<Any>).serialize(result)
     }
 }

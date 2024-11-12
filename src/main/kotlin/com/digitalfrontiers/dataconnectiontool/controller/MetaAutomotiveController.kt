@@ -122,6 +122,6 @@ class MetaAutomotiveController(
 
     @PostMapping("/meta-auto")
     fun process(@RequestBody body: String): String {
-        return this.transform.apply(body)
+        return this.transform.apply(body, "JSON", "JSON")
     }
 }
