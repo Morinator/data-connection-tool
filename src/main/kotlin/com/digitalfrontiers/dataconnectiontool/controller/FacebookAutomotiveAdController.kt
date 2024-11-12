@@ -3,7 +3,6 @@ package com.digitalfrontiers.dataconnectiontool.controller
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
 import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.*
-import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVParser
 import com.digitalfrontiers.datatransformlang.with
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -15,7 +14,7 @@ import java.time.Instant
 
 @RestController
 @RequestMapping("/connectors", consumes = [MediaType.APPLICATION_JSON_VALUE])
-class MetaAutomotiveController(
+class FacebookAutomotiveAdController(
     @Autowired private val transformer: ITransformationService<String, String>
 ) {
     private final val transform: Transform
@@ -45,9 +44,7 @@ class MetaAutomotiveController(
                                 "$.vehicle.condition.value",
                                 "new",
                                 "NEW",
-                                ResultOf {
-                                    "branchOnEquals"("$.warranty.porscheApproved", true, "CPO", "USED")
-                                }
+                                "branchOnEquals"("$.warranty.porscheApproved", true, "CPO", "USED")
                             )
                         }
                         "title" from "$.title.localized"
@@ -65,9 +62,7 @@ class MetaAutomotiveController(
                                 "$.vehicle.drivetrain.value",
                                 "ALL_WHEEL_DRIVE",
                                 "AWD",
-                                ResultOf {
-                                    "branchOnEquals"("$.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
-                                }
+                                "branchOnEquals"("$.vehicle.drivetrain.value", "REAR_WHEEL_DRIVE", "RWD", null)
                             )
                         }
                         "fuel_type" from "$.vehicle.engineType.value"
@@ -91,7 +86,6 @@ class MetaAutomotiveController(
                     }
                 }
             } with {
-
                 function("interpolate") {
                     args ->
                     args.drop(1).fold(args[0] as String) { acc, arg -> acc.replaceFirst("{}", arg.toString()) }
@@ -120,7 +114,7 @@ class MetaAutomotiveController(
             }
     }
 
-    @PostMapping("/meta-auto")
+    @PostMapping("/fb-auto")
     fun process(@RequestBody body: String): String {
         return this.transform.apply(body, "JSON", "JSON")
     }
