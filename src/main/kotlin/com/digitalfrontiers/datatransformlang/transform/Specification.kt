@@ -137,16 +137,11 @@ class ComposeDSL {
 
 // Helper-Functions
 
-private fun argToSpec(arg: Any?): Specification {
-    return if (arg !is Specification)
-        if (arg is String && JSON.isJSONPath(arg))
-            Input(arg)
-        else
-            Const(arg)
-    else
-        arg
+private fun argToSpec(arg: Any?): Specification = when {
+    arg is Specification -> arg
+    arg is String && JSON.isJSONPath(arg) -> Input(arg)
+    else -> Const(arg)
 }
-
 // Shorthands
 
 typealias Const = Specification.Const
