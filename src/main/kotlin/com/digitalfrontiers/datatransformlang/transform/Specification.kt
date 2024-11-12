@@ -188,13 +188,13 @@ typealias Compose = Specification.Compose
 // Evaluation
 
 fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
-    return Evaluator(customFunctions).handle(data, spec)
+    return Evaluator(customFunctions).evaluate(data, spec)
 }
 
 private class Evaluator(
-    private val functions: Map<String, CustomFunction>
+    private val customFunctions: Map<String, CustomFunction>
 ) {
-    fun handle(data: Data, spec: Specification): Data {
+    fun evaluate(data: Data, spec: Specification): Data {
         return when (spec) {
             is Specification.Self -> data
             is Specification.Const -> spec.value
@@ -215,18 +215,18 @@ private class Evaluator(
 
 
     private fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
-        return arraySpec.items.mapNotNull { handle(data, it) }
+        return arraySpec.items.mapNotNull { evaluate(data, it) }
     }
 
     private fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
-        return objectSpec.entries.mapValues { (_, value) -> handle(data, value) }.filterValues { it != null } as Dict<Any>
+        return objectSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
     private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> {
         return if (data is List<*>)
             data.mapNotNull {
                 if (it != null)
-                    handle(it, listOfSpec.mapping)
+                    evaluate(it, listOfSpec.mapping)
                 else
                     null
             }
@@ -261,13 +261,13 @@ private class Evaluator(
     }
 
     private fun evaluateResultOf(data: Data, resultOfSpec: Specification.ResultOf): Data {
-        val f = functions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
-        val args = resultOfSpec.args.map { handle(data, it) }
+        val f = customFunctions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
+        val args = resultOfSpec.args.map { evaluate(data, it) }
 
         return f(args)
     }
 
     private fun evaluateCompose(data: Data, composeSpec: Specification.Compose): Data {
-        return composeSpec.steps.fold(data) { doc, step -> handle(doc, step) }
+        return composeSpec.steps.fold(data) { doc, step -> evaluate(doc, step) }
     }
 }

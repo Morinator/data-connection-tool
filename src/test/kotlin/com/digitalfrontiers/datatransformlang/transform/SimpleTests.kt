@@ -1,7 +1,6 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
-import com.digitalfrontiers.datatransformlang.Transform
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -13,7 +12,7 @@ class SimpleTests {
     private val emptyMap: Data = emptyMap<String, Any>()
 
     @Test
-    fun testToConstTransform() {
+    fun testConstTransform() {
         val constTransform = Const(42)
 
         val result = applyTransform(emptyMap, constTransform)
@@ -22,7 +21,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testToInputTransform() {
+    fun testInputTransform() {
         val jsonDocument = mapOf("name" to "josh")
         val inputTransform = Input("$.name")
 
@@ -32,7 +31,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testToArrayTransform() {
+    fun testArrayTransform() {
         val arrayTransform = Array(
             Const(1),
             Const(2),
@@ -45,7 +44,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testToObjectTransform() {
+    fun testObjectTransform() {
         val objectTransform = Object {
             "a" to 1
             "b" to 2
@@ -57,7 +56,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testForEachTransform() {
+    fun testListOfTransform() {
         val listOfTransform = ListOf { Const(42) }
         val data: Data = listOf(1, 2, 3)
 
@@ -67,7 +66,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testExtendTransform() {
+    fun testExtensionTransform() {
         val extensionTransform = Extension {
             "c" to 3
             "d" to 4
@@ -78,7 +77,27 @@ class SimpleTests {
     }
 
     @Test
-    fun testCallTransform() {
+    fun testRemapTransform() {
+        val data = mapOf(
+            "a" to 1,
+            "b" to 2
+        )
+
+        val remapWithPairs = Specification.Remap.WithPairs(mapOf("a" to "x", "b" to "y"))
+
+        val firstResult = applyTransform(data, remapWithPairs)
+
+        assertEquals(mapOf("x" to 1, "y" to 2), firstResult)
+
+        val remapWithFunc = Specification.Remap.WithFunc { it.uppercase() }
+
+        val secondResult = applyTransform(data, remapWithFunc)
+
+        assertEquals(mapOf("A" to 1, "B" to 2), secondResult)
+    }
+
+    @Test
+    fun testResultOfTransform() {
         // Register a dummy function
 
         val sum: CustomFunction = {
