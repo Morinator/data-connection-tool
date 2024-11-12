@@ -3,6 +3,7 @@ package com.digitalfrontiers.dataconnectiontool.controller
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
 import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.*
+import com.digitalfrontiers.datatransformlang.transform.convert.defaults.CSVParser
 import com.digitalfrontiers.datatransformlang.with
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -90,6 +91,7 @@ class MetaAutomotiveController(
                     }
                 }
             } with {
+
                 function("interpolate") {
                     args ->
                     args.drop(1).fold(args[0] as String) { acc, arg -> acc.replaceFirst("{}", arg.toString()) }

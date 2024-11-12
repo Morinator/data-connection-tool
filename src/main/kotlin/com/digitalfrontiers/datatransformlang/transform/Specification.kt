@@ -101,9 +101,9 @@ class DSL {
         return this then Specification.Remap.WithPairs(RemapDSL().setup())
     }
 
-    infix fun Specification.remappedWith(keyGen: (str: String) -> String): Compose {
-        return this then Specification.Remap.WithFunc(keyGen)
-    }
+//    infix fun Specification.remappedWith(keyGen: (str: String) -> String): Compose {
+//        return this then Specification.Remap.WithFunc(keyGen)
+//    }
 }
 
 class ObjectDSL {
