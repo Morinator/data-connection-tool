@@ -16,6 +16,8 @@ sealed class Specification {
 
     // Basic Transformations
 
+    data object Self: Specification()
+
     data class Const(val value: Data): Specification()
 
     data class Input(val path: String): Specification()
@@ -52,6 +54,12 @@ sealed class Specification {
         }
     }
 
+    sealed class Remap: Specification() {
+        data class WithPairs(val pairs: Dict<String>): Remap()
+
+        data class WithFunc(val func: (String) -> String): Remap()
+    }
+
     /**
      * Apply a function, identified by the function id [fid].
      */
@@ -70,14 +78,39 @@ sealed class Specification {
         constructor(vararg steps: Specification): this(steps.toList())
 
         companion object {
-            operator fun invoke(setup: ComposeDSL.() -> Compose): Compose {
-                return ComposeDSL().setup()
+            operator fun invoke(setup: DSL.() -> Compose): Compose {
+                return DSL().setup()
             }
         }
     }
 }
 
 // Construction-DSLs
+
+class DSL {
+
+    infix fun Specification.then(next: Specification): Compose {
+        return if (this is Compose) {
+            Compose(this.steps + listOf(next))
+        } else {
+            Compose(listOf(this, next))
+        }
+    }
+
+    infix fun Specification.extendedWith(setup: ObjectDSL.() -> Unit): Compose {
+        val obj = ObjectDSL().apply(setup).getToObject()
+
+        return this then Specification.Extension(obj.entries)
+    }
+
+    infix fun Specification.remapping(setup: RemapDSL.() -> Map<String, String>): Compose {
+        return this then Specification.Remap.WithPairs(RemapDSL().setup())
+    }
+
+    infix fun Specification.remappedWith(keyGen: (str: String) -> String): Compose {
+        return this then Specification.Remap.WithFunc(keyGen)
+    }
+}
 
 class ObjectDSL {
     private val entries = mutableMapOf<String, Specification>()
@@ -112,6 +145,16 @@ class ObjectDSL {
     fun getToObject(): Object = Object(this.entries)
 }
 
+class RemapDSL {
+    private val entries = mutableMapOf<String, String>()
+
+    infix fun String.to(newKey: String): Map<String, String> {
+        entries[this] = newKey
+
+        return entries.toMap()
+    }
+}
+
 class ResultOfDSL {
 
     operator fun String.invoke(vararg args: Any?): ResultOf {
@@ -124,17 +167,6 @@ class ResultOfDSL {
     }
 }
 
-class ComposeDSL {
-
-    infix fun Specification.then(next: Specification): Compose {
-        return if (this is Compose) {
-            Compose(this.steps + listOf(next))
-        } else {
-            Compose(listOf(this, next))
-        }
-    }
-}
-
 // Helper-Functions
 
 private fun argToSpec(arg: Any?): Specification = when {
@@ -144,12 +176,14 @@ private fun argToSpec(arg: Any?): Specification = when {
 }
 // Shorthands
 
+typealias Self = Specification.Self
 typealias Const = Specification.Const
 typealias Input = Specification.Input
 typealias Array = Specification.Array
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
+typealias Remap = Specification.Remap
 typealias ResultOf = Specification.ResultOf
 typealias Compose = Specification.Compose
 
@@ -193,12 +227,14 @@ private class Evaluator(
 ) {
     fun evaluate(data: Data, spec: Specification): Data {
         return when (spec) {
+            is Self -> data
             is Const -> spec.value
             is Input -> evaluateInput(data, spec)
             is Array -> evaluateArray(data, spec)
             is Object -> evaluateObject(data, spec)
             is ListOf -> evaluateListOf(data, spec)
             is Extension -> evaluateExtension(data, spec)
+            is Remap -> evaluateRemap(data, spec)
             is ResultOf -> evaluateResultOf(data, spec)
             is Compose -> evaluateCompose(data, spec)
         }
@@ -240,6 +276,23 @@ private class Evaluator(
             return (data as Dict<Any>) + evaluateObject(data, objectSpec)
         } else {
             return mapOf()
+        }
+    }
+
+    private fun evaluateRemap(data: Data, remap: Specification.Remap): Dict<Data> {
+
+        return if (data is Map<*, *>) {
+            if (remap is Specification.Remap.WithPairs) {
+                (data as Map<String, *>).mapKeys { (key, _) ->
+                    remap.pairs[key] ?: key
+                }
+            } else {
+                (data as Map<String, *>).mapKeys { (key, _) ->
+                    (remap as Specification.Remap.WithFunc).func(key)
+                }
+            }
+        } else {
+            mapOf()
         }
     }
 

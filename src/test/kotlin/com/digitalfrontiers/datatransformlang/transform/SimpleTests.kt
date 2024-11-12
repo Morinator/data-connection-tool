@@ -12,7 +12,7 @@ class SimpleTests {
     private val emptyMap: Data = emptyMap<String, Any>()
 
     @Test
-    fun testToConstTransform() {
+    fun testConstTransform() {
         val constTransform = Const(42)
 
         val result = applyTransform(emptyMap, constTransform)
@@ -21,7 +21,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testToInputTransform() {
+    fun testInputTransform() {
         val jsonDocument = mapOf("name" to "josh")
         val inputTransform = Input("$.name")
 
@@ -31,7 +31,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testToArrayTransform() {
+    fun testArrayTransform() {
         val arrayTransform = Array(
             Const(1),
             Const(2),
@@ -44,7 +44,7 @@ class SimpleTests {
     }
 
     @Test
-    fun testToObjectTransform() {
+    fun testObjectTransform() {
         val objectTransform = Object {
             "a" to 1
             "b" to 2
@@ -76,28 +76,43 @@ class SimpleTests {
     }
 
     @Test
-    fun testExtendTransform() {
+    fun testExtensionTransform() {
         val extensionTransform = Extension {
             "c" to 3
             "d" to 4
         }
-
         val result = applyTransform(mapOf("a" to 1, "b" to 2), extensionTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2, "c" to 3, "d" to 4), result)
     }
 
     @Test
-    fun testCallTransform() {
+    fun testRemapTransform() {
+        val data = mapOf(
+            "a" to 1,
+            "b" to 2
+        )
+
+        val remapWithPairs = Specification.Remap.WithPairs(mapOf("a" to "x", "b" to "y"))
+
+        val firstResult = applyTransform(data, remapWithPairs)
+
+        assertEquals(mapOf("x" to 1, "y" to 2), firstResult)
+
+        val remapWithFunc = Specification.Remap.WithFunc { it.uppercase() }
+
+        val secondResult = applyTransform(data, remapWithFunc)
+
+        assertEquals(mapOf("A" to 1, "B" to 2), secondResult)
+    }
+
+    @Test
+    fun testResultOfTransform() {
         // Register a dummy function
 
         val sum: CustomFunction = {
                 args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
         }
-
-//        registerFunction("sum") {
-//            args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
-//        }
 
         val resultOfTransform = ResultOf {
             "sum"(5, 10)
