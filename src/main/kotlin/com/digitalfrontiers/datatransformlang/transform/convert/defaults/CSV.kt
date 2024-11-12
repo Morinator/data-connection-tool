@@ -1,28 +1,24 @@
 package com.digitalfrontiers.datatransformlang.transform.convert.defaults
 
-import com.fasterxml.jackson.dataformat.csv.CsvMapper
-import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import java.io.StringReader
-
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
+import com.fasterxml.jackson.dataformat.csv.CsvMapper
+import com.fasterxml.jackson.dataformat.csv.CsvReadException
+import com.fasterxml.jackson.dataformat.csv.CsvSchema
+import java.io.StringReader
 
 internal val csvMapper = CsvMapper()
 
 /**
  * Reads in the content of a CSV file as String.
  *
- * TODO What is return type?? Always a list with a map per row??
+ * The first row is used to extract the schema, and will not be processed like "normal" data.
  *
- * TODO the first row is not treated differently because it normally is the header of the CSV??
- *
- * TODO Is it correct that `CsvReadException` is thrown for empty input??
- *
- * TODO when is result null??
+ * @throws CsvReadException
  */
-class CSVParser: IParser<Any> {
+class CSVParser : IParser<Any> {
 
-    override fun parse(string: String): Any? {
+    override fun parse(string: String): List<Map<String, Any>> {
         val schema = CsvSchema.emptySchema().withHeader()
         val reader = StringReader(string)
 
@@ -42,7 +38,7 @@ class CSVSerializer: ISerializer<Any> {
 
         val flattenedData: List<MutableMap<String, Any?>> =
             list.map {
-                val flattened: MutableMap<String, Any?> = mutableMapOf();
+                val flattened: MutableMap<String, Any?> = mutableMapOf()
                 flattenData(it, "", flattened)
 
                 flattened
@@ -90,5 +86,5 @@ class CSVSerializer: ISerializer<Any> {
             return
     }
 
-    private inline fun isPrimitive(obj: Any?): Boolean = obj == null || obj is Boolean || obj is Number || obj is String
+    private fun isPrimitive(obj: Any?): Boolean = obj == null || obj is Boolean || obj is Number || obj is String
 }
