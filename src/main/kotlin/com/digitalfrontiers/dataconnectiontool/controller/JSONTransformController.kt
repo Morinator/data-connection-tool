@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/transforms", consumes = [MediaType.APPLICATION_JSON_VALUE])
 class JSONTransformController(
     @Autowired private val storage: IStorageService<String>,
-    @Autowired private val transformer: ITransformationService<String, String>,
+    @Autowired private val transformer: ITransformationService<String, String>
 ) {
     private val keyPrefix: String = "specs/"
 
