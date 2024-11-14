@@ -1,10 +1,10 @@
-name: Kotlin Tests
+name: Unit Tests
 
 on:
   pull_request:
-    branches: [ master ]  # Trigger on PRs targeting master branch
+    branches: [ master ]
   push:
-    branches: [ master ]  # Also run on direct pushes to master
+    branches: [ master ]
 
 jobs:
   test:
@@ -28,7 +28,6 @@ jobs:
 
       - name: Run unit tests
         run: ./gradlew test
-          # Running all tests without a specific pattern since tests are in standard Maven-style directories
 
       - name: Upload test results on failure
         if: failure()

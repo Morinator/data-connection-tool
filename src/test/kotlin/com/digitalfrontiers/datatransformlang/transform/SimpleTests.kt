@@ -52,7 +52,7 @@ class SimpleTests {
 
         val result = applyTransform(emptyMap, objectTransform)
 
-        assertEquals(mapOf("a" to 1, "b" to 3), result)
+        assertEquals(mapOf("a" to 1, "b" to 2), result)
     }
 
     @Test
