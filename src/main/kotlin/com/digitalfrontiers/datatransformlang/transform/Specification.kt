@@ -99,10 +99,10 @@ sealed class Specification {
     /**
      * Changes the values of keys of an object, specified either by a [Dict] or function of the keys.
      */
-    sealed class Remap: Specification() {
-        data class WithPairs(val pairs: Dict<String>): Remap()
+    sealed class Rename: Specification() {
+        data class WithPairs(val pairs: Dict<String>): Rename()
 
-        data class WithFunc(val func: (String) -> String): Remap()
+        data class WithFunc(val func: (String) -> String): Rename()
     }
 
     /**
@@ -149,11 +149,11 @@ class DSL {
     }
 
     infix fun Specification.remapping(setup: RemapDSL.() -> Map<String, String>): Compose {
-        return this then Specification.Remap.WithPairs(RemapDSL().setup())
+        return this then Specification.Rename.WithPairs(RemapDSL().setup())
     }
 
     infix fun Specification.remappedWith(keyGen: (str: String) -> String): Compose {
-        return this then Specification.Remap.WithFunc(keyGen)
+        return this then Specification.Rename.WithFunc(keyGen)
     }
 }
 
@@ -228,7 +228,7 @@ typealias Array = Specification.Array
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
-typealias Remap = Specification.Remap
+typealias Remap = Specification.Rename
 typealias ResultOf = Specification.ResultOf
 typealias Compose = Specification.Compose
 
@@ -324,16 +324,16 @@ private class Evaluator(
         }
     }
 
-    private fun evaluateRemap(data: Data, remap: Specification.Remap): Dict<Data> {
+    private fun evaluateRemap(data: Data, rename: Specification.Rename): Dict<Data> {
 
         return if (data is Map<*, *>) {
-            if (remap is Specification.Remap.WithPairs) {
+            if (rename is Specification.Rename.WithPairs) {
                 (data as Map<String, *>).mapKeys { (key, _) ->
-                    remap.pairs[key] ?: key
+                    rename.pairs[key] ?: key
                 }
             } else {
                 (data as Map<String, *>).mapKeys { (key, _) ->
-                    (remap as Specification.Remap.WithFunc).func(key)
+                    (rename as Specification.Rename.WithFunc).func(key)
                 }
             }
         } else {
