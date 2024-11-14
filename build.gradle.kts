@@ -24,7 +24,9 @@ dependencies {
     implementation("com.opencsv:opencsv:5.9")
     implementation("com.jayway.jsonpath:json-path:2.9.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:dataframe:0.14.1")
+    implementation("org.jetbrains.kotlinx:dataframe:0.14.1") {
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+    }
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.0")
@@ -37,6 +39,8 @@ dependencies {
     testImplementation("org.xmlunit:xmlunit-assertj:2.9.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 kotlin {
