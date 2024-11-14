@@ -1,0 +1,39 @@
+name: Kotlin Tests
+
+on:
+  pull_request:
+    branches: [ master ]  # Trigger on PRs targeting master branch
+  push:
+    branches: [ master ]  # Also run on direct pushes to master
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'  # Adjust this to match your project's Java version
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew test --tests "*.test.*"  # This will run all tests in src/test/kotlin
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
