@@ -17,7 +17,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'  # Adjust this to match your project's Java version
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Gradle
@@ -27,7 +27,8 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run unit tests
-        run: ./gradlew test --tests "*.test.*"  # This will run all tests in src/test/kotlin
+        run: ./gradlew test
+          # Running all tests without a specific pattern since tests are in standard Maven-style directories
 
       - name: Upload test results on failure
         if: failure()
