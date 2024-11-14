@@ -4,14 +4,13 @@ import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.InvalidPathException
+import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 
 internal val mapper = jacksonObjectMapper()
 
 object JSON : IParser<Any>, ISerializer<Any> {
-
-    private val jsonPathREx = """^(\$|\@)(\.\w+|\[\d+\]|\.\[\d+\]|\[\*\]|\.\.\w+)*$""".toRegex()
-
 
     override fun parse(string: String): Any? {
         return Configuration
@@ -33,6 +32,16 @@ object JSON : IParser<Any>, ISerializer<Any> {
             mapper.convertValue(data, Map::class.java)
     }
 
-    fun isJSONPath(string: String): Boolean = jsonPathREx.matches(string)
+    /**
+     * @return True if [string] is a valid JSON Path.
+     */
+    fun isJSONPath(string: String): Boolean {
+        try {
+            JsonPath.compile(string) // throws exception if it is not a valid JsonPath
+            return true
+        } catch (e: InvalidPathException) {
+            return false
+        }
+    }
 
 }
