@@ -22,7 +22,7 @@ val grades: Data = mapOf(
     "josh" to emptyMap()
 )
 val transformation = Object {
-    "gradeOfJosh" to Input("michael.grade")
+    "gradeOfJosh" to Input("$.michael.grade")
 }
 val result = applyTransform(grades, transformation)
 println(result) // {gradeOfJosh=2}
