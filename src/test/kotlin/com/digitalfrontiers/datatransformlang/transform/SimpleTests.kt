@@ -1,6 +1,7 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
+import com.digitalfrontiers.datatransformlang.transform.Specification.Remap
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -87,23 +88,50 @@ class SimpleTests {
     }
 
     @Test
+    fun `extend with existing key`() {
+        val extensionTransform = Extension {
+            "a" to 3
+        }
+        val result = applyTransform(mapOf("a" to 4,), extensionTransform)
+
+        assertEquals(mapOf("a" to 3), result) // remains unchanged
+    }
+
+    @Test
     fun testRemapTransform() {
         val data = mapOf(
             "a" to 1,
             "b" to 2
         )
 
-        val remapWithPairs = Specification.Remap.WithPairs(mapOf("a" to "x", "b" to "y"))
+        val remapWithPairs = Remap.WithPairs(mapOf("a" to "x", "b" to "y"))
 
         val firstResult = applyTransform(data, remapWithPairs)
 
         assertEquals(mapOf("x" to 1, "y" to 2), firstResult)
 
-        val remapWithFunc = Specification.Remap.WithFunc { it.uppercase() }
+        val remapWithFunc = Remap.WithFunc { it.uppercase() }
 
         val secondResult = applyTransform(data, remapWithFunc)
 
         assertEquals(mapOf("A" to 1, "B" to 2), secondResult)
+    }
+
+    @Test // Remap on wrong data type returns empty map ?!?
+    fun `remap on list`() {
+        val data = listOf(1, 2, 3)
+
+        val remapWithPairs = Remap.WithPairs(mapOf("a" to "x", "b" to "y"))
+
+        val firstResult = applyTransform(data, remapWithPairs)
+
+        assertEquals(emptyMap, firstResult)
+
+        val remapWithFunc = Remap.WithFunc { it.uppercase() }
+
+        val secondResult = applyTransform(data, remapWithFunc)
+
+        assertEquals(emptyMap, secondResult)
     }
 
     @Test
