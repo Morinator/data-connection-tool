@@ -1,6 +1,7 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
+import com.digitalfrontiers.datatransformlang.transform.Specification.Rename
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -87,23 +88,50 @@ class SimpleTests {
     }
 
     @Test
-    fun testRemapTransform() {
+    fun `extend with existing key`() {
+        val extensionTransform = Extension {
+            "a" to 3
+        }
+        val result = applyTransform(mapOf("a" to 4,), extensionTransform)
+
+        assertEquals(mapOf("a" to 3), result) // remains unchanged
+    }
+
+    @Test
+    fun testRenameTransform() {
         val data = mapOf(
             "a" to 1,
             "b" to 2
         )
 
-        val remapWithPairs = Specification.Remap.WithPairs(mapOf("a" to "x", "b" to "y"))
+        val renameWithPairs = Rename.WithPairs(mapOf("a" to "x", "b" to "y"))
 
-        val firstResult = applyTransform(data, remapWithPairs)
+        val firstResult = applyTransform(data, renameWithPairs)
 
         assertEquals(mapOf("x" to 1, "y" to 2), firstResult)
 
-        val remapWithFunc = Specification.Remap.WithFunc { it.uppercase() }
+        val renameWithFunc = Rename.WithFunc { it.uppercase() }
 
-        val secondResult = applyTransform(data, remapWithFunc)
+        val secondResult = applyTransform(data, renameWithFunc)
 
         assertEquals(mapOf("A" to 1, "B" to 2), secondResult)
+    }
+
+    @Test // Rename on wrong data type returns empty map ?!?
+    fun `rename on list`() {
+        val data = listOf(1, 2, 3)
+
+        val renameWithPairs = Rename.WithPairs(mapOf("a" to "x", "b" to "y"))
+
+        val firstResult = applyTransform(data, renameWithPairs)
+
+        assertEquals(emptyMap, firstResult)
+
+        val renameWithFunc = Rename.WithFunc { it.uppercase() }
+
+        val secondResult = applyTransform(data, renameWithFunc)
+
+        assertEquals(emptyMap, secondResult)
     }
 
     @Test
