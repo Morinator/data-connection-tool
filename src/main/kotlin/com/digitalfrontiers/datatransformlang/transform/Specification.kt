@@ -84,7 +84,8 @@ sealed class Specification {
 
     /**
      * Extends an existing dictionary with new key-value pairs.
-     * Overwrites entries if a key is already present.
+     *
+     * Does NOT overwrite entries if a key is already present.
      */
     data class Extension(val entries: Dict<Specification>): Specification() {
         companion object {
@@ -98,6 +99,8 @@ sealed class Specification {
 
     /**
      * Changes the values of keys of an object, specified either by a [Dict] or function of the keys.
+     *
+     * TODO: What should happen on unfitting input data, e.g. lists?
      */
     sealed class Rename: Specification() {
         data class WithPairs(val pairs: Dict<String>): Rename()
