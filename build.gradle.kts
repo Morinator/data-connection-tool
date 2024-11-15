@@ -56,7 +56,7 @@ tasks.withType<Test> {
     systemProperty("user.country", "US")
 }
 
-ktlint {// use `./gradlew ktlintFormat` to apply linter locally
+ktlint { // use `./gradlew ktlintFormat` to apply linter locally
     verbose.set(true)
     android.set(false)
     outputToConsole.set(true)

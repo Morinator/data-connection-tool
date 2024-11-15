@@ -3,15 +3,15 @@ package com.digitalfrontiers.datatransformlang
 import com.digitalfrontiers.datatransformlang.transform.DSL
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import com.digitalfrontiers.datatransformlang.transform.applyTransform
-import com.digitalfrontiers.datatransformlang.util.JSON
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
+import com.digitalfrontiers.datatransformlang.util.JSON
 
 typealias CustomFunction = (input: List<Any?>) -> Any?
 
 class Transform(private val spec: Specification) {
-    private val parsers: MutableMap<String, IParser<*>> = mutableMapOf( "JSON" to JSON)
-    private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf( "JSON" to JSON)
+    private val parsers: MutableMap<String, IParser<*>> = mutableMapOf("JSON" to JSON)
+    private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf("JSON" to JSON)
     private val functions: MutableMap<String, CustomFunction> = mutableMapOf()
 
     companion object {
@@ -56,7 +56,6 @@ class Transform(private val spec: Specification) {
     }
 
     fun apply(data: String, inputFormat: String, outputFormat: String): String {
-
         val parsed = this.parsers[inputFormat]?.parse(data)
 
         val result: Any? = applyTransform(parsed, this.spec, this.functions.toMap())

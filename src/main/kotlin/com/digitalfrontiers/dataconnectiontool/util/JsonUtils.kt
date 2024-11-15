@@ -1,8 +1,8 @@
 package com.digitalfrontiers.dataconnectiontool.util
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.databind.node.*
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 object JsonUtils {
     private val mapper = jacksonObjectMapper()

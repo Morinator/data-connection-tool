@@ -14,7 +14,7 @@ fun parseTransformNode(node: JsonNode): Specification {
     val type = node.get("type").asText()
 
     return when (type) {
-        "Self"  -> Self
+        "Self" -> Self
         "Const" -> Const(JsonUtils.unbox(node.get("value")))
         "Input" -> Specification.Input(node.get("path").asText())
         "Array" -> {

@@ -2,6 +2,7 @@ package com.digitalfrontiers.dataconnectiontool.controller
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.jayway.jsonpath.JsonPath
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.api.*
 import org.jetbrains.kotlinx.dataframe.io.readJson
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.io.File
 import java.nio.file.Files
-import com.jayway.jsonpath.JsonPath
 data class ProcessingStepConfig(
     val name: String,
     val description: String,
@@ -66,7 +66,6 @@ class KotlinDataframeController {
 
     @PostMapping("/porsche")
     fun handlePorscheData(@RequestBody jsonString: String): ResponseEntity<String> {
-
         // parse input JSON using JsonPath
         val extractedJson = JsonPath.read<Any>(jsonString, "$.porsche.models.v1").toString()
 
@@ -81,7 +80,6 @@ class KotlinDataframeController {
             }
 
             return ResponseEntity.ok(df.toCsv())
-
         } catch (e: Exception) {
             return ResponseEntity.badRequest().body("Error processing data: ${e.message}")
         } finally {

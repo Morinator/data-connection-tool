@@ -9,7 +9,6 @@ class YAMLParserTest {
 
     @Test
     fun `test different data types`() {
-
         val input = """
             ---  # Document start marker
             
@@ -30,14 +29,12 @@ class YAMLParserTest {
 
     @Test
     fun `empty input produces null`() {
-
         // also prints stacktrace for com.fasterxml.jackson.databind.exc.MismatchedInputException
         assertEquals(null, yamlParser.parse(""))
     }
 
     @Test
     fun `test simple list`() {
-
         val input = """
             - apple
             - banana

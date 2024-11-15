@@ -1,10 +1,10 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-//TODO idk if the is a better name for this
+// TODO idk if the is a better name for this
 class FacebookAutomotiveInventoryAdValidator : OutputValidator() {
 
     // this schema was manually created based on the description at https://developers.facebook.com/docs/marketing-api/auto-ads/reference#vehicle
-    override val schema : String = """
+    override val schema: String = """
         {
           "title": "Automotive Inventory Ads - Supported Fields - Vehicle",
           "description": "See https://developers.facebook.com/docs/marketing-api/auto-ads/reference#vehicle",
@@ -204,5 +204,4 @@ class FacebookAutomotiveInventoryAdValidator : OutputValidator() {
           ]
         }
     """.trimIndent()
-
 }

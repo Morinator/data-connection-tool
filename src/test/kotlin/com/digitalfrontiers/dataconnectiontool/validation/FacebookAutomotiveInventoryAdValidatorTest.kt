@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 
 class FacebookAutomotiveInventoryAdValidatorTest {
 
-
     private lateinit var car1: MutableMap<String, Any>
 
     private val validator = FacebookAutomotiveInventoryAdValidator()
@@ -41,14 +40,13 @@ class FacebookAutomotiveInventoryAdValidatorTest {
             "custom_label_0" to 2022,
             "mileage" to mapOf(
                 "unit" to "KM",
-                "value" to 9876,
+                "value" to 9876
             )
         )
     }
 
     @Test
     fun `test valid input`() {
-
         println(validator.getValidationMessages(car1))
         assertEquals(0, validator.getValidationMessages(car1).size)
         assertTrue(validator.isValid(car1))

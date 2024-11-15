@@ -1,8 +1,8 @@
 package com.digitalfrontiers.dataconnectiontool.util
 
+import com.digitalfrontiers.datatransformlang.transform.Array
 import com.digitalfrontiers.datatransformlang.transform.Const
 import com.digitalfrontiers.datatransformlang.transform.Input
-import com.digitalfrontiers.datatransformlang.transform.Array
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

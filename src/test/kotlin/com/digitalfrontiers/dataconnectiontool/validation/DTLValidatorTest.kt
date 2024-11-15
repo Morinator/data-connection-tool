@@ -1,6 +1,5 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-import com.digitalfrontiers.datatransformlang.transform.Input
 import com.digitalfrontiers.datatransformlang.transform.Object
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -26,7 +25,6 @@ class DTLValidatorTest {
 
     @Test
     fun `test valid transformation`() {
-
         val transform = Object {
             "name" from "bli"
             "age" from "bla"
@@ -37,7 +35,6 @@ class DTLValidatorTest {
 
     @Test
     fun `test invalid transformation`() {
-
         val transform = Object {
             "name" from "bli"
         }
@@ -46,5 +43,3 @@ class DTLValidatorTest {
         assertFalse(DTLValidator.compareDTLWithJSONSchema(schema, transform))
     }
 }
-
-

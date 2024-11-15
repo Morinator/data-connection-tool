@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import java.io.File
 
 @Service
-class FileStorageService: IStorageService<String> {
+class FileStorageService : IStorageService<String> {
     override fun store(key: String, data: String) {
         val file = File("tmp/$key.json")
         file.parentFile.mkdirs()
@@ -14,5 +14,4 @@ class FileStorageService: IStorageService<String> {
     override fun load(key: String): String? {
         return File("tmp/$key.json").inputStream().readBytes().toString(Charsets.UTF_8)
     }
-
 }

@@ -28,15 +28,16 @@ class JSONTransformController(
     fun applyTransform(@PathVariable id: String, @RequestBody body: TransformationRequestBody): String {
         val specString = storage.load("$keyPrefix$id")
 
-        check(specString != null) {"Failed to load transformation specification"}
+        check(specString != null) { "Failed to load transformation specification" }
 
         val spec = parseTransformConfig(specString)
 
         val data: String =
-            if (body.data !is String)
+            if (body.data !is String) {
                 JsonUtils.toJsonString(body.data)
-            else
+            } else {
                 body.data
+            }
 
         return transformer.transform(data, spec, body.inputFormat, body.outputFormat)
     }

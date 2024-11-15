@@ -1,6 +1,6 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-//TODO idk if the is a better name for this
+// TODO idk if the is a better name for this
 class YahooAutosDatafeedValidator : OutputValidator() {
 
     override val schema: String = """
@@ -111,6 +111,4 @@ class YahooAutosDatafeedValidator : OutputValidator() {
         }
 
     """.trimIndent()
-
-
 }

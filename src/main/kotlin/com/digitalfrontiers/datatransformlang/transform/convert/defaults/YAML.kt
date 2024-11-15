@@ -6,7 +6,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 
 internal val yamlMapper = YAMLMapper()
 
-class YAMLParser: IParser<Any> {
+class YAMLParser : IParser<Any> {
     override fun parse(string: String): Any? {
         return try {
             yamlMapper.readValue(string, Any::class.java)
@@ -17,7 +17,7 @@ class YAMLParser: IParser<Any> {
     }
 }
 
-class YAMLSerializer: ISerializer<Any> {
+class YAMLSerializer : ISerializer<Any> {
     override fun serialize(data: Any?): String {
         return try {
             yamlMapper.writeValueAsString(data)

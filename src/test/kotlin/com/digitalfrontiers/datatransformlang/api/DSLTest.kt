@@ -49,11 +49,14 @@ class DSLTest {
 
         val firstResult = transformXYZ.apply(data)
 
-        assertEquals(mapOf(
-            "x" to 1,
-            "y" to 2,
-            "z" to 3
-        ), firstResult)
+        assertEquals(
+            mapOf(
+                "x" to 1,
+                "y" to 2,
+                "z" to 3
+            ),
+            firstResult
+        )
 
         val transformUpper = Transform to {
             Self remappedWith {
@@ -63,10 +66,13 @@ class DSLTest {
 
         val secondResult = transformUpper.apply(data)
 
-        assertEquals(mapOf(
-            "A" to 1,
-            "B" to 2,
-            "C" to 3
-        ), secondResult)
+        assertEquals(
+            mapOf(
+                "A" to 1,
+                "B" to 2,
+                "C" to 3
+            ),
+            secondResult
+        )
     }
 }

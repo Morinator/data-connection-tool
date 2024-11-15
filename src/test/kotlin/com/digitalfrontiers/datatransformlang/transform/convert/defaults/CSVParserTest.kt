@@ -13,16 +13,15 @@ class CSVParserTest {
             firstname,lastname,age
             barack,obama,63
             Cristiano,Ronaldo,39
-        """.trimIndent()
+    """.trimIndent()
 
     private val tooManyEntriesString = """
             firstname,lastname,age
             barack,obama,63,1,2,3,4,5
-        """.trimIndent()
+    """.trimIndent()
 
     @Test
     fun `test simple example`() {
-
         assertEquals(
             "[{firstname=barack, lastname=obama, age=63}, {firstname=Cristiano, lastname=Ronaldo, age=39}]",
             parser.parse(csvString).toString(),
@@ -32,7 +31,6 @@ class CSVParserTest {
 
     @Test
     fun `throws CsvReadException on empty CSV content`() {
-
         val csvString = ""
 
         assertThrows<CsvReadException> { parser.parse(csvString) }
@@ -40,7 +38,6 @@ class CSVParserTest {
 
     @Test
     fun `throws CsvReadException on too many entries`() {
-
         assertThrows<CsvReadException> { parser.parse(tooManyEntriesString) }
     }
 }

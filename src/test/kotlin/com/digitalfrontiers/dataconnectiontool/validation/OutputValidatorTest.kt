@@ -1,9 +1,7 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
 import com.networknt.schema.ValidationMessage
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.util.*
 
@@ -17,7 +15,7 @@ class OutputValidatorTest {
 
     private val valid2 = mapOf(
         "vehicle_id" to "1234",
-        "title" to "der gerät",
+        "title" to "der gerät"
         // vehicle_type is optional
     )
 
@@ -51,10 +49,9 @@ class OutputValidatorTest {
         "required": ["vehicle_id", "title"],
         "additionalProperties": false
     }
-""".trimIndent()
+    """.trimIndent()
 
     private val validator = OutputValidator(schema = carSchema)
-
 
     @Test
     fun `successful validation 1`() {

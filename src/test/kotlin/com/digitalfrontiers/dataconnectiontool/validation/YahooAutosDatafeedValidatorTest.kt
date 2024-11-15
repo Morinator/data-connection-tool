@@ -1,8 +1,7 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-import org.junit.jupiter.api.BeforeEach
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class YahooAutosDatafeedValidatorTest {
@@ -34,12 +33,10 @@ class YahooAutosDatafeedValidatorTest {
             "certificate" to "Y",
             "show_status" to "Y"
         )
-
     }
 
     @Test
     fun `test valid input`() {
-
         println(validator.getValidationMessages(car1))
         kotlin.test.assertEquals(0, validator.getValidationMessages(car1).size)
         assertTrue(validator.isValid(car1))
@@ -62,6 +59,4 @@ class YahooAutosDatafeedValidatorTest {
             validator.getValidationMessages(car1)[0].message
         )
     }
-
-
 }

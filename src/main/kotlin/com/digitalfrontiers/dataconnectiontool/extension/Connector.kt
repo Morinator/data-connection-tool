@@ -1,6 +1,6 @@
 package com.digitalfrontiers.dataconnectiontool.extension
 
-abstract class Connector<I: Any, O: Any>(
+abstract class Connector<I : Any, O : Any>(
     val config: ConnectionConfig
 ) {
 

@@ -28,13 +28,14 @@ class CSVParser : IParser<Any> {
     }
 }
 
-class CSVSerializer: ISerializer<Any> {
+class CSVSerializer : ISerializer<Any> {
     override fun serialize(data: Any?): String {
         val list =
-            if (data !is List<*>)
+            if (data !is List<*>) {
                 listOf(data)
-            else
+            } else {
                 data
+            }
 
         val flattenedData: List<MutableMap<String, Any?>> =
             list.map {
@@ -49,7 +50,7 @@ class CSVSerializer: ISerializer<Any> {
         val csvSchema =
             firstItem
                 .keys
-                .fold(CsvSchema.Builder()) { builder, fieldName -> builder.addColumn(fieldName)}
+                .fold(CsvSchema.Builder()) { builder, fieldName -> builder.addColumn(fieldName) }
                 .build()
                 .withHeader()
 
@@ -59,12 +60,12 @@ class CSVSerializer: ISerializer<Any> {
     }
 
     private fun flattenData(original: Any?, baseKey: String, flattened: MutableMap<String, Any?>) {
-
         fun createKey(baseKey: String, childKey: String): String =
-            if (baseKey == "")
+            if (baseKey == "") {
                 childKey
-            else
+            } else {
                 "$baseKey.$childKey"
+            }
 
         fun addToFlattened(key: String, el: Any?) {
             if (isPrimitive(el)) {
@@ -82,8 +83,9 @@ class CSVSerializer: ISerializer<Any> {
             original.forEach { key, el ->
                 addToFlattened(createKey(baseKey, key as String), el)
             }
-        } else
+        } else {
             return
+        }
     }
 
     private fun isPrimitive(obj: Any?): Boolean = obj == null || obj is Boolean || obj is Number || obj is String

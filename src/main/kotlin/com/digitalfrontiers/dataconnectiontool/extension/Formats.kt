@@ -17,14 +17,16 @@ object Formats {
     }
 
     fun <T> getParserFor(format: String): IParser<T>? =
-        if (parsers.containsKey(format))
+        if (parsers.containsKey(format)) {
             parsers[format] as IParser<T>
-        else
+        } else {
             null
+        }
 
     fun <T> getSerializerFor(format: String): ISerializer<T>? =
-        if (parsers.containsKey(format))
+        if (parsers.containsKey(format)) {
             serializers[format] as ISerializer<T>
-        else
+        } else {
             null
+        }
 }

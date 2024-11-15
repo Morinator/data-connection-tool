@@ -16,13 +16,13 @@ sealed class Specification {
 
     // Basic Transformations
 
-    data object Self: Specification()
+    data object Self : Specification()
 
-    data class Const(val value: Data): Specification()
+    data class Const(val value: Data) : Specification()
 
-    data class Input(val path: String): Specification()
+    data class Input(val path: String) : Specification()
 
-    data class Array(val items: List<Specification>): Specification() {
+    data class Array(val items: List<Specification>) : Specification() {
         constructor(vararg items: Any?) : this(
             items
                 .toList()
@@ -30,7 +30,7 @@ sealed class Specification {
         )
     }
 
-    data class Object(val entries: Dict<Specification>): Specification() {
+    data class Object(val entries: Dict<Specification>) : Specification() {
         companion object {
             operator fun invoke(setup: ObjectDSL.() -> Unit): Object {
                 return ObjectDSL().apply(setup).getToObject()
@@ -40,11 +40,11 @@ sealed class Specification {
 
     // Advanced Transformations
 
-    data class ListOf(val mapping: Specification): Specification() {
-        constructor(setup: () -> Specification): this(setup())
+    data class ListOf(val mapping: Specification) : Specification() {
+        constructor(setup: () -> Specification) : this(setup())
     }
 
-    data class Extension(val entries: Dict<Specification>): Specification() {
+    data class Extension(val entries: Dict<Specification>) : Specification() {
         companion object {
             operator fun invoke(setup: ObjectDSL.() -> Unit): Extension {
                 val obj = ObjectDSL().apply(setup).getToObject()
@@ -54,16 +54,16 @@ sealed class Specification {
         }
     }
 
-    sealed class Remap: Specification() {
-        data class WithPairs(val pairs: Dict<String>): Remap()
+    sealed class Remap : Specification() {
+        data class WithPairs(val pairs: Dict<String>) : Remap()
 
-        data class WithFunc(val func: (String) -> String): Remap()
+        data class WithFunc(val func: (String) -> String) : Remap()
     }
 
     /**
      * Apply a function, identified by the function id [fid].
      */
-    data class ResultOf(val fid: String, val args: List<Specification>): Specification() {
+    data class ResultOf(val fid: String, val args: List<Specification>) : Specification() {
         companion object {
             operator fun invoke(setup: ResultOfDSL.() -> ResultOf): ResultOf {
                 return ResultOfDSL().setup()
@@ -74,8 +74,8 @@ sealed class Specification {
     /**
      * Compose multiple functions in the provided order, given by [steps]
      */
-    data class Compose(val steps: List<Specification>): Specification() {
-        constructor(vararg steps: Specification): this(steps.toList())
+    data class Compose(val steps: List<Specification>) : Specification() {
+        constructor(vararg steps: Specification) : this(steps.toList())
 
         companion object {
             operator fun invoke(setup: DSL.() -> Compose): Compose {
@@ -116,13 +116,14 @@ class ObjectDSL {
     private val entries = mutableMapOf<String, Specification>()
 
     infix fun String.to(value: Any?) {
-        if (value !is Specification)
+        if (value !is Specification) {
             entries[this] = Const(value)
-        else
+        } else {
             entries[this] = value
+        }
     }
 
-    infix fun String.from(path: String){
+    infix fun String.from(path: String) {
         entries[this] = Input(path)
     }
 
@@ -244,9 +245,8 @@ private class Evaluator(
      * @return The part of [data] specified by the JSON path given by [inputSpec].
      */
     private fun evaluateInput(data: Data, inputSpec: Input): Data {
-        return  JsonPath.read(data, inputSpec.path)
+        return JsonPath.read(data, inputSpec.path)
     }
-
 
     private fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
         return arraySpec.items.mapNotNull { evaluate(data, it) }
@@ -280,7 +280,6 @@ private class Evaluator(
     }
 
     private fun evaluateRemap(data: Data, remap: Specification.Remap): Dict<Data> {
-
         return if (data is Map<*, *>) {
             if (remap is Specification.Remap.WithPairs) {
                 (data as Map<String, *>).mapKeys { (key, _) ->

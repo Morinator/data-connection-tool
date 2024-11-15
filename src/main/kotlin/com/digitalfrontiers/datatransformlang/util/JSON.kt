@@ -26,10 +26,11 @@ object JSON : IParser<Any>, ISerializer<Any> {
     }
 
     fun toJSONLike(data: Any?): Any? {
-        return if (data is List<*>)
+        return if (data is List<*>) {
             mapper.convertValue(data, List::class.java)
-        else
+        } else {
             mapper.convertValue(data, Map::class.java)
+        }
     }
 
     /**
@@ -43,5 +44,4 @@ object JSON : IParser<Any>, ISerializer<Any> {
             return false
         }
     }
-
 }

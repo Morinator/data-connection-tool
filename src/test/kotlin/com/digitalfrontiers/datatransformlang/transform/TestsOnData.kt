@@ -30,7 +30,6 @@ class TestsOnData {
 
     @Test
     fun `copy with no change`() {
-
         // given
         val spec = Input("$")
 
@@ -44,7 +43,6 @@ class TestsOnData {
 
     @Test
     fun `get list of entries by field-name`() {
-
         // given
         val spec = Object {
             "heights" from "$[*].height"
@@ -55,14 +53,13 @@ class TestsOnData {
 
         // then
         val expected = mapOf(
-            "heights" to listOf(300, 93, 96),
+            "heights" to listOf(300, 93, 96)
         )
         assertEquals(expected, result)
     }
 
     @Test
     fun `get single entry`() {
-
         // given
         val spec = Input("$[0].name")
 
@@ -76,15 +73,14 @@ class TestsOnData {
 
     @Test
     fun `get first 2 names`() {
-
         // given
         val spec = Compose {
             Input("\$[0:2]") then
-            ListOf {
-                Object {
-                    "name" from "name"
+                ListOf {
+                    Object {
+                        "name" from "name"
+                    }
                 }
-            }
         }
 
         // when
@@ -93,14 +89,13 @@ class TestsOnData {
         // then
         val expected = listOf(
             mapOf("name" to "Eiffel Tower"),
-            mapOf("name" to "Statue of Liberty"),
+            mapOf("name" to "Statue of Liberty")
         )
         assertEquals(expected, result)
     }
 
     @Test
     fun `error on invalid path`() {
-
         // given
         val spec = Input("$[0].qewqrwettcnbvcn")
 
@@ -115,10 +110,9 @@ class TestsOnData {
      */
     @Test
     fun `foreach on non-list returns empty list`() {
-
         // given
         val spec = ListOf(
-            Input("josh"), // no effect
+            Input("josh") // no effect
         )
 
         // when
@@ -128,5 +122,4 @@ class TestsOnData {
         val expected = emptyList<Data>()
         assertEquals(expected, result)
     }
-
 }

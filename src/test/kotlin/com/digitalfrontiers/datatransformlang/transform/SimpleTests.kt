@@ -111,7 +111,8 @@ class SimpleTests {
         // Register a dummy function
 
         val sum: CustomFunction = {
-                args: List<Any?> -> (args[0] as Int) + (args[1] as Int)
+                args: List<Any?> ->
+            (args[0] as Int) + (args[1] as Int)
         }
 
         val resultOfTransform = ResultOf {
@@ -131,13 +132,12 @@ class SimpleTests {
     fun testComposeTransform() {
         val composeTransform = Compose {
             Const(1) then
-            Const(2) then
-            Const(3)
+                Const(2) then
+                Const(3)
         }
 
         val result = applyTransform(emptyMap, composeTransform)
 
-        assertEquals(3, result)  // The last transformation step should be the result
+        assertEquals(3, result) // The last transformation step should be the result
     }
-
 }

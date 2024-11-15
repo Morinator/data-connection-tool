@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
 
-
 object DTLValidator {
 
     private fun getFieldsFromJSONSchema(schema: String): Set<String> {
