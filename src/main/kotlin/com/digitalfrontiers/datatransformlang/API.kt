@@ -3,15 +3,14 @@ package com.digitalfrontiers.datatransformlang
 import com.digitalfrontiers.datatransformlang.transform.DSL
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import com.digitalfrontiers.datatransformlang.transform.applyTransform
-import com.digitalfrontiers.datatransformlang.util.JSON
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 
 typealias CustomFunction = (input: List<Any?>) -> Any?
 
 class Transform(private val spec: Specification) {
-    private val parsers: MutableMap<String, IParser<*>> = mutableMapOf( "JSON" to JSON)
-    private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf( "JSON" to JSON)
+    private val parsers: MutableMap<String, IParser<*>> = mutableMapOf()
+    private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf()
     private val functions: MutableMap<String, CustomFunction> = mutableMapOf()
 
     companion object {

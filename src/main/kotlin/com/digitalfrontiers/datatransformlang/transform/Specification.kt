@@ -4,8 +4,8 @@ import com.digitalfrontiers.datatransformlang.CustomFunction
 import com.digitalfrontiers.datatransformlang.transform.Specification.Array
 import com.digitalfrontiers.datatransformlang.transform.Specification.Const
 import com.digitalfrontiers.datatransformlang.transform.Specification.Input
-import com.digitalfrontiers.datatransformlang.util.JSON
-import com.digitalfrontiers.datatransformlang.util.JSON.isJSONPath
+import com.digitalfrontiers.datatransformlang.util.JsonUtils
+import com.digitalfrontiers.datatransformlang.util.JsonUtils.isJSONPath
 import com.jayway.jsonpath.JsonPath
 
 // Types
@@ -219,7 +219,7 @@ class ResultOfDSL {
 
 private fun argToSpec(arg: Any?): Specification = when {
     arg is Specification -> arg
-    arg is String && JSON.isJSONPath(arg) -> Input(arg)
+    arg is String && JsonUtils.isJSONPath(arg) -> Input(arg)
     else -> Const(arg)
 }
 // Shorthands

@@ -3,6 +3,8 @@ package com.digitalfrontiers.dataconnectiontool.controller
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
 import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.*
+import com.digitalfrontiers.datatransformlang.transform.convert.defaults.JSONParser
+import com.digitalfrontiers.datatransformlang.transform.convert.defaults.JSONSerializer
 import com.digitalfrontiers.datatransformlang.with
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -86,6 +88,15 @@ class FacebookAutomotiveAdController(
                     }
                 }
             } with {
+
+                parserFor("JSON") {
+                    JSONParser()
+                }
+
+                serializerFor("JSON") {
+                    JSONSerializer()
+                }
+
                 function("interpolate") {
                     args ->
                     args.drop(1).fold(args[0] as String) { acc, arg -> acc.replaceFirst("{}", arg.toString()) }

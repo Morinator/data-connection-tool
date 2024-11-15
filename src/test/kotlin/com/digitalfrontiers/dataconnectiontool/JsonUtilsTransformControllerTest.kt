@@ -4,9 +4,9 @@ import com.digitalfrontiers.dataconnectiontool.controller.JSONTransformControlle
 import com.digitalfrontiers.dataconnectiontool.controller.TransformationRequestBody
 import com.digitalfrontiers.dataconnectiontool.service.IStorageService
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
-import com.digitalfrontiers.dataconnectiontool.util.JsonUtils
 import com.digitalfrontiers.dataconnectiontool.util.parseTransformConfig
 import com.digitalfrontiers.datatransformlang.transform.*
+import com.digitalfrontiers.datatransformlang.util.JsonUtils
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito.*
@@ -23,7 +23,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import io.mockk.*
 
 @WebMvcTest(JSONTransformController::class, excludeAutoConfiguration = [SecurityAutoConfiguration::class])
-class JSONTransformControllerTest {
+class JsonUtilsTransformControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc

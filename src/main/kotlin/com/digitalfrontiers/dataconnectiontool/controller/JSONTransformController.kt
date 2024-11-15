@@ -2,8 +2,8 @@ package com.digitalfrontiers.dataconnectiontool.controller
 
 import com.digitalfrontiers.dataconnectiontool.service.IStorageService
 import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
-import com.digitalfrontiers.dataconnectiontool.util.JsonUtils
 import com.digitalfrontiers.dataconnectiontool.util.parseTransformConfig
+import com.digitalfrontiers.datatransformlang.util.JsonUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.PathVariable
