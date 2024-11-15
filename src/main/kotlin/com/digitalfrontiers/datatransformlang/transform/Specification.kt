@@ -5,6 +5,7 @@ import com.digitalfrontiers.datatransformlang.transform.Specification.Array
 import com.digitalfrontiers.datatransformlang.transform.Specification.Const
 import com.digitalfrontiers.datatransformlang.transform.Specification.Input
 import com.digitalfrontiers.datatransformlang.util.JSON
+import com.digitalfrontiers.datatransformlang.util.JSON.isJSONPath
 import com.jayway.jsonpath.JsonPath
 
 // Types
@@ -12,16 +13,43 @@ import com.jayway.jsonpath.JsonPath
 internal typealias Data = Any? // Semantic(TM) Code
 internal typealias Dict<T> = Map<String, T>
 
+/**
+ * Sealed class that represents different types of data transformation specifications.
+ * These specifications can be used to transform input data into desired output data.
+ *
+ * The main usage of this class is to define a declarative way of describing how data should be transformed.
+ * The [applyTransform] function can then be used to execute the transformation defined by the [Specification].
+ *
+ * The [Specification] class provides a DSL-like interface for constructing these different transformation
+ * specifications in a concise and expressive way.
+ */
 sealed class Specification {
 
     // Basic Transformations
 
     data object Self: Specification()
 
+    /**
+     * Represents a constant value to be used in the transformation.
+     * A common use case or hardcoded fields in API usage, like `vendor: someCompany` or `version: 1.2.3`
+     *
+     * @param value The stored constant value.
+     */
     data class Const(val value: Data): Specification()
 
+    /**
+     * Stores [path] to be evaluated as JSONPath.
+     * See the [website](https://goessner.net/articles/JsonPath/) of JSONPath for details.
+     *
+     * @param path A [String] to denote a JSONPath.
+     *
+     * @see [isJSONPath] for validation of [path].
+     */
     data class Input(val path: String): Specification()
 
+    /**
+     * Creates a fixed sized array from the given elements.
+     */
     data class Array(val items: List<Specification>): Specification() {
         constructor(vararg items: Any?) : this(
             items
@@ -30,6 +58,11 @@ sealed class Specification {
         )
     }
 
+    /**
+     *  Creates an associative array (or named `Object` in Javascript).
+     *  Keys must be strings, which are used as identifiers.
+     *  Can have an arbitrary size.
+     */
     data class Object(val entries: Dict<Specification>): Specification() {
         companion object {
             operator fun invoke(setup: ObjectDSL.() -> Unit): Object {
@@ -40,10 +73,20 @@ sealed class Specification {
 
     // Advanced Transformations
 
+    /**
+     * Applies [mapping] when applied to a given list as data.
+     *
+     * A common use case is taking only a selection of fields from a list of big complex objects.
+     */
     data class ListOf(val mapping: Specification): Specification() {
         constructor(setup: () -> Specification): this(setup())
     }
 
+    /**
+     * Extends an existing dictionary with new key-value pairs.
+     *
+     * Does NOT overwrite entries if a key is already present.
+     */
     data class Extension(val entries: Dict<Specification>): Specification() {
         companion object {
             operator fun invoke(setup: ObjectDSL.() -> Unit): Extension {
@@ -54,10 +97,15 @@ sealed class Specification {
         }
     }
 
-    sealed class Remap: Specification() {
-        data class WithPairs(val pairs: Dict<String>): Remap()
+    /**
+     * Changes the values of keys of an object, specified either by a [Dict] or function of the keys.
+     *
+     * TODO: What should happen on unfitting input data, e.g. lists?
+     */
+    sealed class Rename: Specification() {
+        data class WithPairs(val pairs: Dict<String>): Rename()
 
-        data class WithFunc(val func: (String) -> String): Remap()
+        data class WithFunc(val func: (String) -> String): Rename()
     }
 
     /**
@@ -72,7 +120,7 @@ sealed class Specification {
     }
 
     /**
-     * Compose multiple functions in the provided order, given by [steps]
+     * Compose multiple functions in the provided order, given by [steps].
      */
     data class Compose(val steps: List<Specification>): Specification() {
         constructor(vararg steps: Specification): this(steps.toList())
@@ -104,11 +152,11 @@ class DSL {
     }
 
     infix fun Specification.remapping(setup: RemapDSL.() -> Map<String, String>): Compose {
-        return this then Specification.Remap.WithPairs(RemapDSL().setup())
+        return this then Specification.Rename.WithPairs(RemapDSL().setup())
     }
 
     infix fun Specification.remappedWith(keyGen: (str: String) -> String): Compose {
-        return this then Specification.Remap.WithFunc(keyGen)
+        return this then Specification.Rename.WithFunc(keyGen)
     }
 }
 
@@ -183,7 +231,7 @@ typealias Array = Specification.Array
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
-typealias Remap = Specification.Remap
+typealias Remap = Specification.Rename
 typealias ResultOf = Specification.ResultOf
 typealias Compose = Specification.Compose
 
@@ -279,16 +327,16 @@ private class Evaluator(
         }
     }
 
-    private fun evaluateRemap(data: Data, remap: Specification.Remap): Dict<Data> {
+    private fun evaluateRemap(data: Data, rename: Specification.Rename): Dict<Data> {
 
         return if (data is Map<*, *>) {
-            if (remap is Specification.Remap.WithPairs) {
+            if (rename is Specification.Rename.WithPairs) {
                 (data as Map<String, *>).mapKeys { (key, _) ->
-                    remap.pairs[key] ?: key
+                    rename.pairs[key] ?: key
                 }
             } else {
                 (data as Map<String, *>).mapKeys { (key, _) ->
-                    (remap as Specification.Remap.WithFunc).func(key)
+                    (rename as Specification.Rename.WithFunc).func(key)
                 }
             }
         } else {
