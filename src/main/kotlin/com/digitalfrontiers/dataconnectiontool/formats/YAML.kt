@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.extension
+package com.digitalfrontiers.dataconnectiontool.formats
 
 import com.digitalfrontiers.datatransformlang.transform.convert.IParser
 import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
