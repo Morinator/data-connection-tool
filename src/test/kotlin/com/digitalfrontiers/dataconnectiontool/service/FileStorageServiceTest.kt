@@ -76,8 +76,9 @@ class FileStorageServiceTest {
 
     @Test
     fun `test evil key value`() {
-        fileStorageService.store(key = "../..////..//.", data="123abc")
-        val data = fileStorageService.load(key = ".......")
+        val evilKey = "../..////..//."
+        fileStorageService.store(key = evilKey, data = "123abc")
+        val data = fileStorageService.load(key = evilKey)
         assertEquals("123abc", data)
     }
 }
