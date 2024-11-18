@@ -46,7 +46,7 @@ class TestsOnData {
     fun `get list of entries by field-name`() {
 
         // given
-        val spec = Object {
+        val spec = Record {
             "heights" from "$[*].height"
         }
 
@@ -81,7 +81,7 @@ class TestsOnData {
         val spec = Compose {
             Input("\$[0:2]") then
             ListOf {
-                Object {
+                Record {
                     "name" from "name"
                 }
             }

@@ -1,7 +1,6 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-import com.digitalfrontiers.datatransformlang.transform.Input
-import com.digitalfrontiers.datatransformlang.transform.Object
+import com.digitalfrontiers.datatransformlang.transform.Record
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -27,7 +26,7 @@ class DTLValidatorTest {
     @Test
     fun `test valid transformation`() {
 
-        val transform = Object {
+        val transform = Record {
             "name" from "bli"
             "age" from "bla"
         }
@@ -38,7 +37,7 @@ class DTLValidatorTest {
     @Test
     fun `test invalid transformation`() {
 
-        val transform = Object {
+        val transform = Record {
             "name" from "bli"
         }
 

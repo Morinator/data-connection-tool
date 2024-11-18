@@ -5,7 +5,6 @@ import com.digitalfrontiers.datatransformlang.transform.Specification.Tuple
 import com.digitalfrontiers.datatransformlang.transform.Specification.Const
 import com.digitalfrontiers.datatransformlang.transform.Specification.Input
 import com.digitalfrontiers.datatransformlang.util.JsonUtils
-import com.digitalfrontiers.datatransformlang.util.JsonUtils.isJSONPath
 import com.jayway.jsonpath.JsonPath
 
 // Types
@@ -59,14 +58,14 @@ sealed class Specification {
     }
 
     /**
-     *  Creates an associative array (or named `Object` in Javascript).
+     *  Creates an associative array (also named `Object`, or `Dictionary` in some languages).
      *  Keys must be strings, which are used as identifiers.
      *  Can have an arbitrary size.
      */
-    data class Object(val entries: Dict<Specification>): Specification() {
+    data class Record(val entries: Dict<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: ObjectDSL.() -> Unit): Object {
-                return ObjectDSL().apply(setup).getToObject()
+            operator fun invoke(setup: RecordDSL.() -> Unit): Record {
+                return RecordDSL().apply(setup).getRecord()
             }
         }
     }
@@ -89,8 +88,8 @@ sealed class Specification {
      */
     data class Extension(val entries: Dict<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: ObjectDSL.() -> Unit): Extension {
-                val obj = ObjectDSL().apply(setup).getToObject()
+            operator fun invoke(setup: RecordDSL.() -> Unit): Extension {
+                val obj = RecordDSL().apply(setup).getRecord()
 
                 return Extension(obj.entries)
             }
@@ -145,8 +144,8 @@ class DSL {
         }
     }
 
-    infix fun Specification.extendedWith(setup: ObjectDSL.() -> Unit): Compose {
-        val obj = ObjectDSL().apply(setup).getToObject()
+    infix fun Specification.extendedWith(setup: RecordDSL.() -> Unit): Compose {
+        val obj = RecordDSL().apply(setup).getRecord()
 
         return this then Specification.Extension(obj.entries)
     }
@@ -160,7 +159,7 @@ class DSL {
     }
 }
 
-class ObjectDSL {
+class RecordDSL {
     private val entries = mutableMapOf<String, Specification>()
 
     infix fun String.to(value: Any?) {
@@ -174,8 +173,8 @@ class ObjectDSL {
         entries[this] = Input(path)
     }
 
-    operator fun String.invoke(setup: ObjectDSL.() -> Unit) {
-        entries[this] = Specification.Object(setup)
+    operator fun String.invoke(setup: RecordDSL.() -> Unit) {
+        entries[this] = Specification.Record(setup)
     }
 
     operator fun String.invoke(vararg args: Any?) {
@@ -190,7 +189,7 @@ class ObjectDSL {
         entries[this] = ResultOfDSL().setup()
     }
 
-    fun getToObject(): Object = Object(this.entries)
+    fun getRecord(): Record = Record(this.entries)
 }
 
 class RemapDSL {
@@ -228,7 +227,7 @@ typealias Self = Specification.Self
 typealias Const = Specification.Const
 typealias Input = Specification.Input
 typealias Tuple = Specification.Tuple
-typealias Object = Specification.Object
+typealias Record = Specification.Record
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
 typealias Remap = Specification.Rename
@@ -279,7 +278,7 @@ private class Evaluator(
             is Const -> spec.value
             is Input -> evaluateInput(data, spec)
             is Tuple -> evaluateArray(data, spec)
-            is Object -> evaluateObject(data, spec)
+            is Record -> evaluateObject(data, spec)
             is ListOf -> evaluateListOf(data, spec)
             is Extension -> evaluateExtension(data, spec)
             is Remap -> evaluateRemap(data, spec)
@@ -300,8 +299,8 @@ private class Evaluator(
         return tupleSpec.items.mapNotNull { evaluate(data, it) }
     }
 
-    private fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
-        return objectSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
+    private fun evaluateObject(data: Data, recordSpec: Specification.Record): Dict<Data> {
+        return recordSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
     /**
@@ -319,9 +318,9 @@ private class Evaluator(
 
     private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
-            val objectSpec = Object(extensionSpec.entries)
+            val recordSpec = Record(extensionSpec.entries)
 
-            return (data as Dict<Any>) + evaluateObject(data, objectSpec)
+            return (data as Dict<Any>) + evaluateObject(data, recordSpec)
         } else {
             return mapOf()
         }

@@ -46,12 +46,12 @@ class SimpleTests {
 
     @Test
     fun testObjectTransform() {
-        val objectTransform = Object {
+        val recordTransform = Record {
             "a" to 1
             "b" to 2
         }
 
-        val result = applyTransform(emptyMap, objectTransform)
+        val result = applyTransform(emptyMap, recordTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2), result)
     }
