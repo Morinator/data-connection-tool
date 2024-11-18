@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.validation
+package com.digitalfrontiers.olddataconnectiontool.validation
 
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import com.fasterxml.jackson.databind.ObjectMapper

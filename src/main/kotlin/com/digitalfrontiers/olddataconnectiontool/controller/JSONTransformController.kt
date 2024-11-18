@@ -1,8 +1,8 @@
-package com.digitalfrontiers.dataconnectiontool.controller
+package com.digitalfrontiers.olddataconnectiontool.controller
 
-import com.digitalfrontiers.dataconnectiontool.service.IStorageService
-import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
-import com.digitalfrontiers.dataconnectiontool.util.parseTransformConfig
+import com.digitalfrontiers.olddataconnectiontool.service.IStorageService
+import com.digitalfrontiers.olddataconnectiontool.service.ITransformationService
+import com.digitalfrontiers.olddataconnectiontool.util.parseTransformConfig
 import com.digitalfrontiers.datatransformlang.util.JsonUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType

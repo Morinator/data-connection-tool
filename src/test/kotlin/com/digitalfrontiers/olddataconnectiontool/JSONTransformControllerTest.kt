@@ -1,8 +1,8 @@
-package com.digitalfrontiers.dataconnectiontool
+package com.digitalfrontiers.olddataconnectiontool
 
-import com.digitalfrontiers.dataconnectiontool.controller.JSONTransformController
-import com.digitalfrontiers.dataconnectiontool.service.IStorageService
-import com.digitalfrontiers.dataconnectiontool.service.ITransformationService
+import com.digitalfrontiers.olddataconnectiontool.controller.JSONTransformController
+import com.digitalfrontiers.olddataconnectiontool.service.IStorageService
+import com.digitalfrontiers.olddataconnectiontool.service.ITransformationService
 import com.digitalfrontiers.datatransformlang.transform.*
 import com.digitalfrontiers.datatransformlang.util.JsonUtils
 import org.junit.jupiter.api.Test
