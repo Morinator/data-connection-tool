@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.validation
+package com.digitalfrontiers.olddataconnectiontool.validation
 
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
