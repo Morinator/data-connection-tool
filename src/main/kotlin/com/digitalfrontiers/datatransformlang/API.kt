@@ -8,7 +8,7 @@ import com.digitalfrontiers.datatransformlang.transform.convert.ISerializer
 
 typealias CustomFunction = (input: List<Any?>) -> Any?
 
-class Transform(private val spec: Specification) {
+class Transform(val spec: Specification) {
     private val parsers: MutableMap<String, IParser<*>> = mutableMapOf()
     private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf()
     private val functions: MutableMap<String, CustomFunction> = mutableMapOf()
