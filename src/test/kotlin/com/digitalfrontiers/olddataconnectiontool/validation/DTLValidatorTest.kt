@@ -1,7 +1,6 @@
-package com.digitalfrontiers.dataconnectiontool.validation
+package com.digitalfrontiers.olddataconnectiontool.validation
 
-import com.digitalfrontiers.datatransformlang.transform.Input
-import com.digitalfrontiers.datatransformlang.transform.Object
+import com.digitalfrontiers.datatransformlang.transform.Specification.Object
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

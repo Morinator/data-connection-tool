@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.service
+package com.digitalfrontiers.olddataconnectiontool.service
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

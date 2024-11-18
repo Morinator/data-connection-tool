@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.validation
+package com.digitalfrontiers.olddataconnectiontool.validation
 
 //TODO idk if the is a better name for this
 class FacebookAutomotiveInventoryAdValidator : OutputValidator() {
