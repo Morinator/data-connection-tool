@@ -18,27 +18,24 @@ class DefaultTransformationService(
 
         val transform = Transform to {spec}
 
-        if (inputFormat != null) {
+        val inputFormatFinal = inputFormat ?: "JSON"
+        val parser = parsers[inputFormatFinal + "Parser"]
 
-            val parser = parsers[inputFormat + "Parser"]
+        require(parser != null) {"No parser set for Format: $inputFormatFinal"}
 
-            require(parser != null) {"No parser set for Format: $inputFormat"}
-
-            transform with {
-                parserFor(inputFormat) {parser}
-            }
+        transform with {
+            parserFor(inputFormatFinal) {parser}
         }
 
-        if (outputFormat != null) {
-            val serializer = serializers[outputFormat + "Serializer"]
+        val outputFormatFinal = outputFormat ?: "JSON"
+        val serializer = serializers[outputFormatFinal + "Serializer"]
 
-            require(serializer != null) {"No serializer set for Format: $outputFormat"}
+        require(serializer != null) {"No serializer set for Format: $outputFormatFinal"}
 
-            transform with {
-                serializerFor(outputFormat) {serializer}
-            }
+        transform with {
+            serializerFor(outputFormatFinal) {serializer}
         }
 
-        return transform.apply(data, inputFormat ?: "JSON", outputFormat ?: "JSON")
+        return transform.apply(data, inputFormatFinal, outputFormatFinal)
     }
 }

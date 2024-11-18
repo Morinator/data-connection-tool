@@ -1,11 +1,10 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
-import com.digitalfrontiers.datatransformlang.transform.Specification.Array
+import com.digitalfrontiers.datatransformlang.transform.Specification.Tuple
 import com.digitalfrontiers.datatransformlang.transform.Specification.Const
 import com.digitalfrontiers.datatransformlang.transform.Specification.Input
 import com.digitalfrontiers.datatransformlang.util.JsonUtils
-import com.digitalfrontiers.datatransformlang.util.JsonUtils.isJSONPath
 import com.jayway.jsonpath.JsonPath
 
 // Types
@@ -48,9 +47,9 @@ sealed class Specification {
     data class Input(val path: String): Specification()
 
     /**
-     * Creates a fixed sized array from the given elements.
+     * Creates a fixed sized tuple (array-like structure), where the nth item is the result of the nth specified transformation.
      */
-    data class Array(val items: List<Specification>): Specification() {
+    data class Tuple(val items: List<Specification>): Specification() {
         constructor(vararg items: Any?) : this(
             items
                 .toList()
@@ -59,14 +58,14 @@ sealed class Specification {
     }
 
     /**
-     *  Creates an associative array (or named `Object` in Javascript).
+     *  Creates an associative array (also named `Object`, or `Dictionary` in some languages).
      *  Keys must be strings, which are used as identifiers.
      *  Can have an arbitrary size.
      */
-    data class Object(val entries: Dict<Specification>): Specification() {
+    data class Record(val entries: Dict<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: ObjectDSL.() -> Unit): Object {
-                return ObjectDSL().apply(setup).getToObject()
+            operator fun invoke(setup: RecordDSL.() -> Unit): Record {
+                return RecordDSL().apply(setup).getRecord()
             }
         }
     }
@@ -89,8 +88,8 @@ sealed class Specification {
      */
     data class Extension(val entries: Dict<Specification>): Specification() {
         companion object {
-            operator fun invoke(setup: ObjectDSL.() -> Unit): Extension {
-                val obj = ObjectDSL().apply(setup).getToObject()
+            operator fun invoke(setup: RecordDSL.() -> Unit): Extension {
+                val obj = RecordDSL().apply(setup).getRecord()
 
                 return Extension(obj.entries)
             }
@@ -145,8 +144,8 @@ class DSL {
         }
     }
 
-    infix fun Specification.extendedWith(setup: ObjectDSL.() -> Unit): Compose {
-        val obj = ObjectDSL().apply(setup).getToObject()
+    infix fun Specification.extendedWith(setup: RecordDSL.() -> Unit): Compose {
+        val obj = RecordDSL().apply(setup).getRecord()
 
         return this then Specification.Extension(obj.entries)
     }
@@ -160,7 +159,7 @@ class DSL {
     }
 }
 
-class ObjectDSL {
+class RecordDSL {
     private val entries = mutableMapOf<String, Specification>()
 
     infix fun String.to(value: Any?) {
@@ -174,12 +173,12 @@ class ObjectDSL {
         entries[this] = Input(path)
     }
 
-    operator fun String.invoke(setup: ObjectDSL.() -> Unit) {
-        entries[this] = Specification.Object(setup)
+    operator fun String.invoke(setup: RecordDSL.() -> Unit) {
+        entries[this] = Specification.Record(setup)
     }
 
     operator fun String.invoke(vararg args: Any?) {
-        entries[this] = Array(*args as kotlin.Array<Any?>)
+        entries[this] = Tuple(*args as kotlin.Array<Any?>)
     }
 
     infix fun String.listOf(setup: () -> Specification) {
@@ -190,7 +189,7 @@ class ObjectDSL {
         entries[this] = ResultOfDSL().setup()
     }
 
-    fun getToObject(): Object = Object(this.entries)
+    fun getRecord(): Record = Record(this.entries)
 }
 
 class RemapDSL {
@@ -227,8 +226,8 @@ private fun argToSpec(arg: Any?): Specification = when {
 typealias Self = Specification.Self
 typealias Const = Specification.Const
 typealias Input = Specification.Input
-typealias Array = Specification.Array
-typealias Object = Specification.Object
+typealias Tuple = Specification.Tuple
+typealias Record = Specification.Record
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
 typealias Remap = Specification.Rename
@@ -278,8 +277,8 @@ private class Evaluator(
             is Self -> data
             is Const -> spec.value
             is Input -> evaluateInput(data, spec)
-            is Array -> evaluateArray(data, spec)
-            is Object -> evaluateObject(data, spec)
+            is Tuple -> evaluateTuple(data, spec)
+            is Record -> evaluateRecord(data, spec)
             is ListOf -> evaluateListOf(data, spec)
             is Extension -> evaluateExtension(data, spec)
             is Remap -> evaluateRemap(data, spec)
@@ -296,12 +295,12 @@ private class Evaluator(
     }
 
 
-    private fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
-        return arraySpec.items.mapNotNull { evaluate(data, it) }
+    private fun evaluateTuple(data: Data, tupleSpec: Tuple): List<Data> {
+        return tupleSpec.items.mapNotNull { evaluate(data, it) }
     }
 
-    private fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {
-        return objectSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
+    private fun evaluateRecord(data: Data, recordSpec: Specification.Record): Dict<Data> {
+        return recordSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
     /**
@@ -309,19 +308,19 @@ private class Evaluator(
      *
      * Elements that are null will get filtered out.
      *
-     * If [data] is not a list, an empty list will be returned.
+     * If [data] is not a list, it will be transformed and then wrapped into one.
      */
     private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> =
         (data as? List<*>)
             ?.filterNotNull()
             ?.map { evaluate(it, listOfSpec.mapping) }
-            ?: emptyList()
+            ?: listOf(evaluate(data, listOfSpec.mapping))
 
     private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
-            val objectSpec = Object(extensionSpec.entries)
+            val recordSpec = Record(extensionSpec.entries)
 
-            return (data as Dict<Any>) + evaluateObject(data, objectSpec)
+            return (data as Dict<Any>) + evaluateRecord(data, recordSpec)
         } else {
             return mapOf()
         }

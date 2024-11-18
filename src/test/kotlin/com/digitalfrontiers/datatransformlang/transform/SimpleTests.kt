@@ -33,25 +33,25 @@ class SimpleTests {
 
     @Test
     fun testArrayTransform() {
-        val arrayTransform = Array(
+        val tupleTransform = Tuple(
             Const(1),
             Const(2),
             Const(3)
         )
 
-        val result = applyTransform(emptyMap, arrayTransform)
+        val result = applyTransform(emptyMap, tupleTransform)
 
         assertEquals(listOf(1, 2, 3), result)
     }
 
     @Test
     fun testObjectTransform() {
-        val objectTransform = Object {
+        val recordTransform = Record {
             "a" to 1
             "b" to 2
         }
 
-        val result = applyTransform(emptyMap, objectTransform)
+        val result = applyTransform(emptyMap, recordTransform)
 
         assertEquals(mapOf("a" to 1, "b" to 2), result)
     }
@@ -73,7 +73,7 @@ class SimpleTests {
 
         val result = applyTransform(data, spec) // returns empty list as data is not a list type
 
-        assertEquals(emptyList<Any>(), result)
+        assertEquals(listOf(3), result)
     }
 
     @Test

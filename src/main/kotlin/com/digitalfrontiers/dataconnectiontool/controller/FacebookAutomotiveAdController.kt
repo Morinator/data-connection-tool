@@ -26,7 +26,7 @@ class FacebookAutomotiveAdController(
             Transform to {
                 Input("$[*].node") then 
                 ListOf {
-                    Object {
+                    Record {
                         "body_style" from "$.vehicle.bodyType.value"
                         "description" resultOf {
                             "interpolate"("{} ({})", "$.title.localized", "$.subtitle.localized")

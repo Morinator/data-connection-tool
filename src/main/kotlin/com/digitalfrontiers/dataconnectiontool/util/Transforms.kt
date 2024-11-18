@@ -12,21 +12,19 @@ fun parseTransformConfig(specString: String): Specification {
 }
 
 fun parseTransformNode(node: JsonNode): Specification {
-    val type = node.get("type").asText()
-
-    return when (type) {
+    return when (val type = node.get("type").asText()) {
         "Self"  -> Self
         "Const" -> Const(JsonUtils.unbox(node.get("value")))
         "Input" -> Specification.Input(node.get("path").asText())
-        "Array" -> {
+        "Tuple" -> {
             val items = node.get("items").map { parseTransformNode(it) }
-            Array(items)
+            Tuple(items)
         }
-        "Object" -> {
+        "Record" -> {
             val entries = node.get("entries").fields().asSequence()
                 .map { (key, value) -> key to parseTransformNode(value) }
                 .toMap()
-            Object(entries)
+            Record(entries)
         }
         "ListOf" -> ListOf(parseTransformNode(node.get("mapping")))
         "ResultOf" -> {
