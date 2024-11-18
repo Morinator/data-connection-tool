@@ -114,7 +114,7 @@ class TestsOnData {
      * This test checks that "ForEach" only works on list, and returns an empty list per default on all other types.
      */
     @Test
-    fun `foreach on non-list returns empty list`() {
+    fun `ListOf on non-list returns empty list`() {
 
         // given
         val spec = ListOf(
@@ -125,7 +125,7 @@ class TestsOnData {
         val result = applyTransform(studentGrades, spec)
 
         // then
-        val expected = emptyList<Data>()
+        val expected = listOf(1)
         assertEquals(expected, result)
     }
 

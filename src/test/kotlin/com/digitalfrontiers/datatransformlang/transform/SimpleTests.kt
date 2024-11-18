@@ -73,7 +73,7 @@ class SimpleTests {
 
         val result = applyTransform(data, spec) // returns empty list as data is not a list type
 
-        assertEquals(emptyList<Any>(), result)
+        assertEquals(listOf(3), result)
     }
 
     @Test

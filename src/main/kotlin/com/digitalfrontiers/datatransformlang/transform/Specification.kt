@@ -277,8 +277,8 @@ private class Evaluator(
             is Self -> data
             is Const -> spec.value
             is Input -> evaluateInput(data, spec)
-            is Tuple -> evaluateArray(data, spec)
-            is Record -> evaluateObject(data, spec)
+            is Tuple -> evaluateTuple(data, spec)
+            is Record -> evaluateRecord(data, spec)
             is ListOf -> evaluateListOf(data, spec)
             is Extension -> evaluateExtension(data, spec)
             is Remap -> evaluateRemap(data, spec)
@@ -295,11 +295,11 @@ private class Evaluator(
     }
 
 
-    private fun evaluateArray(data: Data, tupleSpec: Tuple): List<Data> {
+    private fun evaluateTuple(data: Data, tupleSpec: Tuple): List<Data> {
         return tupleSpec.items.mapNotNull { evaluate(data, it) }
     }
 
-    private fun evaluateObject(data: Data, recordSpec: Specification.Record): Dict<Data> {
+    private fun evaluateRecord(data: Data, recordSpec: Specification.Record): Dict<Data> {
         return recordSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
@@ -308,19 +308,19 @@ private class Evaluator(
      *
      * Elements that are null will get filtered out.
      *
-     * If [data] is not a list, an empty list will be returned.
+     * If [data] is not a list, it will be transformed and then wrapped into one.
      */
     private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> =
         (data as? List<*>)
             ?.filterNotNull()
             ?.map { evaluate(it, listOfSpec.mapping) }
-            ?: emptyList()
+            ?: listOf(evaluate(data, listOfSpec.mapping))
 
     private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
         if (data is Map<*, *>) {
             val recordSpec = Record(extensionSpec.entries)
 
-            return (data as Dict<Any>) + evaluateObject(data, recordSpec)
+            return (data as Dict<Any>) + evaluateRecord(data, recordSpec)
         } else {
             return mapOf()
         }
