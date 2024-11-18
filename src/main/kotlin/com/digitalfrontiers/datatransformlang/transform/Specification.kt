@@ -1,7 +1,7 @@
 package com.digitalfrontiers.datatransformlang.transform
 
 import com.digitalfrontiers.datatransformlang.CustomFunction
-import com.digitalfrontiers.datatransformlang.transform.Specification.Array
+import com.digitalfrontiers.datatransformlang.transform.Specification.Tuple
 import com.digitalfrontiers.datatransformlang.transform.Specification.Const
 import com.digitalfrontiers.datatransformlang.transform.Specification.Input
 import com.digitalfrontiers.datatransformlang.util.JsonUtils
@@ -48,9 +48,9 @@ sealed class Specification {
     data class Input(val path: String): Specification()
 
     /**
-     * Creates a fixed sized array from the given elements.
+     * Creates a fixed sized tuple (array-like structure), where the nth item is the result of the nth specified transformation.
      */
-    data class Array(val items: List<Specification>): Specification() {
+    data class Tuple(val items: List<Specification>): Specification() {
         constructor(vararg items: Any?) : this(
             items
                 .toList()
@@ -179,7 +179,7 @@ class ObjectDSL {
     }
 
     operator fun String.invoke(vararg args: Any?) {
-        entries[this] = Array(*args as kotlin.Array<Any?>)
+        entries[this] = Tuple(*args as kotlin.Array<Any?>)
     }
 
     infix fun String.listOf(setup: () -> Specification) {
@@ -227,7 +227,7 @@ private fun argToSpec(arg: Any?): Specification = when {
 typealias Self = Specification.Self
 typealias Const = Specification.Const
 typealias Input = Specification.Input
-typealias Array = Specification.Array
+typealias Tuple = Specification.Tuple
 typealias Object = Specification.Object
 typealias ListOf = Specification.ListOf
 typealias Extension = Specification.Extension
@@ -278,7 +278,7 @@ private class Evaluator(
             is Self -> data
             is Const -> spec.value
             is Input -> evaluateInput(data, spec)
-            is Array -> evaluateArray(data, spec)
+            is Tuple -> evaluateArray(data, spec)
             is Object -> evaluateObject(data, spec)
             is ListOf -> evaluateListOf(data, spec)
             is Extension -> evaluateExtension(data, spec)
@@ -296,8 +296,8 @@ private class Evaluator(
     }
 
 
-    private fun evaluateArray(data: Data, arraySpec: Array): List<Data> {
-        return arraySpec.items.mapNotNull { evaluate(data, it) }
+    private fun evaluateArray(data: Data, tupleSpec: Tuple): List<Data> {
+        return tupleSpec.items.mapNotNull { evaluate(data, it) }
     }
 
     private fun evaluateObject(data: Data, objectSpec: Specification.Object): Dict<Data> {

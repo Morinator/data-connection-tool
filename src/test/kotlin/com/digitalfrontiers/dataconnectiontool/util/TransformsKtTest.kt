@@ -2,7 +2,7 @@ package com.digitalfrontiers.dataconnectiontool.util
 
 import com.digitalfrontiers.datatransformlang.transform.Const
 import com.digitalfrontiers.datatransformlang.transform.Input
-import com.digitalfrontiers.datatransformlang.transform.Array
+import com.digitalfrontiers.datatransformlang.transform.Tuple
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -46,7 +46,7 @@ class TransformsKtTest {
     fun `test parse toArray transform`() {
         val json = """
             {
-                "type": "Array",
+                "type": "Tuple",
                 "items": [
                     {
                         "type": "Const",
@@ -67,8 +67,8 @@ class TransformsKtTest {
 
         val result = parseTransformNode(node)
 
-        assertTrue(result is Array)
-        assertEquals(3, (result as Array).items.size)
+        assertTrue(result is Tuple)
+        assertEquals(3, (result as Tuple).items.size)
 
         assertTrue(result.items[0] is Const)
         assertTrue(result.items[1] is Const)

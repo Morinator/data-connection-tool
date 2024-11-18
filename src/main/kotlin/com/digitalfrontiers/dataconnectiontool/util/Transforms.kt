@@ -18,9 +18,9 @@ fun parseTransformNode(node: JsonNode): Specification {
         "Self"  -> Self
         "Const" -> Const(JsonUtils.unbox(node.get("value")))
         "Input" -> Specification.Input(node.get("path").asText())
-        "Array" -> {
+        "Tuple" -> {
             val items = node.get("items").map { parseTransformNode(it) }
-            Array(items)
+            Tuple(items)
         }
         "Object" -> {
             val entries = node.get("entries").fields().asSequence()

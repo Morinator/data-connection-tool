@@ -33,13 +33,13 @@ class SimpleTests {
 
     @Test
     fun testArrayTransform() {
-        val arrayTransform = Array(
+        val tupleTransform = Tuple(
             Const(1),
             Const(2),
             Const(3)
         )
 
-        val result = applyTransform(emptyMap, arrayTransform)
+        val result = applyTransform(emptyMap, tupleTransform)
 
         assertEquals(listOf(1, 2, 3), result)
     }
