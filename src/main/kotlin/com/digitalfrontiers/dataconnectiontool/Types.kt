@@ -3,9 +3,9 @@ package com.digitalfrontiers.dataconnectiontool
 import com.digitalfrontiers.datatransformlang.Transform
 import com.digitalfrontiers.datatransformlang.transform.Specification
 
-enum class Type {
-    Null, Boolean, Integer, String, Object, Array
-}
+//enum class Type {
+//    Null, Boolean, Integer, String, Object, Array
+//}
 
 data class Format(val mandatoryFields: List<String>, val optionalFields: List<String>)
 
