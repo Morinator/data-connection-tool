@@ -2,12 +2,6 @@ package com.digitalfrontiers.dataconnectiontool.components
 
 import org.springframework.stereotype.Component
 
-interface ICustomFunction {
-    val id: String
-
-    fun implementation(args: List<Any?>): Any?
-}
-
 // ========================
 
 @Component

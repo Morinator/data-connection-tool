@@ -3,14 +3,6 @@ package com.digitalfrontiers.dataconnectiontool.components
 import com.digitalfrontiers.dataconnectiontool.Format
 import org.springframework.stereotype.Component
 
-interface ISink {
-    val id: String
-
-    val format: Format
-
-    fun put(data: Map<String, String>)
-}
-
 // ============================
 
 @Component
