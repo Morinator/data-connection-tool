@@ -8,10 +8,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.18.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.1")
 
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    testImplementation("org.xmlunit:xmlunit-assertj:2.9.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
