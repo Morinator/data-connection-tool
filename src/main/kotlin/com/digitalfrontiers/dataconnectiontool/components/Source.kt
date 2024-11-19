@@ -8,7 +8,7 @@ interface ISource {
 
     val format: Format
 
-    fun process(): Map<String, String>
+    fun fetch(): Map<String, String>
 }
 
 // ============================
@@ -24,7 +24,7 @@ class DummySource: ISource {
             listOf("c")
         )
 
-    override fun process(): Map<String, String> {
+    override fun fetch(): Map<String, String> {
         return mapOf(
             "a" to "A",
             "b" to "B",

@@ -8,7 +8,7 @@ interface ISink {
 
     val format: Format
 
-    fun process(data: Map<String, String>)
+    fun put(data: Map<String, String>)
 }
 
 // ============================
@@ -23,7 +23,7 @@ class DummySink: ISink {
             listOf("y", "z")
         )
 
-    override fun process(data: Map<String, String>) {
+    override fun put(data: Map<String, String>) {
         return
     }
 }

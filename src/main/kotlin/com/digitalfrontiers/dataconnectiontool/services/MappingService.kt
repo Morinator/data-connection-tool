@@ -1,19 +1,26 @@
 package com.digitalfrontiers.dataconnectiontool.services
 
-import com.digitalfrontiers.dataconnectiontool.components.ISink
-import com.digitalfrontiers.dataconnectiontool.components.ISource
+import com.digitalfrontiers.datatransformlang.transform.Record
 import org.springframework.stereotype.Service
 
 @Service
 class MappingService(
-    private val sources: List<ISource>,
-    private val sinks: List<ISink>
+    private val sources: SourceService,
+    private val transforms: TransformService,
+    private val sinks: SinkService
 ) {
-    fun transfer(sourceType: String, sinkType: String) {
-        val data = sources.firstOrNull {it.id == sourceType} ?.process()
-            ?: throw IllegalArgumentException("Unknown source: $sourceType")
+    fun transfer(sourceId: String, sinkId: String) {
+        val transform = transforms.createTransform(
+            Record {
+                "x" from "a"
+                "y" from "b"
+            }
+        )
 
-        sinks.firstOrNull {it.id == sinkType} ?.process(data)
-            ?: throw IllegalArgumentException("Unknown sink: $sinkType")
+        // TODO: Validation
+        val data = sources.fetch(sourceId)
+        val transformed = transform.apply(data) as Map<String, String>
+
+        sinks.put(sinkId, transformed)
     }
 }
