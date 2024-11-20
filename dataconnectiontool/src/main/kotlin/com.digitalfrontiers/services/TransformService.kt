@@ -1,9 +1,9 @@
-package com.digitalfrontiers.dataconnectiontool.services
+package com.digitalfrontiers.services
 
-import com.digitalfrontiers.dataconnectiontool.components.ICustomFunction
-import com.digitalfrontiers.datatransformlang.Transform
-import com.digitalfrontiers.datatransformlang.transform.Specification
-import com.digitalfrontiers.datatransformlang.with
+import com.digitalfrontiers.components.ICustomFunction
+import com.digitalfrontiers.Transform
+import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.with
 import org.springframework.stereotype.Service
 
 @Service

@@ -1,6 +1,6 @@
-package com.digitalfrontiers.dataconnectiontool.services
+package com.digitalfrontiers.services
 
-import com.digitalfrontiers.dataconnectiontool.components.ISource
+import com.digitalfrontiers.components.ISource
 import org.springframework.stereotype.Service
 
 @Service

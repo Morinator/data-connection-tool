@@ -1,6 +1,6 @@
-package com.digitalfrontiers.dataconnectiontool.components
+package com.digitalfrontiers.components
 
-import com.digitalfrontiers.dataconnectiontool.Format
+import com.digitalfrontiers.Format
 import org.springframework.stereotype.Component
 
 // ============================

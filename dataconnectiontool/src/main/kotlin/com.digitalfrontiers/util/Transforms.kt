@@ -1,7 +1,6 @@
-package com.digitalfrontiers.dataconnectiontool.util
+package com.digitalfrontiers.util
 
-import com.digitalfrontiers.datatransformlang.transform.*
-import com.digitalfrontiers.datatransformlang.util.JsonUtils
+import com.digitalfrontiers.transform.*
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 

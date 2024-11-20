@@ -1,7 +1,7 @@
-package com.digitalfrontiers.dataconnectiontool.controllers
+package com.digitalfrontiers.controllers
 
-import com.digitalfrontiers.dataconnectiontool.services.MappingService
-import com.digitalfrontiers.dataconnectiontool.util.parseTransformNode
+import com.digitalfrontiers.services.MappingService
+import com.digitalfrontiers.util.parseTransformNode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

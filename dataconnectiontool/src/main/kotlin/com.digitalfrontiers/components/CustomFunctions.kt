@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.components
+package com.digitalfrontiers.components
 
 import org.springframework.stereotype.Component
 

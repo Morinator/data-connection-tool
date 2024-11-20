@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool
+package com.digitalfrontiers
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

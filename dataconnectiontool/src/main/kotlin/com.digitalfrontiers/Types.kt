@@ -1,7 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool
-
-import com.digitalfrontiers.datatransformlang.Transform
-import com.digitalfrontiers.datatransformlang.transform.Specification
+package com.digitalfrontiers
 
 //enum class Type {
 //    Null, Boolean, Integer, String, Object, Array

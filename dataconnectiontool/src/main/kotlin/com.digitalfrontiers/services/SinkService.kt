@@ -1,6 +1,6 @@
-package com.digitalfrontiers.dataconnectiontool.services
+package com.digitalfrontiers.services
 
-import com.digitalfrontiers.dataconnectiontool.components.ISink
+import com.digitalfrontiers.components.ISink
 import org.springframework.stereotype.Service
 
 @Service

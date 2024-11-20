@@ -1,7 +1,7 @@
 package com.digitalfrontiers.dataconnectiontool.validation
 
-import com.digitalfrontiers.dataconnectiontool.Format
-import com.digitalfrontiers.datatransformlang.transform.Specification
+import com.digitalfrontiers.Format
+import com.digitalfrontiers.transform.Specification
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.networknt.schema.JsonSchemaFactory
 import com.networknt.schema.SpecVersion
