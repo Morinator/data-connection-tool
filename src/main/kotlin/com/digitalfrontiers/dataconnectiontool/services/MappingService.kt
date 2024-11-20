@@ -1,7 +1,5 @@
 package com.digitalfrontiers.dataconnectiontool.services
 
-import com.digitalfrontiers.dataconnectiontool.util.parseTransformConfig
-import com.digitalfrontiers.datatransformlang.transform.Record
 import com.digitalfrontiers.datatransformlang.transform.Specification
 import org.springframework.stereotype.Service
 
@@ -11,7 +9,7 @@ class MappingService(
     private val transforms: TransformService,
     private val sinks: SinkService
 ) {
-    fun transfer(sourceId: String, sinkId: String, spec: Specification) {
+    fun map(sourceId: String, sinkId: String, spec: Specification) {
         val transform = transforms.createTransform(
             spec
         )

@@ -23,7 +23,7 @@ class MappingController(
 
     @PostMapping("/invoke")
     fun invokeMapping(@RequestBody body: MappingRequestBody) {
-        mappingService.transfer(body.source, body.sink, parseTransformNode(body.spec))
+        mappingService.map(body.source, body.sink, parseTransformNode(body.spec))
     }
 }
 
