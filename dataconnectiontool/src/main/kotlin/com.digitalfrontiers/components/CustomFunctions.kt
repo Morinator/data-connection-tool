@@ -2,7 +2,6 @@ package com.digitalfrontiers.components
 
 import org.springframework.stereotype.Component
 
-// ========================
 
 @Component
 class Interpolate: ICustomFunction {
