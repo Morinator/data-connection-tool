@@ -29,9 +29,9 @@ class DummySource: ISource {
 }
 
 
-class S3Source : ISource {
+class LocalStackS3Source : ISource {
 
-    override val id = "Dummy"
+    override val id = "localstackS3"
 
     override val format = Format(
             listOf("value"),
@@ -58,6 +58,6 @@ class S3Source : ISource {
 }
 
 fun main() {
-    val content = S3Source().fetch()
+    val content = LocalStackS3Source().fetch()
     println("Content from S3: $content")
 }
