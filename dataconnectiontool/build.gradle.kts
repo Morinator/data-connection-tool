@@ -9,6 +9,8 @@ dependencies {
 
     implementation(project(":datatransformlang"))
 
+    implementation("software.amazon.awssdk:s3:2.20.26")
+
     implementation("com.networknt:json-schema-validator:1.0.76")
 
     implementation("org.springframework.boot:spring-boot-starter-web")

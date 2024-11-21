@@ -1,4 +1,4 @@
-package com.digitalfrontiers.dataconnectiontool.validation
+package com.digitalfrontiers.validation
 
 import com.digitalfrontiers.Format
 import com.digitalfrontiers.transform.Specification
