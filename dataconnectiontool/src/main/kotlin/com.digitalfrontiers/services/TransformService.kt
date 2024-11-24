@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class TransformService(
-    private val customFunctions: List<ICustomFunction>
+    private val customFunctions: List<ICustomFunction> = emptyList(),
 ) {
     fun createTransform(spec: Specification): Transform {
         return Transform to {
