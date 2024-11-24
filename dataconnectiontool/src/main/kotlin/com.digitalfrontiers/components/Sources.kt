@@ -2,7 +2,6 @@ package com.digitalfrontiers.components
 
 import com.digitalfrontiers.Format
 import com.digitalfrontiers.JSONFlattener
-import com.digitalfrontiers.transform.convert.defaults.JSONParser
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
@@ -28,6 +27,19 @@ class DummySource: ISource {
             "c" to "C"
         )
     }
+}
+
+@Component
+class JSONSource: ISource {
+    override val id = "JSONSource"
+
+    override val format = TODO()
+
+    override fun fetch(): Map<String, String> {
+        val filePath = "dummy_data/json/bla.json"
+        return JSONFlattener().flattenJsonFromFile(filePath) as Map<String, String>
+    }
+
 }
 
 
@@ -60,6 +72,12 @@ class LocalStackS3Source : ISource {
 }
 
 fun main() {
-    val content = LocalStackS3Source().fetch()
-    println("Content from S3: $content")
+//    val content = LocalStackS3Source().fetch()
+//    println("Content from S3: $content")
+
+    val jsonSource = JSONSource()
+    val stringMap = jsonSource.fetch()
+    for (key in stringMap.keys) {
+        println("$key -> ${stringMap[key]}")
+    }
 }
