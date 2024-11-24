@@ -1,6 +1,8 @@
 package com.digitalfrontiers.components
 
 import com.digitalfrontiers.Format
+import com.digitalfrontiers.JSONFlattener
+import com.digitalfrontiers.transform.convert.defaults.JSONParser
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
