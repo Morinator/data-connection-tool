@@ -2,6 +2,7 @@ package com.digitalfrontiers.components
 
 import com.digitalfrontiers.Format
 import com.digitalfrontiers.JSONFlattener
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
@@ -20,6 +21,8 @@ class DummySource: ISource {
             listOf("c")
         )
 
+    override fun hasData(): Boolean = true
+
     override fun fetch(): Map<String, String> {
         return mapOf(
             "a" to "A",
@@ -35,6 +38,8 @@ class JSONSource: ISource {
 
     override val format = Format(listOf(), listOf())
 
+    override fun hasData(): Boolean = true
+
     override fun fetch(): Map<String, String> {
         val filePath = "dummy_data/json/bla.json"
         return JSONFlattener().flattenJsonFromFile(filePath) as Map<String, String>
@@ -42,7 +47,7 @@ class JSONSource: ISource {
 
 }
 
-
+@Component
 class LocalStackS3Source : ISource {
 
     override val id = "localstackS3"
@@ -52,12 +57,16 @@ class LocalStackS3Source : ISource {
             emptyList()
         )
 
+    private val mapper = ObjectMapper()
+
     private val localstackClient: S3Client = S3Client.builder()
         .endpointOverride(URI("http://localhost:4566")) // default of LocalStack
-        .forcePathStyle(true)  // use path-style addressing
+        .forcePathStyle(true) // use path-style addressing
         .build()
 
-    fun readStringFromS3(bucketName: String, key: String): String {
+    private val dataList = parseStringToMaps(readStringFromS3("my-bucket", "data.json"))
+
+    private fun readStringFromS3(bucketName: String, key: String): String {
         val request = GetObjectRequest.builder()
             .bucket(bucketName)
             .key(key)
@@ -66,8 +75,26 @@ class LocalStackS3Source : ISource {
         return localstackClient.getObject(request).readBytes().toString(UTF_8)
     }
 
+    private fun parseStringToMaps(data: String): MutableList<Map<String, String>> {
+        val originalData: Map<*, *>? = mapper.readValue(data, Map::class.java)
+        val porsche: Map<String, *> = originalData?.get("porsche") as Map<String, *>
+        val models: Map<String, *> = porsche["models"] as Map<String, *>
+        val v1: List<Map<String, *>> = models["v1"] as List<Map<String, *>>
+
+        val v1WithStringValues: List<Map<String, String>> =
+            v1.map {
+                it.mapValues {
+                    (_, value) -> value.toString()
+                }
+            }
+
+        return mutableListOf(*v1WithStringValues.toTypedArray())
+    }
+
+    override fun hasData(): Boolean = dataList.isNotEmpty()
+
     override fun fetch(): Map<String, String> {
-        return mapOf("value" to readStringFromS3("my-bucket", "my-file.txt"))
+        return dataList.removeFirst()
     }
 }
 

@@ -2,19 +2,18 @@ package com.digitalfrontiers.components
 
 import com.digitalfrontiers.Format
 
-interface ISource {
+interface IEndpoint {
     val id: String
 
     val format: Format
+}
 
+interface ISource: IEndpoint {
+    fun hasData(): Boolean
     fun fetch(): Map<String, String>
 }
 
-interface ISink {
-    val id: String
-
-    val format: Format
-
+interface ISink: IEndpoint {
     fun put(data: Map<String, String>)
 }
 

@@ -15,9 +15,11 @@ class MappingService(
         )
 
         // TODO: Validation
-        val data = sources.fetch(sourceId)
-        val transformed = transform.apply(data) as Map<String, String>
+        while (sources.hasData(sourceId)) {
+            val data = sources.fetch(sourceId)
+            val transformed = transform.apply(data) as Map<String, String>
 
-        sinks.put(sinkId, transformed)
+            sinks.put(sinkId, transformed)
+        }
     }
 }
