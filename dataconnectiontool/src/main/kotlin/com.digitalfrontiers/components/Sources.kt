@@ -33,7 +33,7 @@ class DummySource: ISource {
 class JSONSource: ISource {
     override val id = "JSONSource"
 
-    override val format = TODO()
+    override val format = Format(listOf(), listOf())
 
     override fun fetch(): Map<String, String> {
         val filePath = "dummy_data/json/bla.json"
