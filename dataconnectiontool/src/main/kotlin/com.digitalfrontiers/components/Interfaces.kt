@@ -1,6 +1,8 @@
 package com.digitalfrontiers.components
 
 import com.digitalfrontiers.Format
+import org.springframework.context.annotation.Scope
+import org.springframework.stereotype.Component
 
 interface IEndpoint {
     val id: String
@@ -22,3 +24,9 @@ interface ICustomFunction {
 
     fun implementation(args: List<Any?>): Any?
 }
+
+@Target(AnnotationTarget.CLASS) // Nur für Klassen
+@Retention(AnnotationRetention.RUNTIME) // Zur Laufzeit verfügbar
+@Component
+@Scope("prototype")
+annotation class Endpoint

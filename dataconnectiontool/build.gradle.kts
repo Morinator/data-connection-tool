@@ -9,7 +9,8 @@ dependencies {
 
     implementation(project(":datatransformlang"))
 
-    implementation("software.amazon.awssdk:s3:2.20.26")
+    implementation("aws.smithy.kotlin:http-client-engine-okhttp4:1.3.26")
+    implementation("aws.sdk.kotlin:s3:1.3.81")
 
     implementation("com.networknt:json-schema-validator:1.0.76")
 
@@ -27,6 +28,14 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+}
+
+configurations.all {
+    resolutionStrategy {
+        // Force resolve to OkHttp 4.x
+        force("com.squareup.okhttp3:okhttp:4.12.0") // or whichever version you are using...
+    }
+    exclude(group = "com.squareup.okhttp3", module = "okhttp-coroutines") // Exclude dependency on okhttp-coroutines, which is introduced in 5.0.0-alpha.X
 }
 
 tasks.withType<Test> {

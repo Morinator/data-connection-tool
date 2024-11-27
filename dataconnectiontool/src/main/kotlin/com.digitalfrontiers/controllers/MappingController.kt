@@ -21,14 +21,21 @@ class MappingController(
         TODO()
     }
 
-    @PostMapping("/invoke")
-    fun invokeMapping(@RequestBody body: MappingRequestBody) {
-        mappingService.map(body.source, body.sink, parseTransformNode(body.spec))
+    @PostMapping("/start")
+    fun startMapping(@RequestBody body: MappingRequestBody) {
+        require(body.spec != null) {"No transformation specified!"}
+
+        mappingService.start(body.source, body.sink, parseTransformNode(body.spec))
+    }
+
+    @PostMapping("/cancel")
+    fun cancelMapping(@RequestBody body: MappingRequestBody) {
+        mappingService.cancel(body.source, body.sink)
     }
 }
 
 data class MappingRequestBody(
     val source: String,
     val sink: String,
-    val spec: JsonNode
+    val spec: JsonNode?
 )
