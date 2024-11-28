@@ -36,7 +36,7 @@ class JSONSource: ISource {
     override val format = Format(listOf(), listOf())
 
     override fun fetch(): Map<String, String> {
-        val filePath = "dummy_data/json/bla.json"
+        val filePath = "dummy_data/json/john_doe.json"
         return JSONFlattener().flattenJsonFromFile(filePath) as Map<String, String>
     }
 
