@@ -31,14 +31,6 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
-configurations.all {
-    resolutionStrategy {
-        // Force resolve to OkHttp 4.x
-        force("com.squareup.okhttp3:okhttp:4.12.0") // or whichever version you are using...
-    }
-    exclude(group = "com.squareup.okhttp3", module = "okhttp-coroutines") // Exclude dependency on okhttp-coroutines, which is introduced in 5.0.0-alpha.X
-}
-
 tasks.withType<Test> {
     useJUnitPlatform()
 }
