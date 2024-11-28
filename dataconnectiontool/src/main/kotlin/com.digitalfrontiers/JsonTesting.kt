@@ -12,9 +12,9 @@ fun main() {
 
     val spec = Specification.Record {
         "john_name" to Input("name")
-        "father_name" to Input("""father_name""")
+        "father_name" to Input("['father.name']")
     }
 
-    val result = Transform.to { spec }.apply(flattenedMap)
+    val result = (Transform to { spec }).apply(flattenedMap)
     println(result)
 }
