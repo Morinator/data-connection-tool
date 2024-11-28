@@ -30,7 +30,7 @@ class JSONFlattener {
                 json.forEach { (key, value) ->
                     // Construct the new path by appending the current key to the parent path
                     // If parentPath is empty, just use the key; otherwise use dot notation
-                    val newPath = if (parentPath.isEmpty()) key.toString() else "$parentPath.$key"
+                    val newPath = if (parentPath.isEmpty()) key.toString() else "${parentPath}_$key"
 
                     when (value) {
                         // For nested objects (Maps) or arrays (Lists), recurse deeper
