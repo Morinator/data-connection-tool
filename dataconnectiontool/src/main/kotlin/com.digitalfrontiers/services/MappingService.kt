@@ -12,13 +12,13 @@ import org.springframework.stereotype.Service
 
 @Service
 class MappingService(
+    private val coroutineScope: CoroutineScope,
     private val sourceProvider: ObjectProvider<ISource>,
     private val sinkProvider: ObjectProvider<ISink>,
     private val customFunctions: List<ICustomFunction> = emptyList()
 ) {
 
     private val mappingJobs: MutableMap<String, Job> = mutableMapOf()
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
 
     private fun createSource(sourceId: String): ISource {
         return sourceProvider.stream()
@@ -54,7 +54,7 @@ class MappingService(
         val sink = createSink(sinkId)
         val transform = createTransform(spec)
 
-        val job = coroutineScope.launch {
+        val job: Job = coroutineScope.launch {
             while (isActive) {
                 if (source.hasData()) {
                     val data = source.fetch()
@@ -63,7 +63,7 @@ class MappingService(
 
                     sink.put(transformed)
                 } else {
-                    delay(100)
+                    delay(100) // 0.1 seconds
                 }
             }
         }
