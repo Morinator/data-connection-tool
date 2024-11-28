@@ -5,6 +5,7 @@ import com.digitalfrontiers.components.JSONSource
 import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.Specification
 
+//TODO move to test
 fun main() {
     val jsonSource = JSONSource()
     val jsonSink = JSONSink()
