@@ -9,8 +9,9 @@ dependencies {
 
     implementation(project(":datatransformlang"))
 
-    implementation("aws.smithy.kotlin:http-client-engine-okhttp4:1.3.26")
-    implementation("aws.sdk.kotlin:s3:1.3.81")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+
+    implementation("software.amazon.awssdk:s3:2.20.26")
 
     implementation("com.networknt:json-schema-validator:1.0.76")
 

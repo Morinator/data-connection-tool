@@ -1,16 +1,13 @@
 package com.digitalfrontiers.components
 
-import aws.sdk.kotlin.services.s3.S3Client
-import aws.sdk.kotlin.services.s3.model.GetObjectRequest
-import aws.smithy.kotlin.runtime.content.decodeToString
-import aws.smithy.kotlin.runtime.content.toInputStream
-import aws.smithy.kotlin.runtime.http.engine.okhttp4.OkHttp4Engine
-import aws.smithy.kotlin.runtime.net.url.Url
 import com.digitalfrontiers.Format
 import com.digitalfrontiers.JSONFlattener
 import com.fasterxml.jackson.databind.ObjectMapper
-import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
+import java.net.URI
 import java.nio.charset.StandardCharsets.UTF_8
 
 
@@ -65,28 +62,20 @@ class LocalStackS3Source : ISource {
 
     private val dataList = parseStringToMaps(readStringFromS3("my-bucket", "data.json"))
 
-    private fun readStringFromS3(bucketName: String, objectKey: String): String {
-        val request = GetObjectRequest {
-            bucket = bucketName
-            key = objectKey
-        }
 
-        return runBlocking {
-            OkHttp4Engine().use {
-                httpEngine ->
-                S3Client.fromEnvironment {
-                    region = "eu-central-1"
-                    endpointUrl = Url.parse("http://localhost:4566")
-                    forcePathStyle = true
-                    httpClient = httpEngine
-                }.use {
-                    s3 ->
-                    s3.getObject(request) { response ->
-                        response.body?.decodeToString() ?: ""
-                    }
-                }
-            }
-        }
+    private final fun readStringFromS3(bucketName: String, key: String): String {
+        val localstackClient = S3Client.builder()
+            .region(Region.EU_CENTRAL_1)
+            .endpointOverride(URI("http://localhost:4566")) // default of LocalStack
+            .forcePathStyle(true)  // use path-style addressing
+            .build()
+
+        val request = GetObjectRequest.builder()
+            .bucket(bucketName)
+            .key(key)
+            .build()
+
+        return localstackClient.getObject(request).readBytes().toString(UTF_8)
     }
 
     private fun parseStringToMaps(data: String): MutableList<Map<String, String>> {
