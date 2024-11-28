@@ -9,7 +9,7 @@ import org.junit.jupiter.api.assertThrows
 class MappingServiceTest {
 
     private val dummyMappingService = MappingService(
-        sources = SourceService(listOf(DummySource())),
+        sourceProvider = SourceService(listOf(DummySource())),
         transforms = TransformService(),
         sinks = SinkService(listOf(DummySink()))
     )
