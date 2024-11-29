@@ -2,6 +2,11 @@ package com.digitalfrontiers.components
 
 import org.springframework.stereotype.Component
 
+interface CustomFunction {
+    val id: String
+
+    fun implementation(args: List<Any?>): Any?
+}
 
 @Component
 class Interpolate: CustomFunction {

@@ -6,6 +6,13 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import java.net.URI
 import java.nio.charset.StandardCharsets.UTF_8
 
+interface Source {
+    val id: String
+
+    val format: Format
+
+    fun fetch(): Map<String, String>
+}
 
 @Component
 class DummySource: Source {

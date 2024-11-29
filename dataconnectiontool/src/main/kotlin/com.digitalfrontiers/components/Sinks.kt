@@ -6,6 +6,14 @@ import java.io.File
 
 // ============================
 
+interface Sink {
+    val id: String
+
+    val format: Format
+
+    fun put(data: Map<String, String>)
+}
+
 @Component
 class DummySink: Sink {
 
