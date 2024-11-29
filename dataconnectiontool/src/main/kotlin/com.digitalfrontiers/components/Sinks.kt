@@ -9,6 +9,9 @@ import java.io.File
 
 @Component
 class DummySink: ISink {
+
+    val storage : MutableList<Map<String, String>> = ArrayList()
+
     override val id = "Dummy"
 
     override val format =
@@ -18,7 +21,7 @@ class DummySink: ISink {
         )
 
     override fun put(data: Map<String, String>) {
-        return
+        storage.add(data)
     }
 }
 
