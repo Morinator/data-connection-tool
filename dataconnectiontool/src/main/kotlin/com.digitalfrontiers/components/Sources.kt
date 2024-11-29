@@ -1,6 +1,5 @@
 package com.digitalfrontiers.components
 
-import com.digitalfrontiers.Format
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
@@ -9,7 +8,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 
 
 @Component
-class DummySource: ISource {
+class DummySource: Source {
 
     override val id = "Dummy"
 
@@ -29,7 +28,7 @@ class DummySource: ISource {
 }
 
 
-class LocalStackS3Source : ISource {
+class LocalStackS3Source : Source {
 
     override val id = "localstackS3"
 

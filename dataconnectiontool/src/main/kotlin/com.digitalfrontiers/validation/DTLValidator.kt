@@ -1,6 +1,6 @@
 package com.digitalfrontiers.validation
 
-import com.digitalfrontiers.Format
+import com.digitalfrontiers.components.Format
 import com.digitalfrontiers.transform.Specification
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.networknt.schema.JsonSchemaFactory

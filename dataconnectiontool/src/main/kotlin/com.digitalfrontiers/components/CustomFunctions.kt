@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component
 
 
 @Component
-class Interpolate: ICustomFunction {
+class Interpolate: CustomFunction {
 
     override val id = "interpolate"
 
@@ -15,7 +15,7 @@ class Interpolate: ICustomFunction {
 }
 
 @Component
-class BranchOnEquals: ICustomFunction {
+class BranchOnEquals: CustomFunction {
     override val id: String = "branchOnEquals"
 
     override fun implementation(args: List<Any?>): Any? {

@@ -1,8 +1,6 @@
 package com.digitalfrontiers.components
 
-import com.digitalfrontiers.Format
-
-interface ISource {
+interface Source {
     val id: String
 
     val format: Format
@@ -10,7 +8,7 @@ interface ISource {
     fun fetch(): Map<String, String>
 }
 
-interface ISink {
+interface Sink {
     val id: String
 
     val format: Format
@@ -18,7 +16,7 @@ interface ISink {
     fun put(data: Map<String, String>)
 }
 
-interface ICustomFunction {
+interface CustomFunction {
     val id: String
 
     fun implementation(args: List<Any?>): Any?
