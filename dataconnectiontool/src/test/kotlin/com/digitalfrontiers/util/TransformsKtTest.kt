@@ -10,26 +10,17 @@ import org.junit.jupiter.api.assertThrows
 
 class TransformNodeParserTest {
 
-    private val objectMapper = ObjectMapper()
-
-    private fun parseJson(json: String): JsonNode {
-        return objectMapper.readTree(json)
-    }
-
-
     @Test
     fun `test Self type`() {
         val json = """{ "type": "Self" }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertEquals(Self, result)
     }
 
     @Test
     fun `test Const type`() {
         val json = """{ "type": "Const", "value": 42 }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is Const)
         assertEquals(42, (result as Const).value)
     }
@@ -37,8 +28,7 @@ class TransformNodeParserTest {
     @Test
     fun `test Input type`() {
         val json = """{ "type": "Input", "path": "user.name" }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is Input)
         assertEquals("user.name", (result as Input).path)
     }
@@ -52,8 +42,7 @@ class TransformNodeParserTest {
                 { "type": "Self" }
             ]
         }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is Tuple)
         val items = (result as Tuple).items
         assertEquals(2, items.size)
@@ -71,8 +60,7 @@ class TransformNodeParserTest {
                 "key2": { "type": "Self" }
             }
         }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is Record)
         val entries = (result as Record).entries
         assertEquals(2, entries.size)
@@ -87,8 +75,7 @@ class TransformNodeParserTest {
             "type": "ListOf",
             "mapping": { "type": "Const", "value": "mapped" }
         }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is ListOf)
         val mapping = (result as ListOf).mapping
         assertTrue(mapping is Const)
@@ -105,8 +92,7 @@ class TransformNodeParserTest {
                 { "type": "Self" }
             ]
         }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is ResultOf)
         val fid = (result as ResultOf).fid
         val args = result.args
@@ -126,8 +112,7 @@ class TransformNodeParserTest {
                 { "type": "Self" }
             ]
         }"""
-        val node = parseJson(json)
-        val result = parseTransformNode(node)
+        val result = parseTransformConfig(json)
         assertTrue(result is Compose)
         val steps = (result as Compose).steps
         assertEquals(2, steps.size)
@@ -139,9 +124,8 @@ class TransformNodeParserTest {
     @Test
     fun `test unknown type`() {
         val json = """{ "type": "UnknownType" }"""
-        val node = parseJson(json)
         val exception = assertThrows<IllegalArgumentException> {
-            parseTransformNode(node)
+            parseTransformConfig(json)
         }
         assertEquals("Unknown transform type: UnknownType", exception.message)
     }
