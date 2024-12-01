@@ -2,7 +2,9 @@ package com.digitalfrontiers.services
 
 import com.digitalfrontiers.components.DummySink
 import com.digitalfrontiers.components.DummySource
+import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.Specification
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -38,5 +40,32 @@ class MappingServiceTest {
                 "b" to 2
             }
         )
+    }
+
+    @Test
+    fun `test MappingService`() {
+
+        //given
+        val source = DummySource()
+        val spec = Specification.Record {
+            "x" to Input("a")
+            "y" to Input("b")
+        }
+        val sink = DummySink()
+
+        // when
+        val mappingService = MappingService(
+            sources = SourceService(listOf(source)),
+            transforms = TransformService(), // TODO use automatically?
+            sinks = SinkService(listOf(sink))
+        )
+        mappingService.map(
+            sourceId = "Dummy",
+            sinkId = "Dummy",
+            spec = spec
+        )
+
+        // then
+        assertEquals(mapOf("x" to "A_value", "y" to "B_value"), sink.storage[0])
     }
 }

@@ -1,7 +1,7 @@
 package com.digitalfrontiers.services
 
-import com.digitalfrontiers.components.CustomFunction
 import com.digitalfrontiers.Transform
+import com.digitalfrontiers.components.CustomFunction
 import com.digitalfrontiers.transform.Specification
 import com.digitalfrontiers.with
 import org.springframework.stereotype.Service
@@ -10,13 +10,16 @@ import org.springframework.stereotype.Service
 class TransformService(
     private val customFunctions: List<CustomFunction> = emptyList(),
 ) {
-    fun createTransform(spec: Specification): Transform {
-        return Transform to {
+
+    /**
+     * Creates a [Transform] object and registers [customFunctions] on it.
+     */
+    fun createTransform(spec: Specification): Transform =
+        Transform to {
             spec
         } with {
             for (cf in customFunctions) {
                 function(cf.id, cf::implementation)
             }
         }
-    }
 }

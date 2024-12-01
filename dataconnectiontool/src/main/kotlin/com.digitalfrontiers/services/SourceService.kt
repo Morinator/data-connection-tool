@@ -5,10 +5,14 @@ import org.springframework.stereotype.Service
 
 @Service
 class SourceService(
-    private val sources: List<Source>
+    private val sources: List<Source>,
 ) {
+
+    /**
+     * @throws [IllegalArgumentException] if no sources exist for [sourceId]
+     */
     fun fetch(sourceId: String): Map<String, String> {
-        return sources.firstOrNull {it.id == sourceId} ?.fetch()
+        return sources.firstOrNull { it.id == sourceId }?.fetch()
             ?: throw IllegalArgumentException("Unknown source: $sourceId")
     }
 }

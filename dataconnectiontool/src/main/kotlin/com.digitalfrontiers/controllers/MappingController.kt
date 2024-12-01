@@ -2,18 +2,17 @@ package com.digitalfrontiers.controllers
 
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.util.parseTransformNode
+import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-import com.fasterxml.jackson.databind.JsonNode
-
 @RestController
 @RequestMapping("mappings")
 class MappingController(
-    @Autowired private val mappingService: MappingService
+    @Autowired private val mappingService: MappingService,
 ) {
 
     @PostMapping("/validate")
@@ -30,5 +29,5 @@ class MappingController(
 data class MappingRequestBody(
     val source: String,
     val sink: String,
-    val spec: JsonNode
+    val spec: JsonNode,
 )

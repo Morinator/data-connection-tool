@@ -15,7 +15,7 @@ interface Source {
 }
 
 @Component
-class DummySource: Source {
+class DummySource : Source {
 
     override val id = "Dummy"
 
@@ -40,9 +40,9 @@ class LocalStackS3Source : Source {
     override val id = "localstackS3"
 
     override val format = Format(
-            listOf("value"),
-            emptyList()
-        )
+        listOf("value"),
+        emptyList()
+    )
 
     private val localstackClient: S3Client = S3Client.builder()
         .endpointOverride(URI("http://localhost:4566")) // default of LocalStack

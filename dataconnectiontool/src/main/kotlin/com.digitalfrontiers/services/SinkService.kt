@@ -5,10 +5,14 @@ import org.springframework.stereotype.Service
 
 @Service
 class SinkService(
-    private val sinks: List<Sink>
+    private val sinks: List<Sink>,
 ) {
+
+    /**
+     * @throws [IllegalArgumentException] if no sink exist for [sinkId]
+     */
     fun put(sinkId: String, data: Map<String, String>) {
-        sinks.firstOrNull {it.id == sinkId} ?.put(data)
+        sinks.firstOrNull { it.id == sinkId }?.put(data)
             ?: throw IllegalArgumentException("Unknown sink: $sinkId")
     }
 }

@@ -4,7 +4,6 @@ import com.digitalfrontiers.transform.convert.defaults.JSONSerializer
 import org.springframework.stereotype.Component
 import java.io.File
 
-// ============================
 
 interface Sink {
     val id: String
@@ -14,10 +13,13 @@ interface Sink {
     fun put(data: Map<String, String>)
 }
 
+/**
+ * Only appends the data in the list [storage] field and does not offer actual persistence.
+ */
 @Component
-class DummySink: Sink {
+class DummySink : Sink {
 
-    val storage : MutableList<Map<String, String>> = ArrayList()
+    val storage: MutableList<Map<String, String>> = ArrayList()
 
     override val id = "Dummy"
 
@@ -33,7 +35,7 @@ class DummySink: Sink {
 }
 
 @Component
-class JSONSink: Sink {
+class JSONSink : Sink {
 
     private val js = JSONSerializer()
     private val filePath = "dummy_data/json/john_doe_transformed.json"
