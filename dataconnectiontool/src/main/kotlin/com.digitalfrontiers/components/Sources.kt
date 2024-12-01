@@ -11,7 +11,7 @@ interface Source {
 
     val format: Format
 
-    fun fetch(): Map<String, String>
+    fun fetch(): List<Map<String, String>>
 }
 
 @Component
@@ -25,11 +25,13 @@ class DummySource : Source {
             listOf("c")
         )
 
-    override fun fetch(): Map<String, String> {
-        return mapOf(
-            "a" to "A_value",
-            "b" to "B_value",
-            "c" to "C_value"
+    override fun fetch(): List<Map<String, String>> {
+        return listOf(
+            mapOf(
+                "a" to "A_value",
+                "b" to "B_value",
+                "c" to "C_value"
+            )
         )
     }
 }
@@ -58,7 +60,9 @@ class LocalStackS3Source : Source {
         return localstackClient.getObject(request).readBytes().toString(UTF_8)
     }
 
-    override fun fetch(): Map<String, String> {
-        return mapOf("value" to readStringFromS3("my-bucket", "my-file.txt"))
+    override fun fetch(): List<Map<String, String>> {
+        return listOf(
+            mapOf("value" to readStringFromS3("my-bucket", "my-file.txt"))
+        )
     }
 }

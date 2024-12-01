@@ -11,7 +11,7 @@ class SourceService(
     /**
      * @throws [IllegalArgumentException] if no sources exist for [sourceId]
      */
-    fun fetch(sourceId: String): Map<String, String> {
+    fun fetch(sourceId: String): List<Map<String, String>> {
         return sources.firstOrNull { it.id == sourceId }?.fetch()
             ?: throw IllegalArgumentException("Unknown source: $sourceId")
     }

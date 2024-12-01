@@ -13,7 +13,9 @@ class SinkServiceTest {
         assertThrows<IllegalArgumentException> {
             sinkService.put(
                 "abc",
-                mapOf("a" to "b")
+                listOf(
+                    mapOf("a" to "b")
+                )
             )
         }
     }

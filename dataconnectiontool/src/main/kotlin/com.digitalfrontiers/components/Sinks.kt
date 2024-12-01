@@ -10,7 +10,7 @@ interface Sink {
 
     val format: Format
 
-    fun put(data: Map<String, String>)
+    fun put(data: List<Map<String, String>>)
 }
 
 /**
@@ -19,7 +19,7 @@ interface Sink {
 @Component
 class DummySink : Sink {
 
-    val storage: MutableList<Map<String, String>> = ArrayList()
+    val storage: MutableList<List<Map<String, String>>> = ArrayList()
 
     override val id = "Dummy"
 
@@ -29,7 +29,7 @@ class DummySink : Sink {
             listOf("y", "z")
         )
 
-    override fun put(data: Map<String, String>) {
+    override fun put(data: List<Map<String, String>>) {
         storage.add(data)
     }
 }
@@ -49,7 +49,7 @@ class JSONSink : Sink {
             listOf()
         )
 
-    override fun put(data: Map<String, String>) {
+    override fun put(data: List<Map<String, String>>) {
         val str = js.serialize(data)
 
         val file = File(filePath)

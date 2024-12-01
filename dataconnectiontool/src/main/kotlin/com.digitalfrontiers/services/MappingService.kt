@@ -19,7 +19,7 @@ class MappingService(
     fun map(sourceId: String, sinkId: String, spec: Specification) {
         val transform = transforms.createTransform(spec)
         val data = sources.fetch(sourceId)
-        val transformed = transform.apply(data) as Map<String, String>
+        val transformed = transform.apply(data) as List<Map<String, String>>
         sinks.put(sinkId, transformed)
     }
 }
