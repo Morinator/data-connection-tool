@@ -47,14 +47,14 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `test MappingService`() {
+    fun `more complex example`() {
 
         //given
         val source = DummySource()
         val spec = ListOf {
             Record {
-                "x" to Input("a")
-                "y" to Input("b")
+                "x" from "a"
+                "y" from "b"
             }
         }
         val sink = DummySink()
@@ -62,9 +62,10 @@ class MappingServiceTest {
         // when
         val mappingService = MappingService(
             sources = SourceService(listOf(source)),
-            transforms = TransformService(), // TODO use automatically?
+            transforms = TransformService(),
             sinks = SinkService(listOf(sink))
         )
+
         mappingService.map(
             sourceId = "Dummy",
             sinkId = "Dummy",
@@ -72,6 +73,9 @@ class MappingServiceTest {
         )
 
         // then
-        assertEquals(listOf(mapOf("x" to "A_value", "y" to "B_value")), sink.storage[0])
+        assertEquals(
+            listOf(mapOf("x" to "A_value", "y" to "B_value")),
+            sink.storage[0]
+        )
     }
 }
