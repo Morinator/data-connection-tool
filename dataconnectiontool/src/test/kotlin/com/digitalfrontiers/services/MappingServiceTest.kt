@@ -133,4 +133,31 @@ class MappingServiceTest {
             record = spec
         ))
     }
+
+    @Test
+    fun `validation -- field is not used by sink`() {
+
+        //given
+        val source = DummySource()
+        val spec = Record {
+            "x" from "a"
+            "y" from "b"
+            "z" from "c"
+            "someUnusedFieldName" from "a"
+        }
+        val sink = DummySink()
+
+        // when
+        val mappingService = MappingService(
+            SourceService(listOf(source)),
+            TransformService(),
+            SinkService(listOf(sink))
+        )
+
+        // then
+        assertFalse(mappingService.validateSink(
+            sinkId = "Dummy",
+            record = spec
+        ))
+    }
 }
