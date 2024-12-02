@@ -1,6 +1,6 @@
 package com.digitalfrontiers.services
 
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Record
 import org.springframework.stereotype.Service
 
 @Service
@@ -16,7 +16,7 @@ class MappingService(
      * // TODO Validation
      * // TODO avoid casting ??
      */
-    fun map(sourceId: String, sinkId: String, spec: Specification) {
+    fun map(sourceId: String, sinkId: String, spec: Record) {
         val transform = transforms.createTransform(spec)
         val data = sources.fetch(sourceId)
         val transformed = transform.apply(data) as List<Map<String, String>>
