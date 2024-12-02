@@ -28,11 +28,11 @@ class MappingControllerTest {
 
 
     @Test
-    fun `validate mapping returns true`() {
+    fun `validate mapping returns false on invalid spec`() {
         val requestBody = MappingRequestBody(
             source = "unused-source-id",
             sink = "unused-sink-id",
-            spec = objectMapper.createObjectNode()
+            spec = objectMapper.createObjectNode() // is empty, but has to be Record
         )
 
         mockMvc.perform(
@@ -41,7 +41,7 @@ class MappingControllerTest {
                 .content(objectMapper.writeValueAsString(requestBody))
         )
             .andExpect(status().isOk)
-            .andExpect(content().string("true"))
+            .andExpect(content().string("false"))
     }
 
 }
