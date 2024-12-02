@@ -18,8 +18,8 @@ class TransformTest {
         val x = DummySource().fetch()
         val spec = ListOf {
             Specification.Record {
-                "x" to Input("a")
-                "y" to Input("b")
+                "x" from "a"
+                "y" from "b"
             }
         }
 
