@@ -2,6 +2,7 @@ package com.digitalfrontiers.services
 
 import com.digitalfrontiers.Transform
 import com.digitalfrontiers.components.CustomFunction
+import com.digitalfrontiers.transform.ListOf
 import com.digitalfrontiers.transform.Specification
 import com.digitalfrontiers.with
 import org.springframework.stereotype.Service
@@ -15,9 +16,11 @@ class TransformService(
      * Creates a [Transform] object that applies [spec] to each element of the input list
      * and registers [customFunctions] on it.
      */
-    fun createTransform(spec: Specification): Transform =
+    fun createTransform(spec: Specification.Record): Transform =
         Transform to {
-            spec
+            ListOf {
+                spec
+            }
         } with {
             for (cf in customFunctions) {
                 function(cf.id, cf::implementation)
