@@ -17,8 +17,8 @@ class MappingController(
 ) {
 
     @PostMapping("/validate")
-    fun validateMapping(@RequestBody body: MappingRequestBody) {
-        TODO()
+    fun validateMapping(@RequestBody body: MappingRequestBody) : Boolean {
+        return true
     }
 
     @PostMapping("/invoke")
