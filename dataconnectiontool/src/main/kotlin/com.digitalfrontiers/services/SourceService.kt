@@ -1,5 +1,6 @@
 package com.digitalfrontiers.services
 
+import com.digitalfrontiers.components.Format
 import com.digitalfrontiers.components.Source
 import org.springframework.stereotype.Service
 
@@ -15,4 +16,8 @@ class SourceService(
         return sources.firstOrNull { it.id == sourceId }?.fetch()
             ?: throw IllegalArgumentException("Unknown source: $sourceId")
     }
+
+    fun getFormat(sourceId: String): Format =
+        sources.firstOrNull { it.id == sourceId }?.format
+            ?: throw IllegalArgumentException("Unknown source: $sourceId")
 }

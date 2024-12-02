@@ -1,6 +1,7 @@
 package com.digitalfrontiers.services
 
 import com.digitalfrontiers.components.Format
+import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.util.parseTransformNode
 import com.fasterxml.jackson.databind.JsonNode
@@ -24,15 +25,28 @@ class MappingService(
     }
 
     fun validate(sourceId: String, sinkId: String, spec: JsonNode): Boolean {
-        if (parseTransformNode(spec) !is Record) {
-            return false // we only allow transformations via flat Record objects
-        }
+        val record: Record = parseTransformNode(spec) as? Record ?: return false
 
-        return validateSource() && validateSink(sinkId, parseTransformNode(spec) as Record)
+        return validateSource(sourceId, record) && validateSink(sinkId, record)
     }
 
-    fun validateSource(): Boolean {
-        return true
+    /**
+     * Every field used in the transformation has to be mandatory in the source
+     *
+     */
+    fun validateSource(sourceId: String, record: Record): Boolean {
+
+        val usedFields : MutableList<String> = ArrayList()
+
+        for ((k,v) in record.entries.entries) {
+            if (v is Input) {
+                usedFields.add(v.path)
+            }
+
+            // assumes Record doesn't contain relevant nesting and only Input is relevant
+        }
+
+        return sourceService.getFormat(sourceId).mandatoryFields.containsAll(usedFields)
     }
 
     /**

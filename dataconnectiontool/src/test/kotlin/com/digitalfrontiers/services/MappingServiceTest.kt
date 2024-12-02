@@ -160,4 +160,81 @@ class MappingServiceTest {
             record = spec
         ))
     }
+
+    @Test
+    fun `validation -- source field is only optional instead of mandatory`() {
+
+        //given
+        val source = DummySource()
+        val spec = Record {
+            "x" from "a"
+            "y" from "c"
+        }
+        val sink = DummySink()
+
+        // when
+        val mappingService = MappingService(
+            SourceService(listOf(source)),
+            TransformService(),
+            SinkService(listOf(sink))
+        )
+
+        // then
+        assertFalse(mappingService.validateSource(
+            sourceId = "Dummy",
+            record = spec
+        ))
+    }
+
+    @Test
+    fun `validation -- source is validated successfully`() {
+
+        //given
+        val source = DummySource()
+        val spec = Record {
+            "x" from "a"
+            "y" from "a"
+            "z" from "a"
+        }
+        val sink = DummySink()
+
+        // when
+        val mappingService = MappingService(
+            SourceService(listOf(source)),
+            TransformService(),
+            SinkService(listOf(sink))
+        )
+
+        // then
+        assertTrue(mappingService.validateSource(
+            sourceId = "Dummy",
+            record = spec
+        ))
+    }
+
+    @Test
+    fun `validation -- field not provided by source`() {
+
+        //given
+        val source = DummySource()
+        val spec = Record {
+            "x" from "a"
+            "y" from "b"
+            "z" from "nonExistingFieldName"
+        }
+        val sink = DummySink()
+
+        // when
+        val mappingService = MappingService(
+            SourceService(listOf(source)),
+            TransformService(),
+            SinkService(listOf(sink))
+        )
+
+        // then
+        assertFalse(mappingService.validateSource(
+            sourceId = "Dummy",
+            record = spec
+        ))
+    }
 }
