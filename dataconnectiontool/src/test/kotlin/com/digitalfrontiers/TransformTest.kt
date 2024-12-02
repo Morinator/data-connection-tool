@@ -14,7 +14,7 @@ class TransformTest {
     fun `simple transformation`() {
 
         //given
-        val jsonSink = DummySink()
+        val sink = DummySink()
         val x = DummySource().fetch()
         val spec = ListOf {
             Specification.Record {
@@ -25,9 +25,9 @@ class TransformTest {
 
         // when
         val transformed = (Transform to { spec }).apply(x) as List<Map<String, String>>
-        jsonSink.put(transformed)
+        sink.put(transformed)
 
         // then
-        assertEquals(listOf(mapOf("x" to "A_value", "y" to "B_value")), jsonSink.storage[0])
+        assertEquals(listOf(mapOf("x" to "A_value", "y" to "B_value")), sink.storage[0])
     }
 }
