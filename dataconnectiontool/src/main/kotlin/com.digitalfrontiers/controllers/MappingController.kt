@@ -1,6 +1,7 @@
 package com.digitalfrontiers.controllers
 
 import com.digitalfrontiers.services.MappingService
+import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.util.parseTransformNode
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +23,7 @@ class MappingController(
 
     @PostMapping("/invoke")
     fun invokeMapping(@RequestBody body: MappingRequestBody) {
-        mappingService.map(body.source, body.sink, parseTransformNode(body.spec))
+        mappingService.map(body.source, body.sink, parseTransformNode(body.spec) as Record)
     }
 }
 
