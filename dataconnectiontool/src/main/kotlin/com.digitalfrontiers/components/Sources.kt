@@ -1,16 +1,21 @@
 package com.digitalfrontiers.components
 
-import com.digitalfrontiers.Format
-import com.digitalfrontiers.JSONFlattener
 import org.springframework.stereotype.Component
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import java.net.URI
 import java.nio.charset.StandardCharsets.UTF_8
 
+interface Source {
+    val id: String
+
+    val format: Format
+
+    fun fetch(): List<Map<String, String>>
+}
 
 @Component
-class DummySource: ISource {
+class DummySource : Source {
 
     override val id = "Dummy"
 
@@ -20,37 +25,26 @@ class DummySource: ISource {
             listOf("c")
         )
 
-    override fun fetch(): Map<String, String> {
-        return mapOf(
-            "a" to "A",
-            "b" to "B",
-            "c" to "C"
+    override fun fetch(): List<Map<String, String>> {
+        return listOf(
+            mapOf(
+                "a" to "A_value",
+                "b" to "B_value",
+                "c" to "C_value"
+            )
         )
     }
 }
 
-@Component
-class JSONSource: ISource {
-    override val id = "JSONSource"
 
-    override val format = Format(listOf(), listOf())
-
-    override fun fetch(): Map<String, String> {
-        val filePath = "dummy_data/json/john_doe.json"
-        return JSONFlattener().flattenJsonFromFile(filePath) as Map<String, String>
-    }
-
-}
-
-
-class LocalStackS3Source : ISource {
+class LocalStackS3Source : Source {
 
     override val id = "localstackS3"
 
     override val format = Format(
-            listOf("value"),
-            emptyList()
-        )
+        listOf("value"),
+        emptyList()
+    )
 
     private val localstackClient: S3Client = S3Client.builder()
         .endpointOverride(URI("http://localhost:4566")) // default of LocalStack
@@ -66,18 +60,9 @@ class LocalStackS3Source : ISource {
         return localstackClient.getObject(request).readBytes().toString(UTF_8)
     }
 
-    override fun fetch(): Map<String, String> {
-        return mapOf("value" to readStringFromS3("my-bucket", "my-file.txt"))
-    }
-}
-
-fun main() {
-//    val content = LocalStackS3Source().fetch()
-//    println("Content from S3: $content")
-
-    val jsonSource = JSONSource()
-    val stringMap = jsonSource.fetch()
-    for (key in stringMap.keys) {
-        println("$key -> ${stringMap[key]}")
+    override fun fetch(): List<Map<String, String>> {
+        return listOf(
+            mapOf("value" to readStringFromS3("my-bucket", "my-file.txt"))
+        )
     }
 }

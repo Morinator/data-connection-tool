@@ -12,29 +12,37 @@ fun parseTransformConfig(specString: String): Specification {
 
 fun parseTransformNode(node: JsonNode): Specification {
     return when (val type = node.get("type").asText()) {
-        "Self"  -> Self
+        "Self" -> Self
+
         "Const" -> Const(JsonUtils.unbox(node.get("value")))
+
         "Input" -> Specification.Input(node.get("path").asText())
+
         "Tuple" -> {
             val items = node.get("items").map { parseTransformNode(it) }
             Tuple(items)
         }
+
         "Record" -> {
             val entries = node.get("entries").fields().asSequence()
                 .map { (key, value) -> key to parseTransformNode(value) }
                 .toMap()
             Record(entries)
         }
+
         "ListOf" -> ListOf(parseTransformNode(node.get("mapping")))
+
         "ResultOf" -> {
             val fid = node.get("fid").asText()
             val args = node.get("args").map { parseTransformNode(it) }
             ResultOf(fid, args)
         }
+
         "Compose" -> {
             val steps = node.get("steps").map { parseTransformNode(it) }
             Compose(steps)
         }
+
         else -> throw IllegalArgumentException("Unknown transform type: $type")
     }
 }
