@@ -1,5 +1,6 @@
 package com.digitalfrontiers.services
 
+import com.digitalfrontiers.components.Format
 import com.digitalfrontiers.components.Sink
 import org.springframework.stereotype.Service
 
@@ -15,4 +16,8 @@ class SinkService(
         sinks.firstOrNull { it.id == sinkId }?.put(data)
             ?: throw IllegalArgumentException("Unknown sink: $sinkId")
     }
+
+    fun getFormat(sinkId: String): Format =
+        sinks.firstOrNull { it.id == sinkId }?.format
+            ?: throw IllegalArgumentException("Unknown sink: $sinkId")
 }

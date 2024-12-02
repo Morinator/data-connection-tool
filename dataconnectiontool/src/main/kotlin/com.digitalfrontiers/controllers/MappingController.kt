@@ -18,7 +18,7 @@ class MappingController(
 
     @PostMapping("/validate")
     fun validateMapping(@RequestBody body: MappingRequestBody) : Boolean {
-        return true
+        return mappingService.validate(body.source, body.sink, body.spec)
     }
 
     @PostMapping("/invoke")

@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test
 class MappingServiceTest {
 
     private val dummyMappingService = MappingService(
-        sources = SourceService(listOf(DummySource())),
-        transforms = TransformService(),
-        sinks = SinkService(listOf(DummySink()))
+        SourceService(listOf(DummySource())),
+        TransformService(),
+        SinkService(listOf(DummySink()))
     )
 
     @Test
@@ -40,9 +40,9 @@ class MappingServiceTest {
 
         // when
         val mappingService = MappingService(
-            sources = SourceService(listOf(source)),
-            transforms = TransformService(),
-            sinks = SinkService(listOf(sink))
+            SourceService(listOf(source)),
+            TransformService(),
+            SinkService(listOf(sink))
         )
 
         mappingService.map(
