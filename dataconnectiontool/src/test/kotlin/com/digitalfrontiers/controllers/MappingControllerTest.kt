@@ -3,7 +3,9 @@ package com.digitalfrontiers.controllers
 import com.digitalfrontiers.services.MappingService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import jakarta.servlet.ServletException
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
@@ -23,18 +25,32 @@ class MappingControllerTest {
     private lateinit var mappingService: MappingService
 
     @Test
-    fun `test 1`() {
+    fun `return false for invalid spec`() {
 
         every {
             mappingService.validate(any(), any(), any())
         } returns false
 
+        val specString = """{ "type": "Const", "value": 42 }"""
         mockMvc.perform(
             post("/mappings/validate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": {}}""")
+                .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
         )
             .andExpect(status().isOk)
             .andExpect(content().string("false"))
+    }
+
+    @Test
+    fun `exception on malformed specification string`() {
+
+        val specString = """{ "type": "ThisTypeIsMadeUp", "value": 1234 }"""
+        assertThrows<ServletException> {
+            mockMvc.perform(
+                post("/mappings/validate")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
+            )
+        }
     }
 }

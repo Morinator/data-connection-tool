@@ -3,8 +3,7 @@ package com.digitalfrontiers.services
 import com.digitalfrontiers.components.Format
 import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.Record
-import com.digitalfrontiers.util.parseTransformNode
-import com.fasterxml.jackson.databind.JsonNode
+import com.digitalfrontiers.transform.Specification
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,8 +23,8 @@ class MappingService(
         sinkService.put(sinkId, transformed)
     }
 
-    fun validate(sourceId: String, sinkId: String, spec: JsonNode): Boolean {
-        val record: Record = parseTransformNode(spec) as? Record ?: return false
+    fun validate(sourceId: String, sinkId: String, spec: Specification): Boolean {
+        val record: Record = spec as? Record ?: return false
 
         return validateSource(sourceId, record) && validateSink(sinkId, record)
     }
@@ -38,7 +37,7 @@ class MappingService(
 
         val usedFields : MutableList<String> = ArrayList()
 
-        for ((k,v) in record.entries.entries) {
+        for ((_,v) in record.entries.entries) {
             if (v is Input) {
                 usedFields.add(v.path)
             }
