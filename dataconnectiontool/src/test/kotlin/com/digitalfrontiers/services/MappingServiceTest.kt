@@ -1,7 +1,7 @@
 package com.digitalfrontiers.services
 
-import com.digitalfrontiers.components.DummySink
-import com.digitalfrontiers.components.DummySource
+import com.digitalfrontiers.DummySink
+import com.digitalfrontiers.DummySource
 import com.digitalfrontiers.transform.Record
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

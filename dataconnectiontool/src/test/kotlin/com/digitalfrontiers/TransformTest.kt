@@ -1,7 +1,5 @@
 package com.digitalfrontiers
 
-import com.digitalfrontiers.components.DummySink
-import com.digitalfrontiers.components.DummySource
 import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.ListOf
 import com.digitalfrontiers.transform.Specification
