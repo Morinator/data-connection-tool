@@ -30,33 +30,32 @@ class MappingService(
     }
 
     /**
-     * Every field used in the transformation has to be mandatory in the source
+     * Every field used in the transformation has to be required in the source
      *
      */
     fun validateSource(sourceId: String, record: Record): Boolean {
 
-        val usedFields : MutableList<String> = ArrayList()
+        // assumes Record doesn't contain relevant nesting and only Input is relevant
+        val usedFields = record
+            .entries
+            .values
+            .filterIsInstance<Input>()
+            .map { it.path }
 
-        for ((_,v) in record.entries.entries) {
-            if (v is Input) {
-                usedFields.add(v.path)
-            }
-
-            // assumes Record doesn't contain relevant nesting and only Input is relevant
-        }
-
-        return sourceService.getFormat(sourceId).mandatoryFields.containsAll(usedFields)
+        return sourceService
+            .getFormat(sourceId)
+            .requiredFields.containsAll(usedFields)
     }
 
     /**
-     * Each mandatory field of the sink must be covered
-     * Each field of the transformation must be used in the sink, either in mandatory or optional field
+     * Each required field of the sink must be covered
+     * Each field of the transformation must be used in the sink, either in required or optional field
      */
     fun validateSink(sinkId: String, record: Record): Boolean {
         val recordKeys : List<String> = record.entries.keys.toList()
         val sinkFormat: Format = sinkService.getFormat(sinkId)
 
-        val allSinkFieldsAreCovered =  recordKeys.containsAll(sinkFormat.mandatoryFields)
+        val allSinkFieldsAreCovered =  recordKeys.containsAll(sinkFormat.requiredFields)
         val allRecordKeysAreUsed : Boolean = (sinkFormat.getAllFields()).containsAll(recordKeys)
 
         return allSinkFieldsAreCovered && allRecordKeysAreUsed

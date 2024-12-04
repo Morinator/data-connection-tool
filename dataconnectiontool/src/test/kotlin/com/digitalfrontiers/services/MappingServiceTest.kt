@@ -59,7 +59,7 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `validation -- only mandatory fields are set`() {
+    fun `validation -- only required fields are set`() {
 
         //given
         val source = DummySource()
@@ -84,7 +84,7 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `validation -- mandatory and optional fields are set`() {
+    fun `validation -- required and optional fields are set`() {
 
         //given
         val source = DummySource()
@@ -110,7 +110,7 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `validation -- mandatory field is missing`() {
+    fun `validation -- required field is missing`() {
 
         //given
         val source = DummySource()
@@ -162,7 +162,7 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `validation -- source field is only optional instead of mandatory`() {
+    fun `validation -- source field is only optional instead of required`() {
 
         //given
         val source = DummySource()

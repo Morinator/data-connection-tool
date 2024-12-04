@@ -10,7 +10,7 @@ class FormatTest {
     @Test
     fun `has mandatory and optional fields`() {
         val format = Format(
-            mandatoryFields = listOf("a", "b"),
+            requiredFields = listOf("a", "b"),
             optionalFields = listOf("c", "d", "e"),
         )
 
@@ -20,7 +20,7 @@ class FormatTest {
     @Test
     fun `has only mandatory fields`() {
         val format = Format(
-            mandatoryFields = listOf("a", "b"),
+            requiredFields = listOf("a", "b"),
             optionalFields = listOf(),
         )
 
@@ -30,7 +30,7 @@ class FormatTest {
     @Test
     fun `has only optional fields`() {
         val format = Format(
-            mandatoryFields = listOf(),
+            requiredFields = listOf(),
             optionalFields = listOf("c", "d", "e"),
         )
 
@@ -41,13 +41,13 @@ class FormatTest {
     fun `constructor should throw when fields overlap`() {
         val exception = assertThrows<IllegalArgumentException> {
             Format(
-                mandatoryFields = listOf("id", "email"),
+                requiredFields = listOf("id", "email"),
                 optionalFields = listOf("phone", "email")
             )
         }
 
         assertEquals(
-            "Fields cannot be both mandatory and optional. Overlapping fields: [email]",
+            "Fields cannot be both required and optional. Overlapping fields: [email]",
             exception.message
         )
     }

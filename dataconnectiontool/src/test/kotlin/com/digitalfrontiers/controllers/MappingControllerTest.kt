@@ -6,6 +6,8 @@ import io.mockk.every
 import jakarta.servlet.ServletException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
@@ -24,12 +26,13 @@ class MappingControllerTest {
     @MockkBean
     private lateinit var mappingService: MappingService
 
-    @Test
-    fun `return false for invalid spec`() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `return expected validation result`(expectedValidationResult: Boolean) {
 
         every {
             mappingService.validate(any(), any(), any())
-        } returns false
+        } returns expectedValidationResult
 
         val specString = """{ "type": "Const", "value": 42 }"""
         mockMvc.perform(
@@ -38,7 +41,9 @@ class MappingControllerTest {
                 .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
         )
             .andExpect(status().isOk)
-            .andExpect(content().string("false"))
+            .andExpect(content().string("$expectedValidationResult"))
+
+
     }
 
     @Test
