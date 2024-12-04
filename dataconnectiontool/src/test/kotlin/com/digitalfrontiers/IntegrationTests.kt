@@ -16,7 +16,7 @@ class IntegrationTests @Autowired constructor(
 ) {
 
     @Test
-    fun `unknown source ID`() {
+    fun `unknown source`() {
         val specString = """{
             "type": "Record",
             "entries": {
