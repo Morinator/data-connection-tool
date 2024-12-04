@@ -17,9 +17,8 @@ class MappingController(
 ) {
 
     @PostMapping("/validate")
-    fun validateMapping(@RequestBody body: MappingRequestBody) {
-        TODO()
-    }
+    fun validateMapping(@RequestBody body: MappingRequestBody) : Boolean =
+        mappingService.validate(body.source, body.sink, parseTransformNode(body.spec))
 
     @PostMapping("/invoke")
     fun invokeMapping(@RequestBody body: MappingRequestBody) {
