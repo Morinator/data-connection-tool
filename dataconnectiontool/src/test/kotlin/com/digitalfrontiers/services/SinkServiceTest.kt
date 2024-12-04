@@ -1,6 +1,6 @@
 package com.digitalfrontiers.services
 
-import com.digitalfrontiers.components.DummySink
+import com.digitalfrontiers.DummySink
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

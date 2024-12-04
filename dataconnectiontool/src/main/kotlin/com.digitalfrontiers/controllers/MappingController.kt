@@ -17,12 +17,20 @@ class MappingController(
 ) {
 
     @PostMapping("/validate")
-    fun validateMapping(@RequestBody body: MappingRequestBody) : Boolean =
-        mappingService.validate(body.source, body.sink, parseTransformNode(body.spec))
+    fun validateMapping(@RequestBody body: MappingRequestBody): Map<String, Boolean> =
+        mapOf("isValid" to mappingService.validate(body.source, body.sink, parseTransformNode(body.spec)))
 
     @PostMapping("/invoke")
-    fun invokeMapping(@RequestBody body: MappingRequestBody) {
-        mappingService.map(body.source, body.sink, parseTransformNode(body.spec) as Record)
+    fun invokeMapping(@RequestBody body: MappingRequestBody): Map<String, Any> {
+        return try {
+            mappingService.map(body.source, body.sink, parseTransformNode(body.spec) as Record)
+            mapOf("success" to true)
+        } catch (e: Exception) {
+            mapOf(
+                "success" to false,
+                "error" to (e.message ?: "An unknown error occurred")
+            )
+        }
     }
 }
 
