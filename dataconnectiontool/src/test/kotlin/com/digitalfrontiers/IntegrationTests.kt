@@ -26,14 +26,13 @@ class IntegrationTests @Autowired constructor(
 
         val result: MvcResult = mockMvc.post("/mappings/invoke") {
             contentType = MediaType.APPLICATION_JSON
-            content = """{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}"""
+            content = """{"source": "Dummy", "sink": "Dummy", "spec": $specString}"""
         }.andExpect {
             status { isOk() }
-            jsonPath("$.success") { value("false") }
-            jsonPath("$.error") { value("Unknown source: unused-source-id") }
+            jsonPath("$.success") { value("true") }
         }.andReturn()
 
-        println(result.response.contentAsString)
+        println(result.response.contentAsString) // {"success":true}
     }
 
 }
