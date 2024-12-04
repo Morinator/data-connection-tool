@@ -41,7 +41,7 @@ class MappingControllerTest {
                 .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
         )
             .andExpect(status().isOk)
-            .andExpect(content().string("$expectedValidationResult"))
+            .andExpect(content().string("""{"isValid":$expectedValidationResult}"""))
 
 
     }
