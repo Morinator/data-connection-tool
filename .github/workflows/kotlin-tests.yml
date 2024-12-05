@@ -14,10 +14,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: ☕️ Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Setup Gradle
@@ -26,10 +26,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run unit tests
+      - name: 🧪 Run unit tests
         run: ./gradlew test
 
-      - name: Upload test results on failure
+      - name: 🚨🚨🚨 Upload test results on failure 🚨🚨🚨
         if: failure()
         uses: actions/upload-artifact@v4
         with:
