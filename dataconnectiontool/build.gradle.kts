@@ -31,3 +31,27 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.named<Test>("test") { // gradle task 'test' excludes integration tests
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs the integration tests."
+    group = "verification"
+
+    useJUnitPlatform { // looks for @Tag("integration")
+        includeTags("integration")
+    }
+
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    shouldRunAfter("test")
+}
+
+tasks.named("check") {
+    dependsOn("test", "integrationTest")
+}
