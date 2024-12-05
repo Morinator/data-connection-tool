@@ -1,5 +1,6 @@
 package com.digitalfrontiers
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -14,6 +15,10 @@ import org.springframework.test.web.servlet.post
 class IntegrationTests @Autowired constructor(
     private val mockMvc: MockMvc,
 ) {
+
+    @Autowired
+    private lateinit var dummySink: DummySink
+
 
     @Test
     fun `unknown source`() {
@@ -33,6 +38,14 @@ class IntegrationTests @Autowired constructor(
         }.andReturn()
 
         println(result.response.contentAsString) // {"success":true}
+
+        val sinkEntry  = dummySink.storage.last()
+        val expected = mutableListOf(
+            mutableMapOf(
+                "key1" to 123,
+            )
+        )
+        assertEquals(expected, sinkEntry)
     }
 
 }
