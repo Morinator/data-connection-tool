@@ -21,7 +21,7 @@ class IntegrationTests @Autowired constructor(
 
 
     @Test
-    fun `unknown source`() {
+    fun `record with constant entry`() {
         val specString = """{
             "type": "Record",
             "entries": {
@@ -39,13 +39,12 @@ class IntegrationTests @Autowired constructor(
 
         println(result.response.contentAsString) // {"success":true}
 
-        val sinkEntry  = dummySink.storage.last()
         val expected = mutableListOf(
             mutableMapOf(
                 "key1" to 123,
             )
         )
-        assertEquals(expected, sinkEntry)
+        assertEquals(expected, dummySink.storage.last())
     }
 
 }
