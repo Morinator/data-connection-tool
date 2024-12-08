@@ -13,7 +13,7 @@ import javax.sql.DataSource
 class TransformationDataManager {
     private val dataSource: DataSource = DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
-        url = "jdbc:h2:./nesteddb;DB_CLOSE_DELAY=-1"
+        url = "jdbc:h2:mem:nestdb;DB_CLOSE_DELAY=-1"
         username = "sa"
         password = ""
     }
