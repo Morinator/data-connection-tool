@@ -10,7 +10,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource
 import java.time.LocalDateTime
 import javax.sql.DataSource
 
-class NestedDataManager {
+class TransformationDataManager {
     private val dataSource: DataSource = DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
         url = "jdbc:h2:./nesteddb;DB_CLOSE_DELAY=-1"
@@ -22,8 +22,6 @@ class NestedDataManager {
     private val jdbcInsert = SimpleJdbcInsert(dataSource)
         .withTableName("table1")
         .usingGeneratedKeyColumns("id")
-
-    private val objectMapper: ObjectMapper = ObjectMapper()
 
     private val rowMapper = RowMapper { rs, _ ->
         val data: Specification = parseTransformConfig(rs.getString("data"))
@@ -49,7 +47,7 @@ class NestedDataManager {
     }
 
     fun save(x: SpecificationEntry): Long {
-        val data : String  = objectMapper.writeValueAsString(x.data)
+        val data: String = ObjectMapper().writeValueAsString(x.data)
         val parameters = mapOf(
             "name" to x.name,
             "data" to data,
@@ -68,7 +66,7 @@ class NestedDataManager {
             id
         ).firstOrNull()
 
-    fun allRows(): List<SpecificationEntry> =
+    fun getAllRows(): List<SpecificationEntry> =
         jdbcTemplate.query(
             "SELECT * FROM table1 ORDER BY created_at DESC",
             rowMapper

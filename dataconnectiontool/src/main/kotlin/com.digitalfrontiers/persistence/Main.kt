@@ -3,7 +3,7 @@ package com.digitalfrontiers.persistence
 import com.digitalfrontiers.transform.Specification
 
 fun main() {
-    val manager = NestedDataManager()
+    val manager = TransformationDataManager()
 
     try {
         manager.createTable()
@@ -18,7 +18,7 @@ fun main() {
             )
         )
 
-        manager.allRows().forEach { println(it) }
+        manager.getAllRows().forEach { println(it) }
 
         val x = manager.getById(1)
         println("\n###\nEntry with ID 1: $x")
