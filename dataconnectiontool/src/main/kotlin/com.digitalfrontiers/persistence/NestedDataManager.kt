@@ -1,9 +1,8 @@
 package com.digitalfrontiers.persistence
 
+import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.util.parseTransformConfig
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert
@@ -21,28 +20,25 @@ class NestedDataManager {
 
     private val jdbcTemplate = JdbcTemplate(dataSource)
     private val jdbcInsert = SimpleJdbcInsert(dataSource)
-        .withTableName("nested_data")
+        .withTableName("table1")
         .usingGeneratedKeyColumns("id")
 
-    private val objectMapper: ObjectMapper = ObjectMapper().apply {
-        registerModule(KotlinModule.Builder().build())
-        registerModule(JavaTimeModule())
-    }
+    private val objectMapper: ObjectMapper = ObjectMapper()
 
-    private val nestedDataRowMapper = RowMapper { rs, _ ->
-        val nestedData: List<List<Map<String, Any>>> = objectMapper.readValue(rs.getString("data"))
+    private val rowMapper = RowMapper { rs, _ ->
+        val data: Specification = parseTransformConfig(rs.getString("data"))
 
         NestedData(
             id = rs.getLong("id"),
             name = rs.getString("name"),
-            data = nestedData,
+            data = data,
             createdAt = rs.getObject("created_at", LocalDateTime::class.java)
         )
     }
 
     fun createTable() {
         jdbcTemplate.execute("""
-            CREATE TABLE IF NOT EXISTS nested_data (
+            CREATE TABLE IF NOT EXISTS table1 (
                 id LONG AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
                 data TEXT NOT NULL,
@@ -53,9 +49,10 @@ class NestedDataManager {
     }
 
     fun saveNestedData(nestedData: NestedData): Long {
+        val data : String  = objectMapper.writeValueAsString(nestedData.data)
         val parameters = mapOf(
             "name" to nestedData.name,
-            "data" to objectMapper.writeValueAsString(nestedData.data),
+            "data" to data,
             "created_at" to nestedData.createdAt
         )
 
@@ -66,14 +63,14 @@ class NestedDataManager {
 
     fun getNestedDataById(id: Long): NestedData? =
         jdbcTemplate.query(
-            "SELECT * FROM nested_data WHERE id = ?",
-            nestedDataRowMapper,
+            "SELECT * FROM table1 WHERE id = ?",
+            rowMapper,
             id
         ).firstOrNull()
 
-    fun getAllNestedData(): List<NestedData> =
+    fun allRows(): List<NestedData> =
         jdbcTemplate.query(
-            "SELECT * FROM nested_data ORDER BY created_at DESC",
-            nestedDataRowMapper
+            "SELECT * FROM table1 ORDER BY created_at DESC",
+            rowMapper
         )
 }

@@ -1,5 +1,7 @@
 package com.digitalfrontiers.persistence
 
+import com.digitalfrontiers.transform.Specification
+
 fun main() {
     val manager = NestedDataManager()
 
@@ -8,35 +10,15 @@ fun main() {
 
         manager.saveNestedData(
             NestedData(
-                name = "deine mudda",
-                data = listOf(
-                    listOf(
-                        mapOf<String, Any>("key1" to "value1", "key2" to 123),
-                        mapOf<String, Any>("key3" to "value3", "key4" to true)
-                    ),
-                    listOf(
-                        mapOf<String, Any>("key5" to "value5", "key6" to 456.789),
-                        mapOf<String, Any>("key7" to "value7", "key8" to false)
-                    )
-                )
+                name = "NiceName123",
+                data = Specification.Record {
+                    "x" from "a"
+                    "y" from "b"
+                }
             )
         )
 
-        // Retrieve and print all stored data
-        println("\nAll stored nested data structures:")
-        manager.getAllNestedData().forEach { data ->
-            println("ID: ${data.id}")
-            println("Name: ${data.name}")
-            println("Created at: ${data.createdAt}")
-            println("Data structure:")
-            data.data.forEachIndexed { i, list ->
-                println("  List $i:")
-                list.forEachIndexed { j, map ->
-                    println("    Map $j: $map")
-                }
-            }
-            println()
-        }
+        manager.allRows().forEach { println(it) }
 
     } catch (e: Exception) {
         e.printStackTrace()
