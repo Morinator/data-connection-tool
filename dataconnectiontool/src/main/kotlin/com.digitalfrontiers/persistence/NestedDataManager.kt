@@ -28,7 +28,7 @@ class NestedDataManager {
     private val rowMapper = RowMapper { rs, _ ->
         val data: Specification = parseTransformConfig(rs.getString("data"))
 
-        NestedData(
+        SpecificationEntry(
             id = rs.getLong("id"),
             name = rs.getString("name"),
             data = data,
@@ -48,12 +48,12 @@ class NestedDataManager {
         println("Table created successfully!")
     }
 
-    fun saveNestedData(nestedData: NestedData): Long {
-        val data : String  = objectMapper.writeValueAsString(nestedData.data)
+    fun save(x: SpecificationEntry): Long {
+        val data : String  = objectMapper.writeValueAsString(x.data)
         val parameters = mapOf(
-            "name" to nestedData.name,
+            "name" to x.name,
             "data" to data,
-            "created_at" to nestedData.createdAt
+            "created_at" to x.createdAt
         )
 
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
@@ -61,14 +61,14 @@ class NestedDataManager {
         return id
     }
 
-    fun getNestedDataById(id: Long): NestedData? =
+    fun getById(id: Long): SpecificationEntry? =
         jdbcTemplate.query(
             "SELECT * FROM table1 WHERE id = ?",
             rowMapper,
             id
         ).firstOrNull()
 
-    fun allRows(): List<NestedData> =
+    fun allRows(): List<SpecificationEntry> =
         jdbcTemplate.query(
             "SELECT * FROM table1 ORDER BY created_at DESC",
             rowMapper

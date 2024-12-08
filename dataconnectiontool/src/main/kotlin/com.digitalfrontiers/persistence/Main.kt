@@ -8,8 +8,8 @@ fun main() {
     try {
         manager.createTable()
 
-        manager.saveNestedData(
-            NestedData(
+        manager.save(
+            SpecificationEntry(
                 name = "NiceName123",
                 data = Specification.Record {
                     "x" from "a"
@@ -19,6 +19,9 @@ fun main() {
         )
 
         manager.allRows().forEach { println(it) }
+
+        val x = manager.getById(1)
+        println("\n###\nEntry with ID 1: $x")
 
     } catch (e: Exception) {
         e.printStackTrace()
