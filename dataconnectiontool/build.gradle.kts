@@ -8,7 +8,7 @@ plugins {
 dependencies {
 
     implementation("com.h2database:h2:2.2.224")
-    implementation("org.springframework:spring-jdbc:6.1.8")
+    implementation("org.springframework:spring-jdbc:6.1.15")
 
     implementation(project(":datatransformlang"))
 
