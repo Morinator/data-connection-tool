@@ -6,17 +6,7 @@ fun main() {
     val manager = TransformationDataManager()
 
     try {
-        manager.createTable()
-
-        manager.save(
-            SpecificationEntry(
-                name = "NiceName123",
-                data = Specification.Record {
-                    "x" from "a"
-                    "y" from "b"
-                }
-            )
-        )
+        createTableWithEntry(manager)
 
         manager.getAllRows().forEach { println(it) }
 
@@ -26,4 +16,18 @@ fun main() {
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+fun createTableWithEntry(manager: TransformationDataManager) {
+    manager.createTable()
+
+    manager.save(
+        SpecificationEntry(
+            name = "NiceName123",
+            data = Specification.Record {
+                "x" from "a"
+                "y" from "b"
+            }
+        )
+    )
 }
