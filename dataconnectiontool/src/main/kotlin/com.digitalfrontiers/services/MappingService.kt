@@ -1,9 +1,9 @@
 package com.digitalfrontiers.services
 
 import com.digitalfrontiers.components.Format
-import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Specification.Input
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,41 +24,30 @@ class MappingService(
     }
 
     fun validate(sourceId: String, sinkId: String, spec: Specification): Boolean {
-        val record: Record = spec as? Record ?: return false
-
-        return validateSource(sourceId, record) && validateSink(sinkId, record)
-    }
-
-    /**
-     * Every field used in the transformation has to be required in the source
-     *
-     */
-    fun validateSource(sourceId: String, record: Record): Boolean {
-
-        // assumes Record doesn't contain relevant nesting and only Input is relevant
-        val usedFields = record
-            .entries
-            .values
-            .filterIsInstance<Input>()
-            .map { it.path }
-
-        return sourceService
-            .getFormat(sourceId)
-            .requiredFields.containsAll(usedFields)
-    }
-
-    /**
-     * Each required field of the sink must be covered
-     * Each field of the transformation must be used in the sink, either in required or optional field
-     */
-    fun validateSink(sinkId: String, record: Record): Boolean {
-        val recordKeys : List<String> = record.entries.keys.toList()
+        // Spec must be a flat Record
+        val record = spec as? Record ?: return false
         val sinkFormat: Format = sinkService.getFormat(sinkId)
+        val sourceFormat: Format = sourceService.getFormat(sourceId)
 
-        val allSinkFieldsAreCovered =  recordKeys.containsAll(sinkFormat.requiredFields)
-        val allRecordKeysAreUsed : Boolean = (sinkFormat.getAllFields()).containsAll(recordKeys)
+        // 1. Basic field coverage checks
+        val allRequiredSinkFieldsCovered = sinkFormat.requiredFields.all { it in record.entries.keys }
+        val allRecordKeysUsed = record.entries.keys.all { it in sinkFormat.getAllFields() }
 
-        return allSinkFieldsAreCovered && allRecordKeysAreUsed
+        if (!allRequiredSinkFieldsCovered || !allRecordKeysUsed) {
+            return false
+        }
+
+        return true
+    }
+
+    /**
+     * Since spec is flat and only has a Record at the root,
+     * we can directly filter for entries that are Input specs.
+     */
+    private fun getAllInputs(record: Record): Map<String, Input> {
+        return record.entries
+            .filterValues { it is Input }
+            .mapValues { (_, spec) -> spec as Input }
     }
 
 }
