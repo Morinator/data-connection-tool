@@ -38,16 +38,14 @@ class MappingService(
 
 
         // 3a. Required sink fields must only depend on required source fields
-        val requiredSinkFieldsValid = sinkFormat.requiredFields.all { sinkField ->
-            val input: Input = inputElements[sinkField] ?: return@all true
-            input.path in sourceFormat.requiredFields
-        }
+        val requiredSinkFieldsValid = sinkFormat.requiredFields
+            .filter { it in inputElements.keys }
+            .all {inputElements[it]!!.path in sourceFormat.requiredFields }
 
         // 3b. Optional sink fields may depend on any source field
-        val optionalSinkFieldsValid = sinkFormat.optionalFields.all { sinkField ->
-            val input = inputElements[sinkField] ?: return@all true
-            input.path in sourceFormat.getAllFields()
-        }
+        val optionalSinkFieldsValid = sinkFormat.optionalFields
+            .filter { it in inputElements.keys }
+            .all { inputElements[it]!!.path in sourceFormat.getAllFields()}
 
         return allRequiredSinkFieldsCovered && allRecordKeysUsed && requiredSinkFieldsValid && optionalSinkFieldsValid
     }
