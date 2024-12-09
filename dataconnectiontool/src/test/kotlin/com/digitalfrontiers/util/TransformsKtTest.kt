@@ -127,4 +127,20 @@ class TransformNodeParserTest {
         }
         assertEquals("Unknown transform type: UnknownType", exception.message)
     }
+
+    @Test
+    fun `the type field is missing`() {
+        val specString = """{"entries":{"x":{"path":"a"},"y":{"path":"b"}}}"""
+        val exception = assertThrows<NullPointerException> {
+            parseTransformConfig(specString)
+        }
+        println(exception)
+    }
+
+    @Test
+    fun `simple test case with type field`() {
+        val specString = """{"type":"Record","entries":{"x":{"type":"Input","path":"a"},"y":{"type":"Input","path":"b"}}}"""
+        val x = parseTransformConfig(specString)
+        println(x)
+    }
 }

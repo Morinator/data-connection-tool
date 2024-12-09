@@ -23,8 +23,8 @@ class DummySink : Sink {
 
     override val format =
         Format(
-            listOf("x"),
-            listOf("y", "z")
+            listOf("x", "y"),
+            listOf("z")
         )
 
     override fun put(data: List<Map<String, String>>) {
