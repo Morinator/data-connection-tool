@@ -3,6 +3,7 @@ package com.digitalfrontiers.services
 import com.digitalfrontiers.DummySink
 import com.digitalfrontiers.DummySource
 import com.digitalfrontiers.transform.Record
+import com.digitalfrontiers.transform.Specification
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -12,6 +13,13 @@ class MappingServiceTest {
         SourceService(listOf(DummySource())),
         TransformService(),
         SinkService(listOf(DummySink()))
+    )
+
+    private fun validateWithDummySourceAndSink(spec: Specification) : Boolean =
+        dummyMappingService.validate(
+            sourceId = "Dummy",
+            sinkId = "Dummy",
+            spec = spec
     )
 
     @Test
@@ -28,9 +36,8 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `mapping example 1`() {
+    fun `one required field & one optional field`() {
 
-        //given
         val source = DummySource()
         val spec = Record {
             "x" from "a"
@@ -51,7 +58,6 @@ class MappingServiceTest {
             spec = spec
         )
 
-        // then
         assertEquals(
             listOf(mapOf("x" to "A_value", "y" to "B_value")),
             sink.storage[0]
@@ -59,182 +65,88 @@ class MappingServiceTest {
     }
 
     @Test
-    fun `validation -- only required fields are set`() {
+    fun `both sides only use required fields`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
             "x" from "a"
-            "y" from "b"
         }
-        val sink = DummySink()
-
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
-
-        // then
-        assertTrue(mappingService.validateSink(
-            sinkId = "Dummy",
-            record = spec
-        ))
+        assertFalse(validateWithDummySourceAndSink(spec)) // one required field is missing in sink
     }
 
     @Test
-    fun `validation -- required and optional fields are set`() {
+    fun `required and optional fields are set`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
             "x" from "a"
             "y" from "b"
             "z" from "c"
         }
-        val sink = DummySink()
 
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
-
-        // then
-        assertTrue(mappingService.validateSink(
-            sinkId = "Dummy",
-            record = spec
-        ))
+        assertTrue(validateWithDummySourceAndSink(spec))
     }
 
     @Test
-    fun `validation -- required field is missing`() {
+    fun `required field is missing`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
-            "y" from "b"
+            "y" from "a"
             "z" from "c"
         }
-        val sink = DummySink()
 
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
-
-        // then
-        assertFalse(mappingService.validateSink(
-            sinkId = "Dummy",
-            record = spec
-        ))
+        assertFalse(validateWithDummySourceAndSink(spec))
     }
 
     @Test
-    fun `validation -- field is not used by sink`() {
+    fun `field is not used by sink`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
             "x" from "a"
-            "y" from "b"
-            "z" from "c"
             "someUnusedFieldName" from "a"
         }
-        val sink = DummySink()
-
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
-
-        // then
-        assertFalse(mappingService.validateSink(
-            sinkId = "Dummy",
-            record = spec
-        ))
+        assertFalse(validateWithDummySourceAndSink(spec))
     }
 
     @Test
-    fun `validation -- source field is only optional instead of required`() {
+    fun `source field is only optional instead of required`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
             "x" from "a"
-            "y" from "c"
+            "y" from "c" // "c" is not required
         }
-        val sink = DummySink()
 
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
-
-        // then
-        assertFalse(mappingService.validateSource(
-            sourceId = "Dummy",
-            record = spec
-        ))
+        assertFalse(validateWithDummySourceAndSink(spec))
     }
 
     @Test
-    fun `validation -- source is validated successfully`() {
+    fun `not all required source fields have to be used`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
             "x" from "a"
             "y" from "a"
             "z" from "a"
         }
-        val sink = DummySink()
-
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
-
-        // then
-        assertTrue(mappingService.validateSource(
-            sourceId = "Dummy",
-            record = spec
-        ))
+        assertTrue(validateWithDummySourceAndSink(spec))
     }
 
     @Test
-    fun `validation -- field not provided by source`() {
+    fun `field not provided by source`() {
 
-        //given
-        val source = DummySource()
         val spec = Record {
             "x" from "a"
             "y" from "b"
             "z" from "nonExistingFieldName"
         }
-        val sink = DummySink()
 
-        // when
-        val mappingService = MappingService(
-            SourceService(listOf(source)),
-            TransformService(),
-            SinkService(listOf(sink))
-        )
+        assertFalse(validateWithDummySourceAndSink(spec))
+    }
 
-        // then
-        assertFalse(mappingService.validateSource(
-            sourceId = "Dummy",
-            record = spec
-        ))
+    @Test
+    fun `required field depends on optional field`() {
+
+        val spec = Record {
+            "x" from "c"
+        }
+
+        assertFalse(validateWithDummySourceAndSink(spec))
     }
 }
