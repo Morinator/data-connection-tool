@@ -2,6 +2,7 @@ package com.digitalfrontiers.services
 
 import com.digitalfrontiers.DummySink
 import com.digitalfrontiers.DummySource
+import com.digitalfrontiers.transform.Const
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.transform.Specification
 import org.junit.jupiter.api.Assertions.*
@@ -148,5 +149,40 @@ class MappingServiceTest {
         }
 
         assertFalse(validateWithDummySourceAndSink(spec))
+    }
+
+    @Test
+    fun `required sink fields are set by Const`() {
+
+        val spec = Record {
+            "x" to Const("test123")
+            "y" to Const("test123")
+        }
+
+        assertTrue(validateWithDummySourceAndSink(spec))
+    }
+
+    @Test
+    fun `optional sink fields are set by Const`() {
+
+        val spec = Record {
+            "x" from "a"
+            "y" from "b"
+            "z" to Const("test123")
+        }
+
+        assertTrue(validateWithDummySourceAndSink(spec))
+    }
+
+    @Test
+    fun `all sink fields are set by Const`() {
+
+        val spec = Record {
+            "x" to Const("test123")
+            "y" to Const("test123")
+            "z" to Const("test123")
+        }
+
+        assertTrue(validateWithDummySourceAndSink(spec))
     }
 }
