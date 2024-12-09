@@ -10,7 +10,17 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource
 import java.time.LocalDateTime
 import javax.sql.DataSource
 
-class TransformationDataManager {
+/**
+ * Stores instances of [Specification]
+ */
+class SpecificationRepository {
+
+    data class SpecificationEntry(
+        val id: Long? = null,
+        val data: Specification,
+        val createdAt: LocalDateTime = LocalDateTime.now()
+    )
+
     private val dataSource: DataSource = DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
         url = "jdbc:h2:mem:nestdb;DB_CLOSE_DELAY=-1"
@@ -28,7 +38,6 @@ class TransformationDataManager {
 
         SpecificationEntry(
             id = rs.getLong("id"),
-            name = rs.getString("name"),
             data = data,
             createdAt = rs.getObject("created_at", LocalDateTime::class.java)
         )
@@ -37,25 +46,21 @@ class TransformationDataManager {
     fun createTable() {
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS table1 (
-                id LONG AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                data TEXT NOT NULL,
-                created_at TIMESTAMP NOT NULL
+            id LONG AUTO_INCREMENT PRIMARY KEY,
+            data TEXT NOT NULL,
+            created_at TIMESTAMP NOT NULL
             )
         """)
-        println("Table created successfully!")
     }
 
     fun save(x: SpecificationEntry): Long {
         val data: String = ObjectMapper().writeValueAsString(x.data)
         val parameters = mapOf(
-            "name" to x.name,
             "data" to data,
             "created_at" to x.createdAt
         )
 
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
-        println("Saved nested data with ID: $id")
         return id
     }
 
