@@ -10,7 +10,6 @@ class SpecificationRepositoryTest {
     private val manager = SpecificationRepository()
 
     private fun createTableWithEntry(manager: SpecificationRepository) {
-        manager.createTable()
 
         manager.save(
             SpecificationRepository.SpecificationEntry(

@@ -43,7 +43,7 @@ class SpecificationRepository {
         )
     }
 
-    fun createTable() {
+    init {
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS table1 (
             id LONG AUTO_INCREMENT PRIMARY KEY,
