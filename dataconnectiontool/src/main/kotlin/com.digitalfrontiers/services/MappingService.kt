@@ -32,6 +32,9 @@ class MappingService(
             .filterValues { it is Input }
             .mapValues { (_, spec) -> spec as Input }
 
+        // ########## VALIDATION RULES ##########
+        // ######################################
+
         // Basic field coverage checks
         val allRequiredSinkFieldsCovered = sinkFormat.requiredFields.all { it in record.entries.keys }
         val allRecordKeysUsed = record.entries.keys.all { it in sinkFormat.getAllFields() }
