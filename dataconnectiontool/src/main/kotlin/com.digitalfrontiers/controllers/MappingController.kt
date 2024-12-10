@@ -1,5 +1,6 @@
 package com.digitalfrontiers.controllers
 
+import com.digitalfrontiers.persistence.SpecificationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.util.parseTransformNode
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController
 class MappingController(
     @Autowired private val mappingService: MappingService,
 ) {
+
+    private val specificationRepository =  SpecificationRepository()
 
     @PostMapping("/validate")
     fun validateMapping(@RequestBody body: MappingRequestBody): Map<String, Boolean> =
@@ -32,10 +35,31 @@ class MappingController(
             )
         }
     }
+
+    @PostMapping("/stored/save")
+    fun saveSpecification(@RequestBody body: SaveSpecificationRequest): Map<String, Any> {
+        return try {
+            val specification = parseTransformNode(body.spec)
+            val id = specificationRepository.save(specification)
+            mapOf(
+                "success" to true,
+                "id" to id
+            )
+        } catch (e: Exception) {
+            mapOf(
+                "success" to false,
+                "error" to (e.message ?: "An unknown error occurred")
+            )
+        }
+    }
 }
 
 data class MappingRequestBody(
     val source: String,
     val sink: String,
     val spec: JsonNode,
+)
+
+data class SaveSpecificationRequest(
+    val spec: JsonNode
 )

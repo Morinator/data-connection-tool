@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import javax.sql.DataSource
 
@@ -13,6 +14,7 @@ import javax.sql.DataSource
 /**
  * Stores instances of [Specification]
  */
+@Repository
 class SpecificationRepository(databaseID: String = "") {
 
     data class SpecificationEntry(
