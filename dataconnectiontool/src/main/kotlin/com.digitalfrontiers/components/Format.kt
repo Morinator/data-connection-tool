@@ -12,6 +12,9 @@ data class Format(
         }
     }
 
+    /**
+     * @return A list containing the union of all required and all optional fields
+     */
     fun getAllFields(): List<String> {
         return requiredFields + optionalFields
     }

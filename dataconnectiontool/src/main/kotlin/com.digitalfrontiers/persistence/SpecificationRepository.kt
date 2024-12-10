@@ -46,9 +46,9 @@ class SpecificationRepository {
     init {
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS table1 (
-            id LONG AUTO_INCREMENT PRIMARY KEY,
-            data TEXT NOT NULL,
-            created_at TIMESTAMP NOT NULL
+                id LONG AUTO_INCREMENT PRIMARY KEY,
+                data TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL
             )
         """)
     }

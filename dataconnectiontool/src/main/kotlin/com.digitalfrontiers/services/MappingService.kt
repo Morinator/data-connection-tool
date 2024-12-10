@@ -28,6 +28,7 @@ class MappingService(
         val sinkFormat: Format = sinkService.getFormat(sinkId)
         val sourceFormat: Format = sourceService.getFormat(sourceId)
 
+        // create a map containing all relevant items of type [Specification.Input]
         val inputElements = record.entries
             .filterValues { it is Input }
             .mapValues { (_, spec) -> spec as Input }
