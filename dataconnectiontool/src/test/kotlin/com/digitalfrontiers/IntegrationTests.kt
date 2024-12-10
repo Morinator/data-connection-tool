@@ -112,4 +112,38 @@ class IntegrationTests @Autowired constructor(
             assertNotNull(specificationRepository.getById(id.toLong()))
         }
     }
+
+    @Test
+    fun `save mapping and invoke stored mapping`() {
+        // First save the specification
+        val saveResult = mockMvc.post("/mappings/stored/save") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"spec": $stringRecordWithConst}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.success") { value(true) }
+            jsonPath("$.id") { isNumber() }
+        }.andReturn()
+
+        val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+        // Then invoke the stored mapping
+        mockMvc.post("/mappings/stored/invoke/$id") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"source": "Dummy", "sink": "Dummy"}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.success") { value(true) }
+        }
+
+        // Verify the result in the sink
+        assertEquals(
+            mutableListOf(
+                mutableMapOf(
+                    "key1" to 123,
+                )
+            ),
+            dummySink.storage.last()
+        )
+    }
 }
