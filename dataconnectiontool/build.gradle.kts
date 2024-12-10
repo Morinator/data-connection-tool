@@ -7,6 +7,9 @@ plugins {
 
 dependencies {
 
+    implementation("com.h2database:h2:2.2.224")
+    implementation("org.springframework:spring-jdbc:6.1.15")
+
     implementation(project(":datatransformlang"))
 
     implementation("software.amazon.awssdk:s3:2.20.26")

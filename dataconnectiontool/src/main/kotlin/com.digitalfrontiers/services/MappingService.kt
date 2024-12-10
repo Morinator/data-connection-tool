@@ -2,7 +2,6 @@ package com.digitalfrontiers.services
 
 import com.digitalfrontiers.components.Format
 import com.digitalfrontiers.transform.Input
-import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.transform.Specification
 import org.springframework.stereotype.Service
 
@@ -16,7 +15,7 @@ class MappingService(
     /**
      * Runs the mapping specified by [spec] from [sourceId] to [sinkId].
      */
-    fun map(sourceId: String, sinkId: String, spec: Record) {
+    fun map(sourceId: String, sinkId: String, spec: Specification.Record) {
         val transform = transformService.createTransform(spec)
         val data = sourceService.fetch(sourceId)
         val transformed = transform.apply(data) as List<Map<String, String>>
@@ -24,41 +23,35 @@ class MappingService(
     }
 
     fun validate(sourceId: String, sinkId: String, spec: Specification): Boolean {
-        val record: Record = spec as? Record ?: return false
 
-        return validateSource(sourceId, record) && validateSink(sinkId, record)
-    }
-
-    /**
-     * Every field used in the transformation has to be required in the source
-     *
-     */
-    fun validateSource(sourceId: String, record: Record): Boolean {
-
-        // assumes Record doesn't contain relevant nesting and only Input is relevant
-        val usedFields = record
-            .entries
-            .values
-            .filterIsInstance<Input>()
-            .map { it.path }
-
-        return sourceService
-            .getFormat(sourceId)
-            .requiredFields.containsAll(usedFields)
-    }
-
-    /**
-     * Each required field of the sink must be covered
-     * Each field of the transformation must be used in the sink, either in required or optional field
-     */
-    fun validateSink(sinkId: String, record: Record): Boolean {
-        val recordKeys : List<String> = record.entries.keys.toList()
+        val record: Specification.Record = spec as? Specification.Record ?: return false
         val sinkFormat: Format = sinkService.getFormat(sinkId)
+        val sourceFormat: Format = sourceService.getFormat(sourceId)
 
-        val allSinkFieldsAreCovered =  recordKeys.containsAll(sinkFormat.requiredFields)
-        val allRecordKeysAreUsed : Boolean = (sinkFormat.getAllFields()).containsAll(recordKeys)
+        // create a map containing all relevant items of type [Specification.Input]
+        val inputElements = record.entries
+            .filterValues { it is Input }
+            .mapValues { (_, spec) -> spec as Input }
 
-        return allSinkFieldsAreCovered && allRecordKeysAreUsed
+        // ########## VALIDATION RULES ##########
+        // ######################################
+
+        // Basic field coverage checks
+        val allRequiredSinkFieldsCovered = sinkFormat.requiredFields.all { it in record.entries.keys }
+        val allRecordKeysUsed = record.entries.keys.all { it in sinkFormat.getAllFields() }
+
+
+        // 3a. Required sink fields must only depend on required source fields
+        val requiredSinkFieldsValid = sinkFormat.requiredFields
+            .filter { it in inputElements.keys }
+            .all {inputElements[it]!!.path in sourceFormat.requiredFields }
+
+        // 3b. Optional sink fields may depend on any source field
+        val optionalSinkFieldsValid = sinkFormat.optionalFields
+            .filter { it in inputElements.keys }
+            .all { inputElements[it]!!.path in sourceFormat.getAllFields()}
+
+        return allRequiredSinkFieldsCovered && allRecordKeysUsed && requiredSinkFieldsValid && optionalSinkFieldsValid
     }
 
 }

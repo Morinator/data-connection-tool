@@ -6,6 +6,8 @@ import com.digitalfrontiers.transform.Specification.Const
 import com.digitalfrontiers.transform.Specification.Input
 import com.digitalfrontiers.util.JsonUtils
 import com.jayway.jsonpath.JsonPath
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 // Types
 

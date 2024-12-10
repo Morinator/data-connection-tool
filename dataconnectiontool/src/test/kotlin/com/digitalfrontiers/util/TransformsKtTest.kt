@@ -1,5 +1,6 @@
 package com.digitalfrontiers.util
 
+import com.digitalfrontiers.persistence.SpecificationJsonConfig
 import com.digitalfrontiers.transform.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -126,5 +127,36 @@ class TransformNodeParserTest {
             parseTransformConfig(json)
         }
         assertEquals("Unknown transform type: UnknownType", exception.message)
+    }
+
+    @Test
+    fun `the type field is missing`() {
+        val specString = """{"entries":{"x":{"path":"a"},"y":{"path":"b"}}}"""
+        val exception = assertThrows<NullPointerException> {
+            parseTransformConfig(specString)
+        }
+        println(exception)
+    }
+
+    @Test
+    fun `simple test case with type field`() {
+        val specString = """{"type":"Record","entries":{"x":{"type":"Input","path":"a"},"y":{"type":"Input","path":"b"}}}"""
+        val x = parseTransformConfig(specString)
+        println(x)
+    }
+
+    @Test
+    fun `test spec serialization`() {
+        val spec = Specification.Record {
+            "a" from "b"
+            "y" to Specification.Const("const123")
+        }
+
+        val str = SpecificationJsonConfig.createMapper().writeValueAsString(spec)
+        assertEquals(
+            """{"type":"Record","entries":{"a":{"type":"Input","path":"b"},"y":{"type":"Const","value":"const123"}}}""",
+            str
+
+        )
     }
 }
