@@ -4,10 +4,19 @@ import com.digitalfrontiers.transform.Specification
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import java.util.*
 
 class SpecificationRepositoryTest {
 
-    private val manager = SpecificationRepository()
+    private lateinit var repo: SpecificationRepository
+
+    @BeforeEach // creates database with unique ID each time to avoid side effects
+    fun setup() {
+        val uuid: String = UUID.randomUUID().toString()
+        repo = SpecificationRepository(databaseID = uuid)
+
+    }
 
     private fun createTableWithEntry(manager: SpecificationRepository) {
 
@@ -23,8 +32,8 @@ class SpecificationRepositoryTest {
 
     @Test
     fun `save and retrieve simple record`() {
-        createTableWithEntry(manager)
-        val entry = manager.getById(1)!!
+        createTableWithEntry(repo)
+        val entry = repo.getById(1)!!
 
         assertEquals(1, entry.id)
         assertEquals(
@@ -36,20 +45,18 @@ class SpecificationRepositoryTest {
         )
 
         println("should be only one entry:")
-        manager.getAllRows().forEach { println(it) }
+        repo.getAllRows().forEach { println(it) }
     }
 
     @Test
     fun `missing entry results in null`() {
-        assertNull(manager.getById(1))
+        assertNull(repo.getById(1))
     }
 
     @Test
     fun `id is automatically incremented `() {
-        createTableWithEntry(manager)
-        createTableWithEntry(manager)
-
-        assertEquals(listOf(2L, 1L), manager.getAllRows().map { it.id })
+        createTableWithEntry(repo)
+        createTableWithEntry(repo)
+        assertEquals(listOf(2L, 1L), repo.getAllRows().map { it.id })
     }
-
 }

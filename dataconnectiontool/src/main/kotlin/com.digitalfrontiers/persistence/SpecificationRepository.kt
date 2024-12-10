@@ -13,7 +13,7 @@ import javax.sql.DataSource
 /**
  * Stores instances of [Specification]
  */
-class SpecificationRepository {
+class SpecificationRepository(databaseID: String = "") {
 
     data class SpecificationEntry(
         val id: Long? = null,
@@ -23,7 +23,7 @@ class SpecificationRepository {
 
     private val dataSource: DataSource = DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
-        url = "jdbc:h2:mem:nestdb;DB_CLOSE_DELAY=-1"
+        url = "jdbc:h2:mem:nestdb${databaseID};DB_CLOSE_DELAY=-1"
         username = "sa"
         password = ""
     }
@@ -43,6 +43,8 @@ class SpecificationRepository {
         )
     }
 
+    private val objectMapper = SpecificationJsonConfig.createMapper()
+
     init {
         jdbcTemplate.execute("""
             CREATE TABLE IF NOT EXISTS table1 (
@@ -54,7 +56,7 @@ class SpecificationRepository {
     }
 
     fun save(x: SpecificationEntry): Long {
-        val data: String = ObjectMapper().writeValueAsString(x.data)
+        val data: String = objectMapper.writeValueAsString(x.data)
         val parameters = mapOf(
             "data" to data,
             "created_at" to x.createdAt
@@ -76,4 +78,11 @@ class SpecificationRepository {
             "SELECT * FROM table1 ORDER BY created_at DESC",
             rowMapper
         )
+
+    /**
+     * Removes all entries from the table
+     */
+    fun clearAll() {
+        jdbcTemplate.execute("DELETE FROM table1")
+    }
 }
