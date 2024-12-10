@@ -16,14 +16,11 @@ import org.springframework.test.web.servlet.post
 @Tag("integration")
 class IntegrationTests @Autowired constructor(
     private val mockMvc: MockMvc,
+    private val dummySink: DummySink
 ) {
 
-    @Autowired
-    private lateinit var dummySink: DummySink
-
-
     @Test
-    fun `record with constant entry`() {
+    fun `invoke --- record with constant entry`() {
         val specString = """{
             "type": "Record",
             "entries": {
@@ -41,12 +38,14 @@ class IntegrationTests @Autowired constructor(
 
         println(result.response.contentAsString) // {"success":true}
 
-        val expected = mutableListOf(
-            mutableMapOf(
-                "key1" to 123,
-            )
+        assertEquals(
+            mutableListOf(
+                mutableMapOf(
+                    "key1" to 123,
+                )
+            ),
+            dummySink.storage.last()
         )
-        assertEquals(expected, dummySink.storage.last())
     }
 
 }
