@@ -114,7 +114,7 @@ class IntegrationTests @Autowired constructor(
     }
 
     @Test
-    fun `save mapping and invoke stored mapping`() {
+    fun `save mapping and invoke saved mapping`() {
         // First save the specification
         val saveResult = mockMvc.post("/mappings/stored/save") {
             contentType = MediaType.APPLICATION_JSON
@@ -145,5 +145,69 @@ class IntegrationTests @Autowired constructor(
             ),
             dummySink.storage.last()
         )
+    }
+
+    @Test
+    fun `invoke stored mapping --- non-existent id returns error`() {
+        mockMvc.post("/mappings/stored/invoke/99999") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"source": "Dummy", "sink": "Dummy"}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.success") { value(false) }
+            jsonPath("$.error") { value("No specification found with id: 99999") }
+        }
+    }
+
+    @Test
+    fun `invoke stored mapping --- invalid source returns error`() {
+        // First save a valid specification
+        val saveResult = mockMvc.post("/mappings/stored/save") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"spec": $stringRecordWithConst}"""
+        }.andReturn()
+
+        val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+        // Try to invoke with invalid source
+        mockMvc.post("/mappings/stored/invoke/$id") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"source": "NonExistentSource", "sink": "Dummy"}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.success") { value(false) }
+            jsonPath("$.error") { exists() }
+        }
+    }
+
+    @Test
+    fun `invoke stored mapping --- invalid sink returns error`() {
+        // First save a valid specification
+        val saveResult = mockMvc.post("/mappings/stored/save") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"spec": $stringRecordWithConst}"""
+        }.andReturn()
+
+        val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+        // Try to invoke with invalid sink
+        mockMvc.post("/mappings/stored/invoke/$id") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.success") { value(false) }
+            jsonPath("$.error") { exists() }
+        }
+    }
+
+    @Test
+    fun `invoke stored mapping --- malformed request body returns error`() {
+        mockMvc.post("/mappings/stored/invoke/1") {
+            contentType = MediaType.APPLICATION_JSON
+            content = """{"invalid": "json"}"""
+        }.andExpect {
+            status { isBadRequest() }  // Expect HTTP 400 Bad Request
+        }
     }
 }
