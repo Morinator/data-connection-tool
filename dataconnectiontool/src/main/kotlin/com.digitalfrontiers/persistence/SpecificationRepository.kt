@@ -2,13 +2,13 @@ package com.digitalfrontiers.persistence
 
 import com.digitalfrontiers.transform.Specification
 import com.digitalfrontiers.util.parseTransformConfig
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import java.time.LocalDateTime
 import javax.sql.DataSource
+
 
 /**
  * Stores instances of [Specification]
@@ -55,13 +55,11 @@ class SpecificationRepository(databaseID: String = "") {
         """)
     }
 
-    fun save(x: SpecificationEntry): Long {
-        val data: String = objectMapper.writeValueAsString(x.data)
+    fun save(data: Specification): Long {
         val parameters = mapOf(
-            "data" to data,
-            "created_at" to x.createdAt
+            "data" to objectMapper.writeValueAsString(data),
+            "created_at" to LocalDateTime.now()
         )
-
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
         return id
     }

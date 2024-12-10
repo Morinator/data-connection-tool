@@ -18,26 +18,19 @@ class SpecificationRepositoryTest {
 
     }
 
-    private fun createTableWithEntry(manager: SpecificationRepository) {
-
-        manager.save(
-            SpecificationRepository.SpecificationEntry(
-                data = Specification.Record {
-                    "x" from "a"
-                    "y" from "b"
-                }
-            )
-        )
+    private val dummySpec = Specification.Record {
+        "x" from "a"
+        "y" from "b"
     }
 
     @Test
     fun `save and retrieve simple record`() {
-        createTableWithEntry(repo)
+        repo.save(dummySpec)
         val entry = repo.getById(1)!!
 
         assertEquals(1, entry.id)
         assertEquals(
-            Specification.Record{
+            Specification.Record {
                 "x" from "a"
                 "y" from "b"
             },
@@ -55,8 +48,8 @@ class SpecificationRepositoryTest {
 
     @Test
     fun `id is automatically incremented `() {
-        createTableWithEntry(repo)
-        createTableWithEntry(repo)
+        assertEquals(1, repo.save(dummySpec))
+        assertEquals(2, repo.save(dummySpec))
         assertEquals(listOf(2L, 1L), repo.getAllRows().map { it.id })
     }
 }
