@@ -22,7 +22,7 @@ class SpecificationRepositoryTest {
     }
 
     @Test
-    fun getById() {
+    fun `save and retrieve simple record`() {
         createTableWithEntry(manager)
         val entry = manager.getById(1)!!
 
@@ -37,6 +37,19 @@ class SpecificationRepositoryTest {
 
         println("should be only one entry:")
         manager.getAllRows().forEach { println(it) }
+    }
+
+    @Test
+    fun `missing entry results in null`() {
+        assertNull(manager.getById(1))
+    }
+
+    @Test
+    fun `id is automatically incremented `() {
+        createTableWithEntry(manager)
+        createTableWithEntry(manager)
+
+        assertEquals(listOf(2L, 1L), manager.getAllRows().map { it.id })
     }
 
 }
