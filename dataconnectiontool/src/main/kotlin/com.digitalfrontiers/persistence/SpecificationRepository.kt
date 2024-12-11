@@ -15,7 +15,9 @@ import javax.sql.DataSource
  * Stores instances of [Specification]
  */
 @Repository
-class SpecificationRepository(databaseID: String = "") {
+class SpecificationRepository(
+    val jdbcTemplate: JdbcTemplate
+) {
 
     data class SpecificationEntry(
         val id: Long? = null,
@@ -25,13 +27,12 @@ class SpecificationRepository(databaseID: String = "") {
 
     private val dataSource: DataSource = DriverManagerDataSource().apply {
         setDriverClassName("org.h2.Driver")
-        url = "jdbc:h2:mem:nestdb${databaseID};DB_CLOSE_DELAY=-1"
+        url = "jdbc:h2:mem:nestdb;DB_CLOSE_DELAY=-1"
         username = "sa"
         password = ""
     }
 
-    private val jdbcTemplate = JdbcTemplate(dataSource)
-    private val jdbcInsert = SimpleJdbcInsert(dataSource)
+    private val jdbcInsert = SimpleJdbcInsert(jdbcTemplate)
         .withTableName("table1")
         .usingGeneratedKeyColumns("id")
 

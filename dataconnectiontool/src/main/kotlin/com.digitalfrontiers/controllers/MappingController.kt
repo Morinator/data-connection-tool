@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/mappings")
 class MappingController(
     @Autowired private val mappingService: MappingService,
+    @Autowired val specificationRepository :  SpecificationRepository
 ) {
-
-    private val specificationRepository =  SpecificationRepository()
 
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
