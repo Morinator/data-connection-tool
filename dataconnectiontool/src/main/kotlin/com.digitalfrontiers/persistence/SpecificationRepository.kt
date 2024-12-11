@@ -61,7 +61,7 @@ class SpecificationRepository(
 
     fun save(data: Specification): Long {
         val parameters = mapOf(
-            "data" to objectMapper.writeValueAsString(data),
+            "data" to jsonService.serializeSpecificationToJson(data),
             "created_at" to LocalDateTime.now()
         )
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
