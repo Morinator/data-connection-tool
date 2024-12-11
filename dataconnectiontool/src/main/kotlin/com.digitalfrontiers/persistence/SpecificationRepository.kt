@@ -1,7 +1,7 @@
 package com.digitalfrontiers.persistence
 
 import com.digitalfrontiers.transform.Specification
-import com.digitalfrontiers.util.parseTransformConfig
+import com.digitalfrontiers.services.JsonService
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert
@@ -16,7 +16,8 @@ import javax.sql.DataSource
  */
 @Repository
 class SpecificationRepository(
-    val jdbcTemplate: JdbcTemplate
+    val jdbcTemplate: JdbcTemplate,
+    val jsonService: JsonService
 ) {
 
     data class SpecificationEntry(
@@ -37,7 +38,7 @@ class SpecificationRepository(
         .usingGeneratedKeyColumns("id")
 
     private val rowMapper = RowMapper { rs, _ ->
-        val data: Specification = parseTransformConfig(rs.getString("data"))
+        val data: Specification = jsonService.parseJsonString(rs.getString("data"))
 
         SpecificationEntry(
             id = rs.getLong("id"),

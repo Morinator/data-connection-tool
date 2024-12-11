@@ -1,26 +1,33 @@
 package com.digitalfrontiers.util
 
 import com.digitalfrontiers.persistence.SpecificationJsonConfig
+import com.digitalfrontiers.services.JsonService
 import com.digitalfrontiers.transform.*
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 
-class TransformNodeParserTest {
+@SpringBootTest
+class TransformNodeParserTest @Autowired constructor(
+    val jsonService: JsonService
+) {
+
 
     @Test
     fun `test Self type`() {
         val json = """{ "type": "Self" }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertEquals(Self, result)
     }
 
     @Test
     fun `test Const type`() {
         val json = """{ "type": "Const", "value": 42 }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is Const)
         assertEquals(42, (result as Const).value)
     }
@@ -28,7 +35,7 @@ class TransformNodeParserTest {
     @Test
     fun `test Input type`() {
         val json = """{ "type": "Input", "path": "user.name" }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is Input)
         assertEquals("user.name", (result as Input).path)
     }
@@ -42,7 +49,7 @@ class TransformNodeParserTest {
                 { "type": "Self" }
             ]
         }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is Tuple)
         val items = (result as Tuple).items
         assertEquals(2, items.size)
@@ -60,7 +67,7 @@ class TransformNodeParserTest {
                 "key2": { "type": "Self" }
             }
         }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is Record)
         val entries = (result as Record).entries
         assertEquals(2, entries.size)
@@ -75,7 +82,7 @@ class TransformNodeParserTest {
             "type": "ListOf",
             "mapping": { "type": "Const", "value": "mapped" }
         }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is ListOf)
         val mapping = (result as ListOf).mapping
         assertTrue(mapping is Const)
@@ -92,7 +99,7 @@ class TransformNodeParserTest {
                 { "type": "Self" }
             ]
         }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is ResultOf)
         val fid = (result as ResultOf).fid
         val args = result.args
@@ -112,7 +119,7 @@ class TransformNodeParserTest {
                 { "type": "Self" }
             ]
         }"""
-        val result = parseTransformConfig(json)
+        val result = jsonService.parseJsonString(json)
         assertTrue(result is Compose)
         val steps = (result as Compose).steps
         assertEquals(2, steps.size)
@@ -125,7 +132,7 @@ class TransformNodeParserTest {
     fun `test unknown type`() {
         val json = """{ "type": "UnknownType" }"""
         val exception = assertThrows<InvalidTypeIdException> {
-            parseTransformConfig(json)
+            jsonService.parseJsonString(json)
         }
         println(exception.message)
     }
@@ -134,7 +141,7 @@ class TransformNodeParserTest {
     fun `the type field is missing`() {
         val specString = """{"entries":{"x":{"path":"a"},"y":{"path":"b"}}}"""
         val exception = assertThrows<InvalidTypeIdException> {
-            parseTransformConfig(specString)
+            jsonService.parseJsonString(specString)
         }
         println(exception)
     }
@@ -142,7 +149,7 @@ class TransformNodeParserTest {
     @Test
     fun `simple test case with type field`() {
         val specString = """{"type":"Record","entries":{"x":{"type":"Input","path":"a"},"y":{"type":"Input","path":"b"}}}"""
-        val x = parseTransformConfig(specString)
+        val x = jsonService.parseJsonString(specString)
         println(x)
     }
 
