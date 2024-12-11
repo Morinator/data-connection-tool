@@ -26,6 +26,8 @@ class MappingControllerTest {
     @MockkBean
     private lateinit var mappingService: MappingService
 
+    private val BASE_URL = "/api/v1"
+
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun `return expected validation result`(expectedValidationResult: Boolean) {
@@ -36,7 +38,7 @@ class MappingControllerTest {
 
         val specString = """{ "type": "Const", "value": 42 }"""
         mockMvc.perform(
-            post("/mappings/validate")
+            post("$BASE_URL/mappings/validate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
         )
@@ -52,7 +54,7 @@ class MappingControllerTest {
         val specString = """{ "type": "ThisTypeIsMadeUp", "value": 1234 }"""
         assertThrows<ServletException> {
             mockMvc.perform(
-                post("/mappings/validate")
+                post("$BASE_URL/mappings/validate")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
             )

@@ -4,6 +4,7 @@ import com.digitalfrontiers.persistence.SpecificationRepository
 import com.digitalfrontiers.transform.Specification
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -28,9 +29,11 @@ class IntegrationTests @Autowired constructor(
         }
     }"""
 
+    private val BASE_URL = "/api/v1"
+
     @Test
     fun `invoke --- record with constant entry`() {
-        val result: MvcResult = mockMvc.post("/mappings/invoke") {
+        val result: MvcResult = mockMvc.post("$BASE_URL/mappings/invoke") {
             contentType = MediaType.APPLICATION_JSON
             content = """{"source": "Dummy", "sink": "Dummy", "spec": $stringRecordWithConst}"""
         }.andExpect {
@@ -50,66 +53,170 @@ class IntegrationTests @Autowired constructor(
         )
     }
 
-    @Test
-    fun `save and retrieve spec`() {
 
-        val result: MvcResult = mockMvc.post("/mappings/stored/save") {
-            contentType = MediaType.APPLICATION_JSON
-            content = """{"spec": $stringRecordWithConst}"""
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.success") { value(true) }
-            jsonPath("$.id") { isNumber() }
-        }.andReturn()
+    @Nested
+    inner class StoredMappingTesting {
 
-        val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
+        @Test
+        fun `save and retrieve spec`() {
 
-        // Verify we can retrieve the saved specification
-        val savedSpec = specificationRepository.getById(id.toLong())
-        assertNotNull(savedSpec)
-        assertTrue(savedSpec!!.data is Specification.Record)
+            val result: MvcResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"spec": $stringRecordWithConst}"""
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.success") { value(true) }
+                jsonPath("$.id") { isNumber() }
+            }.andReturn()
 
-        val record = savedSpec.data as Specification.Record
-        assertEquals(123, (record.entries["key1"] as Specification.Const).value)
-    }
+            val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
 
-    @Test
-    fun `save specification --- invalid spec returns error`() {
-        val invalidSpecString = """{
+            // Verify we can retrieve the saved specification
+            val savedSpec = specificationRepository.getById(id.toLong())
+            assertNotNull(savedSpec)
+            assertTrue(savedSpec!!.data is Specification.Record)
+
+            val record = savedSpec.data as Specification.Record
+            assertEquals(123, (record.entries["key1"] as Specification.Const).value)
+        }
+
+        @Test
+        fun `save specification --- invalid spec returns error`() {
+            val invalidSpecString = """{
             "type": "InvalidType",
             "entries": {}
         }"""
 
-        mockMvc.post("/mappings/stored/save") {
-            contentType = MediaType.APPLICATION_JSON
-            content = """{"spec": $invalidSpecString}"""
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.success") { value(false) }
-            jsonPath("$.error") { exists() }
+            mockMvc.post("$BASE_URL/mappings/stored/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"spec": $invalidSpecString}"""
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.success") { value(false) }
+                jsonPath("$.error") { exists() }
+            }
         }
-    }
 
-    @Test
-    fun `save specification --- multiple saves increment id`() {
+        @Test
+        fun `save specification --- multiple saves increment id`() {
 
-        val ids = mutableListOf<Int>()
-        repeat(5) {
-            val result = mockMvc.post("/mappings/stored/save") {
+            val ids = mutableListOf<Int>()
+            repeat(5) {
+                val result = mockMvc.post("$BASE_URL/mappings/stored/save") {
+                    contentType = MediaType.APPLICATION_JSON
+                    content = """{"spec": $stringRecordWithConst}"""
+                }.andReturn()
+
+                val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
+                ids.add(id)
+            }
+
+            // ID should be auto-incremented
+            ids.zipWithNext { a, b -> assertEquals(a+1, b) }
+
+            // Verify both specs are retrievable
+            for (id in ids) {
+                assertNotNull(specificationRepository.getById(id.toLong()))
+            }
+        }
+
+        @Test
+        fun `save mapping and invoke saved mapping`() {
+            // First save the specification
+            val saveResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"spec": $stringRecordWithConst}"""
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.success") { value(true) }
+                jsonPath("$.id") { isNumber() }
+            }.andReturn()
+
+            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+            // Then invoke the stored mapping
+            mockMvc.post("$BASE_URL/mappings/stored/invoke/$id") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"source": "Dummy", "sink": "Dummy"}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(true) }
+            }
+
+            // Verify the result in the sink
+            assertEquals(
+                mutableListOf(
+                    mutableMapOf(
+                        "key1" to 123,
+                    )
+                ),
+                dummySink.storage.last()
+            )
+        }
+
+        @Test
+        fun `invoke stored mapping --- non-existent id returns error`() {
+            mockMvc.post("$BASE_URL/mappings/stored/invoke/99999") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"source": "Dummy", "sink": "Dummy"}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(false) }
+                jsonPath("$.error") { value("No specification found with id: 99999") }
+            }
+        }
+
+        @Test
+        fun `invoke stored mapping --- invalid source returns error`() {
+            // First save a valid specification
+            val saveResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"spec": $stringRecordWithConst}"""
             }.andReturn()
 
-            val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
-            ids.add(id)
+            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+            // Try to invoke with invalid source
+            mockMvc.post("$BASE_URL/mappings/stored/invoke/$id") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"source": "NonExistentSource", "sink": "Dummy"}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(false) }
+                jsonPath("$.error") { exists() }
+            }
         }
 
-        // ID should be auto-incremented
-        ids.zipWithNext { a, b -> assertEquals(a+1, b) }
+        @Test
+        fun `invoke stored mapping --- invalid sink returns error`() {
+            // First save a valid specification
+            val saveResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"spec": $stringRecordWithConst}"""
+            }.andReturn()
 
-        // Verify both specs are retrievable
-        for (id in ids) {
-            assertNotNull(specificationRepository.getById(id.toLong()))
+            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+            // Try to invoke with invalid sink
+            mockMvc.post("$BASE_URL/mappings/stored/invoke/$id") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(false) }
+                jsonPath("$.error") { exists() }
+            }
         }
+
+        @Test
+        fun `invoke stored mapping --- malformed request body returns error`() {
+            mockMvc.post("$BASE_URL/mappings/stored/invoke/1") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"invalid": "json"}"""
+            }.andExpect {
+                status { isBadRequest() }  // Expect HTTP 400 Bad Request
+            }
+        }
+
     }
 }
