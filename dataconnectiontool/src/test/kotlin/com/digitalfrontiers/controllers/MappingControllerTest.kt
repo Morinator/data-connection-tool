@@ -1,6 +1,7 @@
 package com.digitalfrontiers.controllers
 
 import com.digitalfrontiers.services.MappingService
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import jakarta.servlet.ServletException
@@ -54,7 +55,7 @@ class MappingControllerTest {
     fun `exception on malformed specification string`() {
 
         val specString = """{ "type": "ThisTypeIsMadeUp", "value": 1234 }"""
-        assertThrows<ServletException> {
+        assertThrows<InvalidTypeIdException> {
             mockMvc.perform(
                 post("$BASE_URL/mappings/validate")
                     .contentType(MediaType.APPLICATION_JSON)

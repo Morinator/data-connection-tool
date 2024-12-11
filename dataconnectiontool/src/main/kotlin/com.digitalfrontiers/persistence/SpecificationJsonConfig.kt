@@ -1,9 +1,10 @@
 package com.digitalfrontiers.persistence
 
 import com.digitalfrontiers.transform.Specification
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 /**
  * Mixin abstract class that defines the JSON type information.
@@ -31,14 +32,11 @@ abstract class SpecificationMixin
 class SpecificationJsonConfig {
     companion object {
         private fun configureMapper(mapper: ObjectMapper = ObjectMapper()): ObjectMapper {
-
-            // Register the mixin!
-            // It tells Jackson to apply the annotations from SpecificationMixin to the Specification class
+            mapper.registerKotlinModule()
             mapper.addMixIn(Specification::class.java, SpecificationMixin::class.java)
-
             return mapper
         }
 
-        fun createMapper(): ObjectMapper = configureMapper(ObjectMapper())
-   }
+        fun createMapper(): ObjectMapper = configureMapper()
+    }
 }

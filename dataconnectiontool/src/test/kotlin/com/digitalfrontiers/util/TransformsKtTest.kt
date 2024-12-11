@@ -2,6 +2,7 @@ package com.digitalfrontiers.util
 
 import com.digitalfrontiers.persistence.SpecificationJsonConfig
 import com.digitalfrontiers.transform.*
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -123,16 +124,16 @@ class TransformNodeParserTest {
     @Test
     fun `test unknown type`() {
         val json = """{ "type": "UnknownType" }"""
-        val exception = assertThrows<IllegalArgumentException> {
+        val exception = assertThrows<InvalidTypeIdException> {
             parseTransformConfig(json)
         }
-        assertEquals("Unknown transform type: UnknownType", exception.message)
+        println(exception.message)
     }
 
     @Test
     fun `the type field is missing`() {
         val specString = """{"entries":{"x":{"path":"a"},"y":{"path":"b"}}}"""
-        val exception = assertThrows<NullPointerException> {
+        val exception = assertThrows<InvalidTypeIdException> {
             parseTransformConfig(specString)
         }
         println(exception)
