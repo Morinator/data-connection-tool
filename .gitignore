@@ -39,3 +39,7 @@ tmp/
 
 ### Kotlin ###
 .kotlin
+
+### Misc. ###
+
+.DS_Store
