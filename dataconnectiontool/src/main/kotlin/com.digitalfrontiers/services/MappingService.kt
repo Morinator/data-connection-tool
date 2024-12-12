@@ -28,7 +28,6 @@ class MappingService(
         val sinkFormat: Format = sinkService.getFormat(sinkId)
         val sourceFormat: Format = sourceService.getFormat(sourceId)
 
-        // create a map containing all relevant items of type [Specification.Input]
         val inputElements = record.entries
             .filterValues { it is Input }
             .mapValues { (_, spec) -> spec as Input }
@@ -41,12 +40,12 @@ class MappingService(
         val allRecordKeysUsed = record.entries.keys.all { it in sinkFormat.getAllFields() }
 
 
-        // 3a. Required sink fields must only depend on required source fields
+        // Required sink fields must only depend on required source fields
         val requiredSinkFieldsValid = sinkFormat.requiredFields
             .filter { it in inputElements.keys }
             .all {inputElements.getValue(it).path in sourceFormat.requiredFields }
 
-        // 3b. Optional sink fields may depend on any source field
+        // Optional sink fields may depend on any source field
         val optionalSinkFieldsValid = sinkFormat.optionalFields
             .filter { it in inputElements.keys }
             .all { inputElements.getValue(it).path in sourceFormat.getAllFields()}

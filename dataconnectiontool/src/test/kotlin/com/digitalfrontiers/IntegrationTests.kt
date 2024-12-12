@@ -11,9 +11,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.*
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class IntegrationTests @Autowired constructor(
     private val mockMvc: MockMvc,
     private val dummySink: DummySink,
@@ -341,6 +343,66 @@ class IntegrationTests @Autowired constructor(
                 content = """{"invalid": "json"}"""
             }.andExpect {
                 status { isBadRequest() }  // Expect HTTP 400 Bad Request
+            }
+        }
+
+        @Test
+        fun `getAllTransformations --- returns empty list when no transformations exist`() {
+
+            mockMvc.get("$BASE_URL/transformations") {
+                contentType = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(true) }
+                jsonPath("$.transformations") { isArray() }
+                jsonPath("$.transformations.length()") { value(0) }
+            }
+        }
+
+        @Test
+        fun `getAllTransformations --- returns all saved transformations in correct order`() {
+
+            val transformationValues = listOf(123, 456, 789)
+            val savedIds = transformationValues.map { value ->
+                val transformation = """{
+                    "type": "record",
+                    "entries": {
+                        "key1": { "type": "const", "value": $value }
+                    }
+                }"""
+
+                val result = mockMvc.post("$BASE_URL/transformations/save") {
+                    contentType = MediaType.APPLICATION_JSON
+                    content = """{"transformation": $transformation}"""
+                }.andReturn()
+
+                return@map JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
+            }
+
+            // Get all transformations and verify
+            val result = mockMvc.get("$BASE_URL/transformations") {
+                contentType = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(true) }
+                jsonPath("$.transformations") { isArray() }
+                jsonPath("$.transformations.length()") { value(3) }
+
+                // Verify order (should be newest first due to ORDER BY created_at DESC)
+                jsonPath("$.transformations[0].id") { value(savedIds[2]) }
+                jsonPath("$.transformations[1].id") { value(savedIds[1]) }
+                jsonPath("$.transformations[2].id") { value(savedIds[0]) }
+            }.andReturn()
+
+            // Verify the actual transformation data
+            val transformations = JsonPath.parse(result.response.contentAsString)
+                .read<List<Map<String, Any>>>("$.transformations")
+
+            transformations.forEachIndexed { index, transformation ->
+                val data = transformation["data"] as Map<*, *>
+                val entries = (data["entries"] as Map<*, *>)["key1"] as Map<*, *>
+                val expectedValue = transformationValues[transformationValues.size - 1 - index]
+                assertEquals(expectedValue, entries["value"])
             }
         }
 
