@@ -1,14 +1,12 @@
 package com.digitalfrontiers.persistence
 
 import com.digitalfrontiers.transform.Specification
-import com.digitalfrontiers.util.parseTransformConfig
+import com.digitalfrontiers.services.JsonService
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert
-import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
-import javax.sql.DataSource
 
 
 /**
@@ -16,28 +14,22 @@ import javax.sql.DataSource
  */
 @Repository
 class SpecificationRepository(
-    val jdbcTemplate: JdbcTemplate
+    private val jdbcTemplate: JdbcTemplate,
+    val jsonService: JsonService
 ) {
 
     data class SpecificationEntry(
-        val id: Long? = null,
+        val id: Long,
         val data: Specification,
         val createdAt: LocalDateTime = LocalDateTime.now()
     )
-
-    private val dataSource: DataSource = DriverManagerDataSource().apply {
-        setDriverClassName("org.h2.Driver")
-        url = "jdbc:h2:mem:nestdb;DB_CLOSE_DELAY=-1"
-        username = "sa"
-        password = ""
-    }
 
     private val jdbcInsert = SimpleJdbcInsert(jdbcTemplate)
         .withTableName("table1")
         .usingGeneratedKeyColumns("id")
 
     private val rowMapper = RowMapper { rs, _ ->
-        val data: Specification = parseTransformConfig(rs.getString("data"))
+        val data: Specification = jsonService.parseJsonString(rs.getString("data"))
 
         SpecificationEntry(
             id = rs.getLong("id"),
@@ -45,8 +37,6 @@ class SpecificationRepository(
             createdAt = rs.getObject("created_at", LocalDateTime::class.java)
         )
     }
-
-    private val objectMapper = SpecificationJsonConfig.createMapper()
 
     init {
         jdbcTemplate.execute("""
@@ -60,7 +50,7 @@ class SpecificationRepository(
 
     fun save(data: Specification): Long {
         val parameters = mapOf(
-            "data" to objectMapper.writeValueAsString(data),
+            "data" to jsonService.serializeSpecificationToJson(data),
             "created_at" to LocalDateTime.now()
         )
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()

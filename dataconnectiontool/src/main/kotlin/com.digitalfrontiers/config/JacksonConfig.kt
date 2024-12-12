@@ -1,14 +1,19 @@
-package com.digitalfrontiers.persistence
+package com.digitalfrontiers.config
+
 
 import com.digitalfrontiers.transform.Specification
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
+import org.springframework.context.annotation.Configuration
 
-/**
- * Mixin abstract class that defines the JSON type information.
- * These annotations will be applied to the Specification class at runtime.
- */
+@Configuration
+class JacksonConfig : Jackson2ObjectMapperBuilderCustomizer {
+    override fun customize(builder: org.springframework.http.converter.json.Jackson2ObjectMapperBuilder) {
+        builder.mixIn(Specification::class.java, SpecificationMixin::class.java)
+    }
+}
+
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,
@@ -27,18 +32,3 @@ import com.fasterxml.jackson.databind.ObjectMapper
     JsonSubTypes.Type(value = Specification.Compose::class, name = "Compose")
 )
 abstract class SpecificationMixin
-
-class SpecificationJsonConfig {
-    companion object {
-        private fun configureMapper(mapper: ObjectMapper = ObjectMapper()): ObjectMapper {
-
-            // Register the mixin!
-            // It tells Jackson to apply the annotations from SpecificationMixin to the Specification class
-            mapper.addMixIn(Specification::class.java, SpecificationMixin::class.java)
-
-            return mapper
-        }
-
-        fun createMapper(): ObjectMapper = configureMapper(ObjectMapper())
-   }
-}
