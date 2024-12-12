@@ -1,6 +1,6 @@
 package com.digitalfrontiers
 
-import com.digitalfrontiers.persistence.SpecificationRepository
+import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.transform.Specification
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
@@ -19,7 +19,7 @@ import org.springframework.test.web.servlet.post
 class IntegrationTests @Autowired constructor(
     private val mockMvc: MockMvc,
     private val dummySink: DummySink,
-    private val specificationRepository: SpecificationRepository
+    private val transformationRepository: TransformationRepository
 ) {
 
     private val stringRecordWithConst = """{
@@ -72,7 +72,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
 
             // Verify we can retrieve the saved specification
-            val savedSpec = specificationRepository.getById(id.toLong())
+            val savedSpec = transformationRepository.getById(id.toLong())
             assertNotNull(savedSpec)
             assertTrue(savedSpec!!.data is Specification.Record)
 
@@ -116,7 +116,7 @@ class IntegrationTests @Autowired constructor(
 
             // Verify both specs are retrievable
             for (id in ids) {
-                assertNotNull(specificationRepository.getById(id.toLong()))
+                assertNotNull(transformationRepository.getById(id.toLong()))
             }
         }
 

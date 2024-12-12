@@ -13,12 +13,12 @@ import java.time.LocalDateTime
  * Stores instances of [Specification]
  */
 @Repository
-class SpecificationRepository(
+class TransformationRepository(
     private val jdbcTemplate: JdbcTemplate,
     val jsonService: JsonService
 ) {
 
-    data class SpecificationEntry(
+    data class Entry(
         val id: Long,
         val data: Specification,
         val createdAt: LocalDateTime = LocalDateTime.now()
@@ -29,9 +29,9 @@ class SpecificationRepository(
         .usingGeneratedKeyColumns("id")
 
     private val rowMapper = RowMapper { rs, _ ->
-        val data: Specification = jsonService.parseJsonString(rs.getString("data"))
+        val data: Specification = jsonService.stringToTransformation(rs.getString("data"))
 
-        SpecificationEntry(
+        Entry(
             id = rs.getLong("id"),
             data = data,
             createdAt = rs.getObject("created_at", LocalDateTime::class.java)
@@ -50,21 +50,21 @@ class SpecificationRepository(
 
     fun save(data: Specification): Long {
         val parameters = mapOf(
-            "data" to jsonService.serializeSpecificationToJson(data),
+            "data" to jsonService.transformationToJson(data),
             "created_at" to LocalDateTime.now()
         )
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
         return id
     }
 
-    fun getById(id: Long): SpecificationEntry? =
+    fun getById(id: Long): Entry? =
         jdbcTemplate.query(
             "SELECT * FROM table1 WHERE id = ?",
             rowMapper,
             id
         ).firstOrNull()
 
-    fun getAllRows(): List<SpecificationEntry> =
+    fun getAllRows(): List<Entry> =
         jdbcTemplate.query(
             "SELECT * FROM table1 ORDER BY created_at DESC",
             rowMapper

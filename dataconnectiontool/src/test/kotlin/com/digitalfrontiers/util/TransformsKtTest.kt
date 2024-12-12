@@ -19,14 +19,14 @@ class TransformNodeParserTest @Autowired constructor(
     @Test
     fun `test Self type`() {
         val json = """{ "type": "self" }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertEquals(Self, result)
     }
 
     @Test
     fun `test Const type`() {
         val json = """{ "type": "const", "value": 42 }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is Const)
         assertEquals(42, (result as Const).value)
     }
@@ -34,7 +34,7 @@ class TransformNodeParserTest @Autowired constructor(
     @Test
     fun `test Input type`() {
         val json = """{ "type": "input", "path": "user.name" }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is Input)
         assertEquals("user.name", (result as Input).path)
     }
@@ -48,7 +48,7 @@ class TransformNodeParserTest @Autowired constructor(
                 { "type": "self" }
             ]
         }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is Tuple)
         val items = (result as Tuple).items
         assertEquals(2, items.size)
@@ -66,7 +66,7 @@ class TransformNodeParserTest @Autowired constructor(
                 "key2": { "type": "self" }
             }
         }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is Record)
         val entries = (result as Record).entries
         assertEquals(2, entries.size)
@@ -81,7 +81,7 @@ class TransformNodeParserTest @Autowired constructor(
             "type": "listOf",
             "mapping": { "type": "const", "value": "mapped" }
         }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is ListOf)
         val mapping = (result as ListOf).mapping
         assertTrue(mapping is Const)
@@ -98,7 +98,7 @@ class TransformNodeParserTest @Autowired constructor(
                 { "type": "self" }
             ]
         }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is ResultOf)
         val fid = (result as ResultOf).fid
         val args = result.args
@@ -118,7 +118,7 @@ class TransformNodeParserTest @Autowired constructor(
                 { "type": "self" }
             ]
         }"""
-        val result = jsonService.parseJsonString(json)
+        val result = jsonService.stringToTransformation(json)
         assertTrue(result is Compose)
         val steps = (result as Compose).steps
         assertEquals(2, steps.size)
@@ -131,7 +131,7 @@ class TransformNodeParserTest @Autowired constructor(
     fun `test unknown type`() {
         val json = """{ "type": "UnknownType" }"""
         val exception = assertThrows<InvalidTypeIdException> {
-            jsonService.parseJsonString(json)
+            jsonService.stringToTransformation(json)
         }
         println(exception.message)
     }
@@ -140,7 +140,7 @@ class TransformNodeParserTest @Autowired constructor(
     fun `the type field is missing`() {
         val specString = """{"entries":{"x":{"path":"a"},"y":{"path":"b"}}}"""
         val exception = assertThrows<InvalidTypeIdException> {
-            jsonService.parseJsonString(specString)
+            jsonService.stringToTransformation(specString)
         }
         println(exception)
     }
@@ -148,7 +148,7 @@ class TransformNodeParserTest @Autowired constructor(
     @Test
     fun `simple test case with type field`() {
         val specString = """{"type":"record","entries":{"x":{"type":"input","path":"a"},"y":{"type":"input","path":"b"}}}"""
-        val x = jsonService.parseJsonString(specString)
+        val x = jsonService.stringToTransformation(specString)
         println(x)
     }
 
@@ -159,7 +159,7 @@ class TransformNodeParserTest @Autowired constructor(
             "y" to Specification.Const("const123")
         }
 
-        val str = jsonService.serializeSpecificationToJson(spec)
+        val str = jsonService.transformationToJson(spec)
         assertEquals(
             """{"type":"record","entries":{"a":{"type":"input","path":"b"},"y":{"type":"const","value":"const123"}}}""",
             str

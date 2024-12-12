@@ -9,15 +9,15 @@ import org.springframework.stereotype.Service
 @Service
 class JsonService(private val objectMapper: ObjectMapper) {
 
-    fun parseJsonString(jsonString: String): Specification {
+    fun stringToTransformation(jsonString: String): Specification {
         return objectMapper.readValue(jsonString, Specification::class.java)
     }
 
-    fun parseJsonNode(node: JsonNode): Specification {
+    fun jsonNodeToTransformation(node: JsonNode): Specification {
         return objectMapper.treeToValue(node, Specification::class.java)
     }
 
-    fun serializeSpecificationToJson(specification: Specification): String {
+    fun transformationToJson(specification: Specification): String {
         return objectMapper.writeValueAsString(specification)
     }
 }
