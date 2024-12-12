@@ -69,4 +69,14 @@ class TransformationRepository(
         val rowsAffected = jdbcTemplate.update("DELETE FROM table1 WHERE id = ?", id)
         return rowsAffected > 0
     }
+
+    fun update(id: Long, data: Transformation): Boolean {
+        val rowsAffected = jdbcTemplate.update(
+            """UPDATE table1 SET data = ?, created_at = ? WHERE id = ?""",
+            jsonService.transformationToJson(data),
+            LocalDateTime.now(),
+            id
+        )
+        return rowsAffected > 0
+    }
 }
