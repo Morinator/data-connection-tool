@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1/mappings")
+@RequestMapping("/api/v1")
 class MappingController @Autowired constructor(
     private val mappingService: MappingService,
     val specificationRepository :  SpecificationRepository,

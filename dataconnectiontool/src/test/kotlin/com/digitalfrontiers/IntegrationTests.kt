@@ -33,7 +33,7 @@ class IntegrationTests @Autowired constructor(
 
     @Test
     fun `invoke --- record with constant entry`() {
-        val result: MvcResult = mockMvc.post("$BASE_URL/mappings/invoke") {
+        val result: MvcResult = mockMvc.post("$BASE_URL/invoke") {
             contentType = MediaType.APPLICATION_JSON
             content = """{"source": "Dummy", "sink": "Dummy", "spec": $stringRecordWithConst}"""
         }.andExpect {
@@ -60,7 +60,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `save and retrieve spec`() {
 
-            val result: MvcResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+            val result: MvcResult = mockMvc.post("$BASE_URL/stored/save") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"spec": $stringRecordWithConst}"""
             }.andExpect {
@@ -87,7 +87,7 @@ class IntegrationTests @Autowired constructor(
             "entries": {}
         }"""
 
-            mockMvc.post("$BASE_URL/mappings/stored/save") {
+            mockMvc.post("$BASE_URL/stored/save") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"spec": $invalidSpecString}"""
             }.andExpect {
@@ -102,7 +102,7 @@ class IntegrationTests @Autowired constructor(
 
             val ids = mutableListOf<Int>()
             repeat(5) {
-                val result = mockMvc.post("$BASE_URL/mappings/stored/save") {
+                val result = mockMvc.post("$BASE_URL/stored/save") {
                     contentType = MediaType.APPLICATION_JSON
                     content = """{"spec": $stringRecordWithConst}"""
                 }.andReturn()
@@ -123,7 +123,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `save mapping and invoke saved mapping`() {
             // First save the specification
-            val saveResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+            val saveResult = mockMvc.post("$BASE_URL/stored/save") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"spec": $stringRecordWithConst}"""
             }.andExpect {
@@ -135,7 +135,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Then invoke the stored mapping
-            mockMvc.post("$BASE_URL/mappings/stored/invoke/$id") {
+            mockMvc.post("$BASE_URL/stored/invoke/$id") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -156,7 +156,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- non-existent id returns error`() {
-            mockMvc.post("$BASE_URL/mappings/stored/invoke/99999") {
+            mockMvc.post("$BASE_URL/stored/invoke/99999") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -169,7 +169,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `invoke stored mapping --- invalid source returns error`() {
             // First save a valid specification
-            val saveResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+            val saveResult = mockMvc.post("$BASE_URL/stored/save") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"spec": $stringRecordWithConst}"""
             }.andReturn()
@@ -177,7 +177,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Try to invoke with invalid source
-            mockMvc.post("$BASE_URL/mappings/stored/invoke/$id") {
+            mockMvc.post("$BASE_URL/stored/invoke/$id") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "NonExistentSource", "sink": "Dummy"}"""
             }.andExpect {
@@ -190,7 +190,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `invoke stored mapping --- invalid sink returns error`() {
             // First save a valid specification
-            val saveResult = mockMvc.post("$BASE_URL/mappings/stored/save") {
+            val saveResult = mockMvc.post("$BASE_URL/stored/save") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"spec": $stringRecordWithConst}"""
             }.andReturn()
@@ -198,7 +198,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Try to invoke with invalid sink
-            mockMvc.post("$BASE_URL/mappings/stored/invoke/$id") {
+            mockMvc.post("$BASE_URL/stored/invoke/$id") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
             }.andExpect {
@@ -210,7 +210,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- malformed request body returns error`() {
-            mockMvc.post("$BASE_URL/mappings/stored/invoke/1") {
+            mockMvc.post("$BASE_URL/stored/invoke/1") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"invalid": "json"}"""
             }.andExpect {

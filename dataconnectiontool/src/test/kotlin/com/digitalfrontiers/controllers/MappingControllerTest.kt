@@ -41,7 +41,7 @@ class MappingControllerTest {
 
         val specString = """{ "type": "Const", "value": 42 }"""
         mockMvc.perform(
-            post("$BASE_URL/mappings/validate")
+            post("$BASE_URL/validate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
         )
@@ -57,7 +57,7 @@ class MappingControllerTest {
         val specString = """{ "type": "ThisTypeIsMadeUp", "value": 1234 }"""
         assertThrows<InvalidTypeIdException> {
             mockMvc.perform(
-                post("$BASE_URL/mappings/validate")
+                post("$BASE_URL/validate")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
             )
