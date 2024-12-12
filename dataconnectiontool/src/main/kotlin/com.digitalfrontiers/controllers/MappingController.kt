@@ -37,9 +37,9 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @PostMapping("/stored/save")
+    @PostMapping("/transformations/save")
     @ResponseStatus(HttpStatus.CREATED)
-    fun saveSpecification(@RequestBody body: SaveSpecificationRequest): Map<String, Any> {
+    fun saveMapping(@RequestBody body: SaveSpecificationRequest): Map<String, Any> {
         return try {
             val specification = jsonService.jsonNodeToTransformation(body.spec)
             val id = transformationRepository.save(specification)
@@ -55,7 +55,7 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @PostMapping("/stored/invoke/{id}")
+    @PostMapping("/transformations/invoke/{id}")
     @ResponseStatus(HttpStatus.OK)
     fun invokeStoredMapping(
         @PathVariable id: Long,
