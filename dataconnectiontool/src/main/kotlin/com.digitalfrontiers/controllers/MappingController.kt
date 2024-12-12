@@ -1,6 +1,6 @@
 package com.digitalfrontiers.controllers
 
-import com.digitalfrontiers.persistence.SpecificationRepository
+import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.transform.Specification
@@ -11,23 +11,23 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1/mappings")
+@RequestMapping("/api/v1")
 class MappingController @Autowired constructor(
     private val mappingService: MappingService,
-    val specificationRepository :  SpecificationRepository,
+    val transformationRepository :  TransformationRepository,
     val jsonService: JsonService
 ) {
 
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
     fun validateMapping(@RequestBody body: MappingRequestBody): Map<String, Boolean> =
-        mapOf("isValid" to mappingService.validate(body.source, body.sink, jsonService.parseJsonNode(body.spec)))
+        mapOf("isValid" to mappingService.validate(body.source, body.sink, jsonService.jsonNodeToTransformation(body.spec)))
 
     @PostMapping("/invoke")
     @ResponseStatus(HttpStatus.OK)
     fun invokeMapping(@RequestBody body: MappingRequestBody): Map<String, Any> {
         return try {
-            mappingService.map(body.source, body.sink, jsonService.parseJsonNode(body.spec) as Record)
+            mappingService.map(body.source, body.sink, jsonService.jsonNodeToTransformation(body.spec) as Record)
             mapOf("success" to true)
         } catch (e: Exception) {
             mapOf(
@@ -37,12 +37,12 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @PostMapping("/stored/save")
+    @PostMapping("/transformations/save")
     @ResponseStatus(HttpStatus.CREATED)
-    fun saveSpecification(@RequestBody body: SaveSpecificationRequest): Map<String, Any> {
+    fun saveMapping(@RequestBody body: SaveSpecificationRequest): Map<String, Any> {
         return try {
-            val specification = jsonService.parseJsonNode(body.spec)
-            val id = specificationRepository.save(specification)
+            val specification = jsonService.jsonNodeToTransformation(body.spec)
+            val id = transformationRepository.save(specification)
             mapOf(
                 "success" to true,
                 "id" to id
@@ -55,13 +55,13 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @PostMapping("/stored/invoke/{id}")
+    @PostMapping("/transformations/invoke/{id}")
     @ResponseStatus(HttpStatus.OK)
     fun invokeStoredMapping(
         @PathVariable id: Long,
         @RequestBody body: StoredMappingRequestBody
     ): Map<String, Any> = try {
-        val specification = specificationRepository.getById(id)
+        val specification = transformationRepository.getById(id)
             ?: throw IllegalArgumentException("No specification found with id: $id")
 
         val record = specification.data as? Specification.Record
@@ -74,6 +74,13 @@ class MappingController @Autowired constructor(
             "success" to false,
             "error" to (e.message ?: "An unknown error occurred")
         )
+    }
+
+    @DeleteMapping("/transformations/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun deleteTransformation(@PathVariable id: Long): Map<String, Boolean> {
+        val wasDeleted = transformationRepository.deleteById(id)
+        return mapOf("success" to wasDeleted)
     }
 }
 

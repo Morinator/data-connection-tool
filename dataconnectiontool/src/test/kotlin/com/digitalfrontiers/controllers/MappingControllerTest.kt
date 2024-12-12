@@ -4,7 +4,6 @@ import com.digitalfrontiers.services.MappingService
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
-import jakarta.servlet.ServletException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -39,9 +38,9 @@ class MappingControllerTest {
             mappingService.validate(any(), any(), any())
         } returns expectedValidationResult
 
-        val specString = """{ "type": "Const", "value": 42 }"""
+        val specString = """{ "type": "const", "value": 42 }"""
         mockMvc.perform(
-            post("$BASE_URL/mappings/validate")
+            post("$BASE_URL/validate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
         )
@@ -54,10 +53,10 @@ class MappingControllerTest {
     @Test
     fun `exception on malformed specification string`() {
 
-        val specString = """{ "type": "ThisTypeIsMadeUp", "value": 1234 }"""
+        val specString = """{ "type": "thisTypeIsMadeUp", "value": 1234 }"""
         assertThrows<InvalidTypeIdException> {
             mockMvc.perform(
-                post("$BASE_URL/mappings/validate")
+                post("$BASE_URL/validate")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
             )

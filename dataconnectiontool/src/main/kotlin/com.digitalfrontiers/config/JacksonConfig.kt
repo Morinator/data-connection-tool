@@ -20,15 +20,15 @@ class JacksonConfig : Jackson2ObjectMapperBuilderCustomizer {
     property = "type"
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = Specification.Self::class, name = "Self"),
-    JsonSubTypes.Type(value = Specification.Const::class, name = "Const"),
-    JsonSubTypes.Type(value = Specification.Input::class, name = "Input"),
-    JsonSubTypes.Type(value = Specification.Tuple::class, name = "Tuple"),
-    JsonSubTypes.Type(value = Specification.Record::class, name = "Record"),
-    JsonSubTypes.Type(value = Specification.ListOf::class, name = "ListOf"),
-    JsonSubTypes.Type(value = Specification.Extension::class, name = "Extension"),
-    JsonSubTypes.Type(value = Specification.Rename::class, name = "Rename"),
-    JsonSubTypes.Type(value = Specification.ResultOf::class, name = "ResultOf"),
-    JsonSubTypes.Type(value = Specification.Compose::class, name = "Compose")
+    JsonSubTypes.Type(value = Specification.Self::class, name = "self"),
+    JsonSubTypes.Type(value = Specification.Const::class, name = "const"),
+    JsonSubTypes.Type(value = Specification.Input::class, name = "input"),
+    JsonSubTypes.Type(value = Specification.Tuple::class, name = "tuple"),
+    JsonSubTypes.Type(value = Specification.Record::class, name = "record"),
+    JsonSubTypes.Type(value = Specification.ListOf::class, name = "listOf"),
+    JsonSubTypes.Type(value = Specification.Extension::class, name = "extension"),
+    JsonSubTypes.Type(value = Specification.Rename::class, name = "rename"),
+    JsonSubTypes.Type(value = Specification.ResultOf::class, name = "resultOf"),
+    JsonSubTypes.Type(value = Specification.Compose::class, name = "compose")
 )
 abstract class SpecificationMixin
