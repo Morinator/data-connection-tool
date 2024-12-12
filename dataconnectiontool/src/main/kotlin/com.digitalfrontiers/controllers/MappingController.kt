@@ -21,13 +21,13 @@ class MappingController @Autowired constructor(
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
     fun validateMapping(@RequestBody body: MappingRequestBody): Map<String, Boolean> =
-        mapOf("isValid" to mappingService.validate(body.source, body.sink, jsonService.jsonNodeToTransformation(body.spec)))
+        mapOf("isValid" to mappingService.validate(body.source, body.sink, jsonService.jsonNodeToTransformation(body.transformation)))
 
     @PostMapping("/invoke")
     @ResponseStatus(HttpStatus.OK)
     fun invokeMapping(@RequestBody body: MappingRequestBody): Map<String, Any> {
         return try {
-            mappingService.map(body.source, body.sink, jsonService.jsonNodeToTransformation(body.spec) as Record)
+            mappingService.map(body.source, body.sink, jsonService.jsonNodeToTransformation(body.transformation) as Record)
             mapOf("success" to true)
         } catch (e: Exception) {
             mapOf(
@@ -39,9 +39,9 @@ class MappingController @Autowired constructor(
 
     @PostMapping("/transformations/save")
     @ResponseStatus(HttpStatus.CREATED)
-    fun saveMapping(@RequestBody body: SaveSpecificationRequest): Map<String, Any> {
+    fun saveMapping(@RequestBody body: SaveTransformationRequest): Map<String, Any> {
         return try {
-            val specification = jsonService.jsonNodeToTransformation(body.spec)
+            val specification = jsonService.jsonNodeToTransformation(body.transformation)
             val id = transformationRepository.save(specification)
             mapOf(
                 "success" to true,
@@ -62,7 +62,7 @@ class MappingController @Autowired constructor(
         @RequestBody body: StoredMappingRequestBody
     ): Map<String, Any> = try {
         val specification = transformationRepository.getById(id)
-            ?: throw IllegalArgumentException("No specification found with id: $id")
+            ?: throw IllegalArgumentException("No transformation found with id: $id")
 
         val record = specification.data as? Transformation.Record
             ?: throw IllegalArgumentException("Stored specification is not a valid Record type")
@@ -87,11 +87,11 @@ class MappingController @Autowired constructor(
 data class MappingRequestBody(
     val source: String,
     val sink: String,
-    val spec: JsonNode,
+    val transformation: JsonNode,
 )
 
-data class SaveSpecificationRequest(
-    val spec: JsonNode
+data class SaveTransformationRequest(
+    val transformation: JsonNode
 )
 
 data class StoredMappingRequestBody(

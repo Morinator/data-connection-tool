@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class JacksonConfig : Jackson2ObjectMapperBuilderCustomizer {
     override fun customize(builder: org.springframework.http.converter.json.Jackson2ObjectMapperBuilder) {
-        builder.mixIn(Transformation::class.java, SpecificationMixin::class.java)
+        builder.mixIn(Transformation::class.java, TransformationMixin::class.java)
     }
 }
 
@@ -31,4 +31,4 @@ class JacksonConfig : Jackson2ObjectMapperBuilderCustomizer {
     JsonSubTypes.Type(value = Transformation.ResultOf::class, name = "resultOf"),
     JsonSubTypes.Type(value = Transformation.Compose::class, name = "compose")
 )
-abstract class SpecificationMixin
+abstract class TransformationMixin

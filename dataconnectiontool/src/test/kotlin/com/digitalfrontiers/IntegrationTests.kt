@@ -36,7 +36,7 @@ class IntegrationTests @Autowired constructor(
     fun `invoke --- record with constant entry`() {
         val result: MvcResult = mockMvc.post("$BASE_URL/invoke") {
             contentType = MediaType.APPLICATION_JSON
-            content = """{"source": "Dummy", "sink": "Dummy", "spec": $stringRecordWithConst}"""
+            content = """{"source": "Dummy", "sink": "Dummy", "transformation": $stringRecordWithConst}"""
         }.andExpect {
             status { isOk() }
             jsonPath("$.success") { value("true") }
@@ -59,11 +59,11 @@ class IntegrationTests @Autowired constructor(
     inner class StoredMappingTesting {
 
         @Test
-        fun `save and retrieve spec`() {
+        fun `save and retrieve transformation`() {
 
             val result: MvcResult = mockMvc.post("$BASE_URL/transformations/save") {
                 contentType = MediaType.APPLICATION_JSON
-                content = """{"spec": $stringRecordWithConst}"""
+                content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
                 jsonPath("$.success") { value(true) }
@@ -72,25 +72,25 @@ class IntegrationTests @Autowired constructor(
 
             val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
 
-            // Verify we can retrieve the saved specification
-            val savedSpec = transformationRepository.getById(id.toLong())
-            assertNotNull(savedSpec)
-            assertTrue(savedSpec!!.data is Transformation.Record)
+            // Verify we can retrieve the saved transformation
+            val savedTransformation = transformationRepository.getById(id.toLong())
+            assertNotNull(savedTransformation)
+            assertTrue(savedTransformation!!.data is Transformation.Record)
 
-            val record = savedSpec.data as Transformation.Record
+            val record = savedTransformation.data as Transformation.Record
             assertEquals(123, (record.entries["key1"] as Transformation.Const).value)
         }
 
         @Test
-        fun `save specification --- invalid spec returns error`() {
-            val invalidSpecString = """{
+        fun `save transformation --- invalid transformation returns error`() {
+            val invalidTransformationString = """{
             "type": "InvalidType",
             "entries": {}
         }"""
 
             mockMvc.post("$BASE_URL/transformations/save") {
                 contentType = MediaType.APPLICATION_JSON
-                content = """{"spec": $invalidSpecString}"""
+                content = """{"transformation": $invalidTransformationString}"""
             }.andExpect {
                 status { isCreated() }
                 jsonPath("$.success") { value(false) }
@@ -99,13 +99,13 @@ class IntegrationTests @Autowired constructor(
         }
 
         @Test
-        fun `save specification --- multiple saves increment id`() {
+        fun `save transformation --- multiple saves increment id`() {
 
             val ids = mutableListOf<Int>()
             repeat(5) {
                 val result = mockMvc.post("$BASE_URL/transformations/save") {
                     contentType = MediaType.APPLICATION_JSON
-                    content = """{"spec": $stringRecordWithConst}"""
+                    content = """{"transformation": $stringRecordWithConst}"""
                 }.andReturn()
 
                 val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
@@ -115,7 +115,7 @@ class IntegrationTests @Autowired constructor(
             // ID should be auto-incremented
             ids.zipWithNext { a, b -> assertEquals(a+1, b) }
 
-            // Verify both specs are retrievable
+            // Verify both transformations are retrievable
             for (id in ids) {
                 assertNotNull(transformationRepository.getById(id.toLong()))
             }
@@ -123,10 +123,10 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `save mapping and invoke saved mapping`() {
-            // First save the specification
+            // First save the transformation
             val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
                 contentType = MediaType.APPLICATION_JSON
-                content = """{"spec": $stringRecordWithConst}"""
+                content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
                 jsonPath("$.success") { value(true) }
@@ -163,16 +163,16 @@ class IntegrationTests @Autowired constructor(
             }.andExpect {
                 status { isOk() }
                 jsonPath("$.success") { value(false) }
-                jsonPath("$.error") { value("No specification found with id: 99999") }
+                jsonPath("$.error") { value("No transformation found with id: 99999") }
             }
         }
 
         @Test
         fun `invoke stored mapping --- invalid source returns error`() {
-            // First save a valid specification
+            // First save a valid transformation
             val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
                 contentType = MediaType.APPLICATION_JSON
-                content = """{"spec": $stringRecordWithConst}"""
+                content = """{"transformation": $stringRecordWithConst}"""
             }.andReturn()
 
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
@@ -190,10 +190,10 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- invalid sink returns error`() {
-            // First save a valid specification
+            // First save a valid transformation
             val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
                 contentType = MediaType.APPLICATION_JSON
-                content = """{"spec": $stringRecordWithConst}"""
+                content = """{"transformation": $stringRecordWithConst}"""
             }.andReturn()
 
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
@@ -224,7 +224,7 @@ class IntegrationTests @Autowired constructor(
             // First save the transformation
             val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
                 contentType = MediaType.APPLICATION_JSON
-                content = """{"spec": $stringRecordWithConst}"""
+                content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
                 jsonPath("$.success") { value(true) }

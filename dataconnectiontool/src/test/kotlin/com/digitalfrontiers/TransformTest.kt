@@ -13,7 +13,7 @@ class TransformTest {
         //given
         val sink = DummySink()
         val x = DummySource().fetch()
-        val spec = ListOf {
+        val transformation = ListOf {
             Transformation.Record {
                 "x" from "a"
                 "y" from "b"
@@ -21,7 +21,7 @@ class TransformTest {
         }
 
         // when
-        val transformed = (Transform to { spec }).apply(x) as List<Map<String, String>>
+        val transformed = (Transform to { transformation }).apply(x) as List<Map<String, String>>
         sink.put(transformed)
 
         // then

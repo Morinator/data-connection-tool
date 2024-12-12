@@ -13,18 +13,18 @@ class MappingService(
 ) {
 
     /**
-     * Runs the mapping specified by [spec] from [sourceId] to [sinkId].
+     * Runs the mapping specified by [record] from [sourceId] to [sinkId].
      */
-    fun map(sourceId: String, sinkId: String, spec: Transformation.Record) {
-        val transform = transformService.createTransform(spec)
+    fun map(sourceId: String, sinkId: String, record: Transformation.Record) {
+        val transform = transformService.createTransform(record)
         val data = sourceService.fetch(sourceId)
         val transformed = transform.apply(data) as List<Map<String, String>>
         sinkService.put(sinkId, transformed)
     }
 
-    fun validate(sourceId: String, sinkId: String, spec: Transformation): Boolean {
+    fun validate(sourceId: String, sinkId: String, transformation: Transformation): Boolean {
 
-        val record: Transformation.Record = spec as? Transformation.Record ?: return false
+        val record: Transformation.Record = transformation as? Transformation.Record ?: return false
         val sinkFormat: Format = sinkService.getFormat(sinkId)
         val sourceFormat: Format = sourceService.getFormat(sourceId)
 
