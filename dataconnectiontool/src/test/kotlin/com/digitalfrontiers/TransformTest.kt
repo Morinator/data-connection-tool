@@ -1,8 +1,7 @@
 package com.digitalfrontiers
 
-import com.digitalfrontiers.transform.Input
 import com.digitalfrontiers.transform.ListOf
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -15,7 +14,7 @@ class TransformTest {
         val sink = DummySink()
         val x = DummySource().fetch()
         val spec = ListOf {
-            Specification.Record {
+            Transformation.Record {
                 "x" from "a"
                 "y" from "b"
             }

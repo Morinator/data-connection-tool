@@ -1,6 +1,6 @@
 package com.digitalfrontiers.persistence
 
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -16,7 +16,7 @@ class TransformationRepositoryTest {
     @Autowired
     lateinit var repo: TransformationRepository
 
-    private val someRecord = Specification.Record {
+    private val someRecord = Transformation.Record {
         "x" from "a"
         "y" from "b"
     }
@@ -28,7 +28,7 @@ class TransformationRepositoryTest {
 
         assertEquals(1, entry.id)
         assertEquals(
-            Specification.Record {
+            Transformation.Record {
                 "x" from "a"
                 "y" from "b"
             },

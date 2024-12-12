@@ -1,7 +1,7 @@
 package com.digitalfrontiers.transform
 
 import com.digitalfrontiers.CustomFunction
-import com.digitalfrontiers.transform.Specification.Rename
+import com.digitalfrontiers.transform.Transformation.Rename
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

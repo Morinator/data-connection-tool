@@ -3,7 +3,7 @@ package com.digitalfrontiers.controllers
 import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import com.digitalfrontiers.services.JsonService
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Autowired
@@ -64,7 +64,7 @@ class MappingController @Autowired constructor(
         val specification = transformationRepository.getById(id)
             ?: throw IllegalArgumentException("No specification found with id: $id")
 
-        val record = specification.data as? Specification.Record
+        val record = specification.data as? Transformation.Record
             ?: throw IllegalArgumentException("Stored specification is not a valid Record type")
 
         mappingService.map(body.source, body.sink, record)

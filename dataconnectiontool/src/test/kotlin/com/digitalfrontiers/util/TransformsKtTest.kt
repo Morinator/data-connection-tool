@@ -154,9 +154,9 @@ class TransformNodeParserTest @Autowired constructor(
 
     @Test
     fun `test spec serialization`() {
-        val spec = Specification.Record {
+        val spec = Transformation.Record {
             "a" from "b"
-            "y" to Specification.Const("const123")
+            "y" to Transformation.Const("const123")
         }
 
         val str = jsonService.transformationToJson(spec)

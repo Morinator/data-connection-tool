@@ -1,6 +1,6 @@
 package com.digitalfrontiers.persistence
 
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import com.digitalfrontiers.services.JsonService
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 
 
 /**
- * Stores instances of [Specification]
+ * Stores instances of [Transformation]
  */
 @Repository
 class TransformationRepository(
@@ -20,7 +20,7 @@ class TransformationRepository(
 
     data class Entry(
         val id: Long,
-        val data: Specification,
+        val data: Transformation,
         val createdAt: LocalDateTime = LocalDateTime.now()
     )
 
@@ -29,7 +29,7 @@ class TransformationRepository(
         .usingGeneratedKeyColumns("id")
 
     private val rowMapper = RowMapper { rs, _ ->
-        val data: Specification = jsonService.stringToTransformation(rs.getString("data"))
+        val data: Transformation = jsonService.stringToTransformation(rs.getString("data"))
 
         Entry(
             id = rs.getLong("id"),
@@ -38,7 +38,7 @@ class TransformationRepository(
         )
     }
 
-    fun save(data: Specification): Long {
+    fun save(data: Transformation): Long {
         val parameters = mapOf(
             "data" to jsonService.transformationToJson(data),
             "created_at" to LocalDateTime.now()

@@ -4,7 +4,7 @@ import com.digitalfrontiers.DummySink
 import com.digitalfrontiers.DummySource
 import com.digitalfrontiers.transform.Const
 import com.digitalfrontiers.transform.Record
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -16,7 +16,7 @@ class MappingServiceTest {
         SinkService(listOf(DummySink()))
     )
 
-    private fun validateWithDummySourceAndSink(spec: Specification) : Boolean =
+    private fun validateWithDummySourceAndSink(spec: Transformation) : Boolean =
         dummyMappingService.validate(
             sourceId = "Dummy",
             sinkId = "Dummy",

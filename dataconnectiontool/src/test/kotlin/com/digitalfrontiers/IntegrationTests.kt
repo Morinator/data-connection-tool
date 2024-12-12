@@ -1,7 +1,7 @@
 package com.digitalfrontiers
 
 import com.digitalfrontiers.persistence.TransformationRepository
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -75,10 +75,10 @@ class IntegrationTests @Autowired constructor(
             // Verify we can retrieve the saved specification
             val savedSpec = transformationRepository.getById(id.toLong())
             assertNotNull(savedSpec)
-            assertTrue(savedSpec!!.data is Specification.Record)
+            assertTrue(savedSpec!!.data is Transformation.Record)
 
-            val record = savedSpec.data as Specification.Record
-            assertEquals(123, (record.entries["key1"] as Specification.Const).value)
+            val record = savedSpec.data as Transformation.Record
+            assertEquals(123, (record.entries["key1"] as Transformation.Const).value)
         }
 
         @Test

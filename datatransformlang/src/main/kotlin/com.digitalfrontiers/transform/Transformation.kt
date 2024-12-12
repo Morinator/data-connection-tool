@@ -1,13 +1,11 @@
 package com.digitalfrontiers.transform
 
 import com.digitalfrontiers.CustomFunction
-import com.digitalfrontiers.transform.Specification.Tuple
-import com.digitalfrontiers.transform.Specification.Const
-import com.digitalfrontiers.transform.Specification.Input
+import com.digitalfrontiers.transform.Transformation.Tuple
+import com.digitalfrontiers.transform.Transformation.Const
+import com.digitalfrontiers.transform.Transformation.Input
 import com.digitalfrontiers.util.JsonUtils
 import com.jayway.jsonpath.JsonPath
-import com.fasterxml.jackson.annotation.JsonSubTypes
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 
 // Types
 
@@ -19,16 +17,16 @@ internal typealias Dict<T> = Map<String, T>
  * These specifications can be used to transform input data into desired output data.
  *
  * The main usage of this class is to define a declarative way of describing how data should be transformed.
- * The [applyTransform] function can then be used to execute the transformation defined by the [Specification].
+ * The [applyTransform] function can then be used to execute the transformation defined by the [Transformation].
  *
- * The [Specification] class provides a DSL-like interface for constructing these different transformation
+ * The [Transformation] class provides a DSL-like interface for constructing these different transformation
  * specifications in a concise and expressive way.
  */
-sealed class Specification {
+sealed class Transformation {
 
     // Basic Transformations
 
-    data object Self: Specification()
+    data object Self: Transformation()
 
     /**
      * Represents a constant value to be used in the transformation.
@@ -36,7 +34,7 @@ sealed class Specification {
      *
      * @param value The stored constant value.
      */
-    data class Const(val value: Data): Specification()
+    data class Const(val value: Data): Transformation()
 
     /**
      * Stores [path] to be evaluated as JSONPath.
@@ -46,12 +44,12 @@ sealed class Specification {
      *
      * @see [isJSONPath] for validation of [path].
      */
-    data class Input(val path: String): Specification()
+    data class Input(val path: String): Transformation()
 
     /**
      * Creates a fixed sized tuple (array-like structure), where the nth item is the result of the nth specified transformation.
      */
-    data class Tuple(val items: List<Specification>): Specification() {
+    data class Tuple(val items: List<Transformation>): Transformation() {
         constructor(vararg items: Any?) : this(
             items
                 .toList()
@@ -64,7 +62,7 @@ sealed class Specification {
      *  Keys must be strings, which are used as identifiers.
      *  Can have an arbitrary size.
      */
-    data class Record(val entries: Dict<Specification>): Specification() {
+    data class Record(val entries: Dict<Transformation>): Transformation() {
         companion object {
             operator fun invoke(setup: RecordDSL.() -> Unit): Record {
                 return RecordDSL().apply(setup).getRecord()
@@ -79,8 +77,8 @@ sealed class Specification {
      *
      * A common use case is taking only a selection of fields from a list of big complex objects.
      */
-    data class ListOf(val mapping: Specification): Specification() {
-        constructor(setup: () -> Specification): this(setup())
+    data class ListOf(val mapping: Transformation): Transformation() {
+        constructor(setup: () -> Transformation): this(setup())
     }
 
     /**
@@ -88,7 +86,7 @@ sealed class Specification {
      *
      * Does NOT overwrite entries if a key is already present.
      */
-    data class Extension(val entries: Dict<Specification>): Specification() {
+    data class Extension(val entries: Dict<Transformation>): Transformation() {
         companion object {
             operator fun invoke(setup: RecordDSL.() -> Unit): Extension {
                 val obj = RecordDSL().apply(setup).getRecord()
@@ -103,7 +101,7 @@ sealed class Specification {
      *
      * TODO: What should happen on unfitting input data, e.g. lists?
      */
-    sealed class Rename: Specification() {
+    sealed class Rename: Transformation() {
         data class WithPairs(val pairs: Dict<String>): Rename()
 
         data class WithFunc(val func: (String) -> String): Rename()
@@ -112,7 +110,7 @@ sealed class Specification {
     /**
      * Apply a function, identified by the function id [fid].
      */
-    data class ResultOf(val fid: String, val args: List<Specification>): Specification() {
+    data class ResultOf(val fid: String, val args: List<Transformation>): Transformation() {
         companion object {
             operator fun invoke(setup: ResultOfDSL.() -> ResultOf): ResultOf {
                 return ResultOfDSL().setup()
@@ -123,8 +121,8 @@ sealed class Specification {
     /**
      * Compose multiple functions in the provided order, given by [steps].
      */
-    data class Compose(val steps: List<Specification>): Specification() {
-        constructor(vararg steps: Specification): this(steps.toList())
+    data class Compose(val steps: List<Transformation>): Transformation() {
+        constructor(vararg steps: Transformation): this(steps.toList())
 
         companion object {
             operator fun invoke(setup: DSL.() -> Compose): Compose {
@@ -138,7 +136,7 @@ sealed class Specification {
 
 class DSL {
 
-    infix fun Specification.then(next: Specification): Compose {
+    infix fun Transformation.then(next: Transformation): Compose {
         return if (this is Compose) {
             Compose(this.steps + listOf(next))
         } else {
@@ -146,26 +144,26 @@ class DSL {
         }
     }
 
-    infix fun Specification.extendedWith(setup: RecordDSL.() -> Unit): Compose {
+    infix fun Transformation.extendedWith(setup: RecordDSL.() -> Unit): Compose {
         val obj = RecordDSL().apply(setup).getRecord()
 
-        return this then Specification.Extension(obj.entries)
+        return this then Transformation.Extension(obj.entries)
     }
 
-    infix fun Specification.remapping(setup: RemapDSL.() -> Map<String, String>): Compose {
-        return this then Specification.Rename.WithPairs(RemapDSL().setup())
+    infix fun Transformation.remapping(setup: RemapDSL.() -> Map<String, String>): Compose {
+        return this then Transformation.Rename.WithPairs(RemapDSL().setup())
     }
 
-    infix fun Specification.remappedWith(keyGen: (str: String) -> String): Compose {
-        return this then Specification.Rename.WithFunc(keyGen)
+    infix fun Transformation.remappedWith(keyGen: (str: String) -> String): Compose {
+        return this then Transformation.Rename.WithFunc(keyGen)
     }
 }
 
 class RecordDSL {
-    private val entries = mutableMapOf<String, Specification>()
+    private val entries = mutableMapOf<String, Transformation>()
 
     infix fun String.to(value: Any?) {
-        if (value !is Specification)
+        if (value !is Transformation)
             entries[this] = Const(value)
         else
             entries[this] = value
@@ -183,7 +181,7 @@ class RecordDSL {
         entries[this] = Tuple(*args as kotlin.Array<Any?>)
     }
 
-    infix fun String.listOf(setup: () -> Specification) {
+    infix fun String.listOf(setup: () -> Transformation) {
         entries[this] = ListOf(setup())
     }
 
@@ -218,30 +216,30 @@ class ResultOfDSL {
 
 // Helper-Functions
 
-private fun argToSpec(arg: Any?): Specification = when {
-    arg is Specification -> arg
+private fun argToSpec(arg: Any?): Transformation = when {
+    arg is Transformation -> arg
     arg is String && JsonUtils.isJSONPath(arg) -> Input(arg)
     else -> Const(arg)
 }
 // Shorthands
 
-typealias Self = Specification.Self
-typealias Const = Specification.Const
-typealias Input = Specification.Input
-typealias Tuple = Specification.Tuple
-typealias Record = Specification.Record
-typealias ListOf = Specification.ListOf
-typealias Extension = Specification.Extension
-typealias Remap = Specification.Rename
-typealias ResultOf = Specification.ResultOf
-typealias Compose = Specification.Compose
+typealias Self = Transformation.Self
+typealias Const = Transformation.Const
+typealias Input = Transformation.Input
+typealias Tuple = Transformation.Tuple
+typealias Record = Transformation.Record
+typealias ListOf = Transformation.ListOf
+typealias Extension = Transformation.Extension
+typealias Remap = Transformation.Rename
+typealias ResultOf = Transformation.ResultOf
+typealias Compose = Transformation.Compose
 
 // Evaluation
 
 /**
- * Applies a [Specification] to given [Data], potentially using [customFunctions] that have to be manually defined.
+ * Applies a [Transformation] to given [Data], potentially using [customFunctions] that have to be manually defined.
  *
- * This method does most of the heavy lifting of this library, the most effort lies in defining the [Specification],
+ * This method does most of the heavy lifting of this library, the most effort lies in defining the [Transformation],
  * potentially with its [customFunctions].
  *
  * Example usage:
@@ -256,13 +254,13 @@ typealias Compose = Specification.Compose
  * ```
  *
  * @param data Some input of arbitrary type
- * @param spec The [Specification] that defines what should be applied to the [data]
+ * @param spec The [Transformation] that defines what should be applied to the [data]
  * @param customFunctions A map that defines a custom function for each string identifier used as key.
  * An example might be the key "checkIfPalindrome", along with a function implementing this functionality.
  *
  * @return The result after the evaluation is done.
  */
-fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
+fun applyTransform(data: Data, spec: Transformation, customFunctions: Map<String, CustomFunction> = mapOf()): Data {
     return Evaluator(customFunctions).evaluate(data, spec)
 }
 
@@ -274,7 +272,7 @@ fun applyTransform(data: Data, spec: Specification, customFunctions: Map<String,
 private class Evaluator(
     private val customFunctions: Map<String, CustomFunction>
 ) {
-    fun evaluate(data: Data, spec: Specification): Data {
+    fun evaluate(data: Data, spec: Transformation): Data {
         return when (spec) {
             is Self -> data
             is Const -> spec.value
@@ -301,7 +299,7 @@ private class Evaluator(
         return tupleSpec.items.mapNotNull { evaluate(data, it) }
     }
 
-    private fun evaluateRecord(data: Data, recordSpec: Specification.Record): Dict<Data> {
+    private fun evaluateRecord(data: Data, recordSpec: Transformation.Record): Dict<Data> {
         return recordSpec.entries.mapValues { (_, value) -> evaluate(data, value) }.filterValues { it != null } as Dict<Any>
     }
 
@@ -312,13 +310,13 @@ private class Evaluator(
      *
      * If [data] is not a list, it will be transformed and then wrapped into one.
      */
-    private fun evaluateListOf(data: Data, listOfSpec: Specification.ListOf): List<Data> =
+    private fun evaluateListOf(data: Data, listOfSpec: Transformation.ListOf): List<Data> =
         (data as? List<*>)
             ?.filterNotNull()
             ?.map { evaluate(it, listOfSpec.mapping) }
             ?: listOf(evaluate(data, listOfSpec.mapping))
 
-    private fun evaluateExtension(data: Data, extensionSpec: Specification.Extension): Dict<Data> {
+    private fun evaluateExtension(data: Data, extensionSpec: Transformation.Extension): Dict<Data> {
         if (data is Map<*, *>) {
             val recordSpec = Record(extensionSpec.entries)
 
@@ -328,16 +326,16 @@ private class Evaluator(
         }
     }
 
-    private fun evaluateRemap(data: Data, rename: Specification.Rename): Dict<Data> {
+    private fun evaluateRemap(data: Data, rename: Transformation.Rename): Dict<Data> {
 
         return if (data is Map<*, *>) {
-            if (rename is Specification.Rename.WithPairs) {
+            if (rename is Transformation.Rename.WithPairs) {
                 (data as Map<String, *>).mapKeys { (key, _) ->
                     rename.pairs[key] ?: key
                 }
             } else {
                 (data as Map<String, *>).mapKeys { (key, _) ->
-                    (rename as Specification.Rename.WithFunc).func(key)
+                    (rename as Transformation.Rename.WithFunc).func(key)
                 }
             }
         } else {
@@ -345,14 +343,14 @@ private class Evaluator(
         }
     }
 
-    private fun evaluateResultOf(data: Data, resultOfSpec: Specification.ResultOf): Data {
+    private fun evaluateResultOf(data: Data, resultOfSpec: Transformation.ResultOf): Data {
         val f = customFunctions.getOrDefault(resultOfSpec.fid, null) as (input: List<Any?>) -> Any? // getFunction<Any, Any>(callSpec.fid)
         val args = resultOfSpec.args.map { evaluate(data, it) }
 
         return f(args)
     }
 
-    private fun evaluateCompose(data: Data, composeSpec: Specification.Compose): Data {
+    private fun evaluateCompose(data: Data, composeSpec: Transformation.Compose): Data {
         return composeSpec.steps.fold(data) { doc, step -> evaluate(doc, step) }
     }
 }
