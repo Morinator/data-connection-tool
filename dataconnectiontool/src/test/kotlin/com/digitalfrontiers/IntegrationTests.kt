@@ -23,9 +23,9 @@ class IntegrationTests @Autowired constructor(
 ) {
 
     private val stringRecordWithConst = """{
-        "type": "Record",
+        "type": "record",
         "entries": {
-            "key1": { "type": "Const", "value": 123 }
+            "key1": { "type": "const", "value": 123 }
         }
     }"""
 
