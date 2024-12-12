@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
 
+/**
+ * Provides serialization and deserialization from and to [Transformation] instances.
+ */
 @Service
 class JsonService(private val objectMapper: ObjectMapper) {
 
