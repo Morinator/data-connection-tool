@@ -78,9 +78,9 @@ class MappingController @Autowired constructor(
 
     @DeleteMapping("/transformations/{id}")
     @ResponseStatus(HttpStatus.OK)
-    fun deleteTransformation(@PathVariable id: Long): () -> Map<String, Boolean> = {
+    fun deleteTransformation(@PathVariable id: Long): Map<String, Boolean> {
         val wasDeleted = transformationRepository.deleteById(id)
-        mapOf("success" to wasDeleted)
+        return mapOf("success" to wasDeleted)
     }
 }
 

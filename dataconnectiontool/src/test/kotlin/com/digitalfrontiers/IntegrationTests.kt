@@ -220,7 +220,7 @@ class IntegrationTests @Autowired constructor(
             }
         }
 
-        @Disabled
+//        @Disabled
         @Test
         fun `save transformation, verify presence, delete it, verify absence`() {
             // First save the transformation
