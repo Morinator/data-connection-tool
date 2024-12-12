@@ -1,7 +1,7 @@
 package com.digitalfrontiers.services
 
 
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Service
@@ -9,15 +9,15 @@ import org.springframework.stereotype.Service
 @Service
 class JsonService(private val objectMapper: ObjectMapper) {
 
-    fun stringToTransformation(jsonString: String): Specification {
-        return objectMapper.readValue(jsonString, Specification::class.java)
+    fun stringToTransformation(jsonString: String): Transformation {
+        return objectMapper.readValue(jsonString, Transformation::class.java)
     }
 
-    fun jsonNodeToTransformation(node: JsonNode): Specification {
-        return objectMapper.treeToValue(node, Specification::class.java)
+    fun jsonNodeToTransformation(node: JsonNode): Transformation {
+        return objectMapper.treeToValue(node, Transformation::class.java)
     }
 
-    fun transformationToJson(specification: Specification): String {
-        return objectMapper.writeValueAsString(specification)
+    fun transformationToJson(transformation: Transformation): String {
+        return objectMapper.writeValueAsString(transformation)
     }
 }

@@ -38,11 +38,11 @@ class MappingControllerTest {
             mappingService.validate(any(), any(), any())
         } returns expectedValidationResult
 
-        val specString = """{ "type": "const", "value": 42 }"""
+        val transformationString = """{ "type": "const", "value": 42 }"""
         mockMvc.perform(
             post("$BASE_URL/validate")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
+                .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "transformation": $transformationString}""")
         )
             .andExpect(status().isOk)
             .andExpect(content().string("""{"isValid":$expectedValidationResult}"""))
@@ -51,14 +51,14 @@ class MappingControllerTest {
     }
 
     @Test
-    fun `exception on malformed specification string`() {
+    fun `exception on malformed transformation string`() {
 
-        val specString = """{ "type": "thisTypeIsMadeUp", "value": 1234 }"""
+        val transformationString = """{ "type": "thisTypeIsMadeUp", "value": 1234 }"""
         assertThrows<InvalidTypeIdException> {
             mockMvc.perform(
                 post("$BASE_URL/validate")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "spec": $specString}""")
+                    .content("""{"source": "unused-source-id", "sink": "unused-sink-id", "transformation": $transformationString}""")
             )
         }
     }

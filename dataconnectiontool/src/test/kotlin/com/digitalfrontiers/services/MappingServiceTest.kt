@@ -3,8 +3,7 @@ package com.digitalfrontiers.services
 import com.digitalfrontiers.DummySink
 import com.digitalfrontiers.DummySource
 import com.digitalfrontiers.transform.Const
-import com.digitalfrontiers.transform.Record
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -16,20 +15,20 @@ class MappingServiceTest {
         SinkService(listOf(DummySink()))
     )
 
-    private fun validateWithDummySourceAndSink(spec: Specification) : Boolean =
+    private fun validateWithDummySourceAndSink(transformation: Transformation) : Boolean =
         dummyMappingService.validate(
             sourceId = "Dummy",
             sinkId = "Dummy",
-            spec = spec
+            transformation = transformation
     )
 
     @Test
-    fun `simple record can be used as spec`() {
+    fun `simple record can be used as transformation`() {
 
         dummyMappingService.map(
             sourceId = "Dummy",
             sinkId = "Dummy",
-            spec =  Record {
+            record =  Transformation.Record {
                 "a" to 1
                 "b" to 2
             }
@@ -40,7 +39,7 @@ class MappingServiceTest {
     fun `one required field & one optional field`() {
 
         val source = DummySource()
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "y" from "b"
         }
@@ -56,7 +55,7 @@ class MappingServiceTest {
         mappingService.map(
             sourceId = "Dummy",
             sinkId = "Dummy",
-            spec = spec
+            record = transformation
         )
 
         assertEquals(
@@ -68,121 +67,121 @@ class MappingServiceTest {
     @Test
     fun `both sides only use required fields`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
         }
-        assertFalse(validateWithDummySourceAndSink(spec)) // one required field is missing in sink
+        assertFalse(validateWithDummySourceAndSink(transformation)) // one required field is missing in sink
     }
 
     @Test
     fun `required and optional fields are set`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "y" from "b"
             "z" from "c"
         }
 
-        assertTrue(validateWithDummySourceAndSink(spec))
+        assertTrue(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `required field is missing`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "y" from "a"
             "z" from "c"
         }
 
-        assertFalse(validateWithDummySourceAndSink(spec))
+        assertFalse(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `field is not used by sink`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "someUnusedFieldName" from "a"
         }
-        assertFalse(validateWithDummySourceAndSink(spec))
+        assertFalse(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `source field is only optional instead of required`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "y" from "c" // "c" is not required
         }
 
-        assertFalse(validateWithDummySourceAndSink(spec))
+        assertFalse(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `not all required source fields have to be used`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "y" from "a"
             "z" from "a"
         }
-        assertTrue(validateWithDummySourceAndSink(spec))
+        assertTrue(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `field not provided by source`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "y" from "b"
             "z" from "nonExistingFieldName"
         }
 
-        assertFalse(validateWithDummySourceAndSink(spec))
+        assertFalse(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `required field depends on optional field`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "c"
         }
 
-        assertFalse(validateWithDummySourceAndSink(spec))
+        assertFalse(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `required sink fields are set by Const`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" to Const("test123")
             "y" to Const("test123")
         }
 
-        assertTrue(validateWithDummySourceAndSink(spec))
+        assertTrue(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `optional sink fields are set by Const`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" from "a"
             "y" from "b"
             "z" to Const("test123")
         }
 
-        assertTrue(validateWithDummySourceAndSink(spec))
+        assertTrue(validateWithDummySourceAndSink(transformation))
     }
 
     @Test
     fun `all sink fields are set by Const`() {
 
-        val spec = Record {
+        val transformation = Transformation.Record {
             "x" to Const("test123")
             "y" to Const("test123")
             "z" to Const("test123")
         }
 
-        assertTrue(validateWithDummySourceAndSink(spec))
+        assertTrue(validateWithDummySourceAndSink(transformation))
     }
 }

@@ -1,20 +1,20 @@
 package com.digitalfrontiers
 
 import com.digitalfrontiers.transform.DSL
-import com.digitalfrontiers.transform.Specification
+import com.digitalfrontiers.transform.Transformation
 import com.digitalfrontiers.transform.applyTransform
 import com.digitalfrontiers.transform.convert.IParser
 import com.digitalfrontiers.transform.convert.ISerializer
 
 typealias CustomFunction = (input: List<Any?>) -> Any?
 
-class Transform(val spec: Specification) {
+class Transform(val spec: Transformation) {
     private val parsers: MutableMap<String, IParser<*>> = mutableMapOf()
     private val serializers: MutableMap<String, ISerializer<*>> = mutableMapOf()
     private val functions: MutableMap<String, CustomFunction> = mutableMapOf()
 
     companion object {
-        infix fun to(specProvider: DSL.() -> Specification): Transform {
+        infix fun to(specProvider: DSL.() -> Transformation): Transform {
             return Transform(DSL().specProvider())
         }
     }
