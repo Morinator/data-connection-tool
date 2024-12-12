@@ -136,7 +136,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Then invoke the stored mapping
-            mockMvc.post("$BASE_URL/transformations/invoke/$id") {
+            mockMvc.post("$BASE_URL/transformations/$id/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -157,7 +157,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- non-existent id returns error`() {
-            mockMvc.post("$BASE_URL/transformations/invoke/99999") {
+            mockMvc.post("$BASE_URL/transformations/99999/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -178,7 +178,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Try to invoke with invalid source
-            mockMvc.post("$BASE_URL/transformations/invoke/$id") {
+            mockMvc.post("$BASE_URL/transformations/$id/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "NonExistentSource", "sink": "Dummy"}"""
             }.andExpect {
@@ -199,7 +199,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Try to invoke with invalid sink
-            mockMvc.post("$BASE_URL/transformations/invoke/$id") {
+            mockMvc.post("$BASE_URL/transformations/$id/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
             }.andExpect {
@@ -211,7 +211,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- malformed request body returns error`() {
-            mockMvc.post("$BASE_URL/transformations/invoke/1") {
+            mockMvc.post("$BASE_URL/transformations/1/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"invalid": "json"}"""
             }.andExpect {

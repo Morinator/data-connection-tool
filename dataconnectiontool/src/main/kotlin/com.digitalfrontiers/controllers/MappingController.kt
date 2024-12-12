@@ -55,7 +55,7 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @PostMapping("/transformations/invoke/{id}")
+    @PostMapping("/transformations/{id}/invoke")
     @ResponseStatus(HttpStatus.OK)
     fun invokeStoredMapping(
         @PathVariable id: Long,
