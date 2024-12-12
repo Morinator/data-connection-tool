@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.MvcResult
-import org.springframework.test.web.servlet.delete
-import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.*
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -247,6 +244,104 @@ class IntegrationTests @Autowired constructor(
 
             // Verify the transformation no longer exists
             assertNull(transformationRepository.getById(id.toLong()))
+        }
+
+        @Test
+        fun `update transformation --- successful update`() {
+            // First save a transformation
+            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"transformation": $stringRecordWithConst}"""
+            }.andReturn()
+
+            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+            // Update with new transformation
+            val updatedTransformation = """{
+                "type": "record",
+                "entries": {
+                    "key1": { "type": "const", "value": 456 }
+                }
+            }"""
+
+            mockMvc.put("$BASE_URL/transformations/$id") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"transformation": $updatedTransformation}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(true) }
+            }
+
+            // Verify the transformation was updated
+            val savedTransformation = transformationRepository.getById(id.toLong())
+            assertNotNull(savedTransformation)
+            assertTrue(savedTransformation!!.data is Transformation.Record)
+
+            val record = savedTransformation.data as Transformation.Record
+            assertEquals(456, (record.entries["key1"] as Transformation.Const).value)
+        }
+
+        @Test
+        fun `update transformation --- non-existent id returns error`() {
+            val transformation = """{
+                "type": "record",
+                "entries": {
+                    "key1": { "type": "const", "value": 456 }
+                }
+            }"""
+
+            mockMvc.put("$BASE_URL/transformations/99999") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"transformation": $transformation}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(false) }
+                jsonPath("$.error") { value("No transformation found with id: 99999") }
+            }
+        }
+
+        @Test
+        fun `update transformation --- invalid transformation returns error`() {
+            // First save a valid transformation
+            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"transformation": $stringRecordWithConst}"""
+            }.andReturn()
+
+            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+
+            // Try to update with invalid transformation
+            val invalidTransformation = """{
+                "type": "InvalidType",
+                "entries": {}
+            }"""
+
+            mockMvc.put("$BASE_URL/transformations/$id") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"transformation": $invalidTransformation}"""
+            }.andExpect {
+                status { isOk() }
+                jsonPath("$.success") { value(false) }
+                jsonPath("$.error") { exists() }
+            }
+
+            // Verify original transformation is unchanged
+            val savedTransformation = transformationRepository.getById(id.toLong())
+            assertNotNull(savedTransformation)
+            assertTrue(savedTransformation!!.data is Transformation.Record)
+
+            val record = savedTransformation.data as Transformation.Record
+            assertEquals(123, (record.entries["key1"] as Transformation.Const).value)
+        }
+
+        @Test
+        fun `update transformation --- malformed request body returns error`() {
+            mockMvc.put("$BASE_URL/transformations/1") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"invalid": "json"}"""
+            }.andExpect {
+                status { isBadRequest() }  // Expect HTTP 400 Bad Request
+            }
         }
 
     }
