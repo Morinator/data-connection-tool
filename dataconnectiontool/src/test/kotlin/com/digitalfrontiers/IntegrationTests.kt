@@ -4,7 +4,6 @@ import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.transform.Specification
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -220,7 +219,6 @@ class IntegrationTests @Autowired constructor(
             }
         }
 
-//        @Disabled
         @Test
         fun `save transformation, verify presence, delete it, verify absence`() {
             // First save the transformation
