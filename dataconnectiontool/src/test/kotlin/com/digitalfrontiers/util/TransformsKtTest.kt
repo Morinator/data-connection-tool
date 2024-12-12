@@ -1,6 +1,5 @@
 package com.digitalfrontiers.util
 
-import com.digitalfrontiers.persistence.SpecificationJsonConfig
 import com.digitalfrontiers.services.JsonService
 import com.digitalfrontiers.transform.*
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
@@ -160,7 +159,7 @@ class TransformNodeParserTest @Autowired constructor(
             "y" to Specification.Const("const123")
         }
 
-        val str = SpecificationJsonConfig.createMapper().writeValueAsString(spec)
+        val str = jsonService.serializeSpecificationToJson(spec)
         assertEquals(
             """{"type":"Record","entries":{"a":{"type":"Input","path":"b"},"y":{"type":"Const","value":"const123"}}}""",
             str

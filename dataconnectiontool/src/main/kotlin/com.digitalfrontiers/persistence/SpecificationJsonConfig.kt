@@ -28,15 +28,3 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
     JsonSubTypes.Type(value = Specification.Compose::class, name = "Compose")
 )
 abstract class SpecificationMixin
-
-class SpecificationJsonConfig {
-    companion object {
-        private fun configureMapper(mapper: ObjectMapper = ObjectMapper()): ObjectMapper {
-            mapper.registerKotlinModule()
-            mapper.addMixIn(Specification::class.java, SpecificationMixin::class.java)
-            return mapper
-        }
-
-        fun createMapper(): ObjectMapper = configureMapper()
-    }
-}
