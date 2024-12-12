@@ -75,6 +75,13 @@ class MappingController @Autowired constructor(
             "error" to (e.message ?: "An unknown error occurred")
         )
     }
+
+    @DeleteMapping("/transformations/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    fun deleteTransformation(@PathVariable id: Long): () -> Map<String, Boolean> = {
+        val wasDeleted = transformationRepository.deleteById(id)
+        mapOf("success" to wasDeleted)
+    }
 }
 
 data class MappingRequestBody(

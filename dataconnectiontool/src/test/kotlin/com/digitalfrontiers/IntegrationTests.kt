@@ -4,6 +4,7 @@ import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.transform.Specification
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
+import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.post
 
 @SpringBootTest
@@ -216,6 +218,37 @@ class IntegrationTests @Autowired constructor(
             }.andExpect {
                 status { isBadRequest() }  // Expect HTTP 400 Bad Request
             }
+        }
+
+        @Disabled
+        @Test
+        fun `save transformation, verify presence, delete it, verify absence`() {
+            // First save the transformation
+            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+                contentType = MediaType.APPLICATION_JSON
+                content = """{"spec": $stringRecordWithConst}"""
+            }.andExpect {
+                status { isCreated() }
+                jsonPath("$.success") { value(true) }
+                jsonPath("$.id") { isNumber() }
+            }.andReturn()
+
+            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id") // 1
+
+            // Verify the transformation exists
+            assertNotNull(transformationRepository.getById(id.toLong()))
+
+            // Delete the transformation
+            mockMvc.delete("$BASE_URL/transformations/$id") {
+                contentType = MediaType.APPLICATION_JSON
+            }.andExpect {
+                status { isOk() }
+            }
+
+            val x = transformationRepository.getById(id.toLong())
+
+            // Verify the transformation no longer exists
+            assertNull(transformationRepository.getById(id.toLong()))
         }
 
     }

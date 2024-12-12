@@ -71,9 +71,12 @@ class TransformationRepository(
         )
 
     /**
-     * Removes all entries from the table
+     * Deletes an entry by its ID
+     * @param id The ID of the entry to delete
+     * @return true if an entry was deleted, false if no entry with the given ID existed
      */
-    fun clearAll() {
-        jdbcTemplate.execute("DELETE FROM table1")
+    fun deleteById(id: Long): Boolean {
+        val rowsAffected = jdbcTemplate.update("DELETE FROM table1 WHERE id = ?", id)
+        return rowsAffected > 0
     }
 }
