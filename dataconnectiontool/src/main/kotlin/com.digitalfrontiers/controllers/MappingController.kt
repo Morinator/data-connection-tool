@@ -108,6 +108,20 @@ class MappingController @Autowired constructor(
             )
         }
     }
+
+    @GetMapping("/transformations")
+    @ResponseStatus(HttpStatus.OK)
+    fun getAllTransformations(): Map<String, Any> = try {
+        mapOf(
+            "success" to true,
+            "transformations" to transformationRepository.getAllRows()
+        )
+    } catch (e: Exception) {
+        mapOf(
+            "success" to false,
+            "error" to (e.message ?: "An unknown error occurred")
+        )
+    }
 }
 
 data class MappingDTO(
