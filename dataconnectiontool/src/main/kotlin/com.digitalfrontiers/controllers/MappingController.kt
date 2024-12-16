@@ -3,7 +3,6 @@ package com.digitalfrontiers.controllers
 import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
-import com.digitalfrontiers.transform.Transformation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -97,7 +96,7 @@ class MappingController @Autowired constructor(
         val transformation = transformationRepository.getById(id)
             ?: throw IllegalArgumentException("No transformation found with id: $id")
 
-        val record = transformation.data as? Transformation.Record
+        val record = transformation.data as? Record
             ?: throw IllegalArgumentException("Stored transformation is not a valid Record type")
 
         mappingService.map(body.source, body.sink, record)
@@ -108,12 +107,9 @@ class MappingController @Autowired constructor(
             "error" to (e.message ?: "An unknown error occurred")
         )
     }
-}
 
-@RestControllerAdvice
-class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleParseError(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any>> {
+    fun handleErrorWhileParsingRequestBody(e: HttpMessageNotReadableException): ResponseEntity<Map<String, Any>> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(mapOf(

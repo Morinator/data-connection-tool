@@ -1,7 +1,7 @@
 package com.digitalfrontiers.persistence
 
 import com.digitalfrontiers.transform.Transformation
-import com.digitalfrontiers.services.JsonService
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert
@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 @Repository
 class TransformationRepository(
     private val jdbcTemplate: JdbcTemplate,
-    val jsonService: JsonService
+    private val objectMapper: ObjectMapper
 ) {
 
     data class Entry(
@@ -28,8 +28,16 @@ class TransformationRepository(
         .withTableName("table1")
         .usingGeneratedKeyColumns("id")
 
+    private fun stringToTransformation(jsonString: String): Transformation {
+        return objectMapper.readValue(jsonString, Transformation::class.java)
+    }
+
+    private fun transformationToJson(transformation: Transformation): String {
+        return objectMapper.writeValueAsString(transformation)
+    }
+
     private val rowMapper = RowMapper { rs, _ ->
-        val data: Transformation = jsonService.stringToTransformation(rs.getString("data"))
+        val data: Transformation = stringToTransformation(rs.getString("data"))
 
         Entry(
             id = rs.getLong("id"),
@@ -40,7 +48,7 @@ class TransformationRepository(
 
     fun save(data: Transformation): Long {
         val parameters = mapOf(
-            "data" to jsonService.transformationToJson(data),
+            "data" to transformationToJson(data),
             "created_at" to LocalDateTime.now()
         )
         val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
@@ -73,7 +81,7 @@ class TransformationRepository(
     fun update(id: Long, data: Transformation): Boolean {
         val rowsAffected = jdbcTemplate.update(
             """UPDATE table1 SET data = ?, created_at = ? WHERE id = ?""",
-            jsonService.transformationToJson(data),
+            transformationToJson(data),
             LocalDateTime.now(),
             id
         )
