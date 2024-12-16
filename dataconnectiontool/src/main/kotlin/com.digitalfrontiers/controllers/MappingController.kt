@@ -11,7 +11,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/mappings")
 class MappingController @Autowired constructor(
     private val mappingService: MappingService,
     val transformationRepository :  TransformationRepository
@@ -23,7 +23,7 @@ class MappingController @Autowired constructor(
         return mapOf("isValid" to mappingService.validate(body.source, body.sink, body.transformation))
     }
 
-    @PostMapping("/transformations/save")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun saveMapping(@RequestBody body: TransformationDTO): Map<String, Any> {
         return try {
@@ -41,20 +41,13 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @PostMapping("/transformations/{id}/invoke")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun invokeStoredMapping(
-        @PathVariable id: Long,
-        @RequestBody body: SourceSinkDTO
-    ): Map<String, Any> = try {
-        val transformation = transformationRepository.getById(id)
-            ?: throw IllegalArgumentException("No transformation found with id: $id")
-
-        val record = transformation.data as? Transformation.Record
-            ?: throw IllegalArgumentException("Stored transformation is not a valid Record type")
-
-        mappingService.map(body.source, body.sink, record)
-        mapOf("success" to true)
+    fun getAllTransformations(): Map<String, Any> = try {
+        mapOf(
+            "success" to true,
+            "transformations" to transformationRepository.getAllRows()
+        )
     } catch (e: Exception) {
         mapOf(
             "success" to false,
@@ -62,17 +55,10 @@ class MappingController @Autowired constructor(
         )
     }
 
-    @DeleteMapping("/transformations/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    fun deleteTransformation(@PathVariable id: Long): Map<String, Boolean> {
-        val wasDeleted = transformationRepository.deleteById(id)
-        return mapOf("success" to wasDeleted)
-    }
-
     /**
      * Update an existing transformation
      */
-    @PutMapping("/transformations/{id}")
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     fun updateTransformation(
         @PathVariable id: Long,
@@ -95,13 +81,27 @@ class MappingController @Autowired constructor(
         }
     }
 
-    @GetMapping("/transformations")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    fun getAllTransformations(): Map<String, Any> = try {
-        mapOf(
-            "success" to true,
-            "transformations" to transformationRepository.getAllRows()
-        )
+    fun deleteTransformation(@PathVariable id: Long): Map<String, Boolean> {
+        val wasDeleted = transformationRepository.deleteById(id)
+        return mapOf("success" to wasDeleted)
+    }
+
+    @PostMapping("/{id}/invoke")
+    @ResponseStatus(HttpStatus.OK)
+    fun invokeStoredMapping(
+        @PathVariable id: Long,
+        @RequestBody body: SourceSinkDTO
+    ): Map<String, Any> = try {
+        val transformation = transformationRepository.getById(id)
+            ?: throw IllegalArgumentException("No transformation found with id: $id")
+
+        val record = transformation.data as? Transformation.Record
+            ?: throw IllegalArgumentException("Stored transformation is not a valid Record type")
+
+        mappingService.map(body.source, body.sink, record)
+        mapOf("success" to true)
     } catch (e: Exception) {
         mapOf(
             "success" to false,

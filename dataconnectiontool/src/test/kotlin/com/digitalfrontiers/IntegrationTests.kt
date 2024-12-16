@@ -37,7 +37,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `save and retrieve transformation`() {
 
-            val result: MvcResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val result: MvcResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
@@ -64,7 +64,7 @@ class IntegrationTests @Autowired constructor(
             "entries": {}
         }"""
 
-            mockMvc.post("$BASE_URL/transformations/save") {
+            mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $invalidTransformationString}"""
             }.andExpect {
@@ -78,7 +78,7 @@ class IntegrationTests @Autowired constructor(
 
             val ids = mutableListOf<Int>()
             repeat(5) {
-                val result = mockMvc.post("$BASE_URL/transformations/save") {
+                val result = mockMvc.post("$BASE_URL/mappings") {
                     contentType = MediaType.APPLICATION_JSON
                     content = """{"transformation": $stringRecordWithConst}"""
                 }.andReturn()
@@ -99,7 +99,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `save mapping and invoke saved mapping`() {
             // First save the transformation
-            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
@@ -111,7 +111,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Then invoke the stored mapping
-            mockMvc.post("$BASE_URL/transformations/$id/invoke") {
+            mockMvc.post("$BASE_URL/mappings/$id/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -132,7 +132,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- non-existent id returns error`() {
-            mockMvc.post("$BASE_URL/transformations/99999/invoke") {
+            mockMvc.post("$BASE_URL/mappings/99999/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -145,7 +145,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `invoke stored mapping --- invalid source returns error`() {
             // First save a valid transformation
-            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andReturn()
@@ -153,7 +153,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Try to invoke with invalid source
-            mockMvc.post("$BASE_URL/transformations/$id/invoke") {
+            mockMvc.post("$BASE_URL/mappings/$id/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "NonExistentSource", "sink": "Dummy"}"""
             }.andExpect {
@@ -166,7 +166,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `invoke stored mapping --- invalid sink returns error`() {
             // First save a valid transformation
-            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andReturn()
@@ -174,7 +174,7 @@ class IntegrationTests @Autowired constructor(
             val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
 
             // Try to invoke with invalid sink
-            mockMvc.post("$BASE_URL/transformations/$id/invoke") {
+            mockMvc.post("$BASE_URL/mappings/$id/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
             }.andExpect {
@@ -186,7 +186,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `invoke stored mapping --- malformed request body returns error`() {
-            mockMvc.post("$BASE_URL/transformations/1/invoke") {
+            mockMvc.post("$BASE_URL/mappings/1/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"invalid": "json"}"""
             }.andExpect {
@@ -197,7 +197,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `save transformation, verify presence, delete it, verify absence`() {
             // First save the transformation
-            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
@@ -212,7 +212,7 @@ class IntegrationTests @Autowired constructor(
             assertNotNull(transformationRepository.getById(id.toLong()))
 
             // Delete the transformation
-            mockMvc.delete("$BASE_URL/transformations/$id") {
+            mockMvc.delete("$BASE_URL/mappings/$id") {
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
@@ -227,7 +227,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `update transformation --- successful update`() {
             // First save a transformation
-            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andReturn()
@@ -242,7 +242,7 @@ class IntegrationTests @Autowired constructor(
                 }
             }"""
 
-            mockMvc.put("$BASE_URL/transformations/$id") {
+            mockMvc.put("$BASE_URL/mappings/$id") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $updatedTransformation}"""
             }.andExpect {
@@ -268,7 +268,7 @@ class IntegrationTests @Autowired constructor(
                 }
             }"""
 
-            mockMvc.put("$BASE_URL/transformations/99999") {
+            mockMvc.put("$BASE_URL/mappings/99999") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $transformation}"""
             }.andExpect {
@@ -281,7 +281,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `update transformation --- invalid transformation returns error`() {
             // First save a valid transformation
-            val saveResult = mockMvc.post("$BASE_URL/transformations/save") {
+            val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andReturn()
@@ -294,7 +294,7 @@ class IntegrationTests @Autowired constructor(
                 "entries": {}
             }"""
 
-            mockMvc.put("$BASE_URL/transformations/$id") {
+            mockMvc.put("$BASE_URL/mappings/$id") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $invalidTransformation}"""
             }.andExpect {
@@ -313,7 +313,7 @@ class IntegrationTests @Autowired constructor(
 
         @Test
         fun `update transformation --- malformed request body returns error`() {
-            mockMvc.put("$BASE_URL/transformations/1") {
+            mockMvc.put("$BASE_URL/mappings/1") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"invalid": "json"}"""
             }.andExpect {
@@ -324,7 +324,7 @@ class IntegrationTests @Autowired constructor(
         @Test
         fun `getAllTransformations --- returns empty list when no transformations exist`() {
 
-            mockMvc.get("$BASE_URL/transformations") {
+            mockMvc.get("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
@@ -346,7 +346,7 @@ class IntegrationTests @Autowired constructor(
                     }
                 }"""
 
-                val result = mockMvc.post("$BASE_URL/transformations/save") {
+                val result = mockMvc.post("$BASE_URL/mappings") {
                     contentType = MediaType.APPLICATION_JSON
                     content = """{"transformation": $transformation}"""
                 }.andReturn()
@@ -355,7 +355,7 @@ class IntegrationTests @Autowired constructor(
             }
 
             // Get all transformations and verify
-            val result = mockMvc.get("$BASE_URL/transformations") {
+            val result = mockMvc.get("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
