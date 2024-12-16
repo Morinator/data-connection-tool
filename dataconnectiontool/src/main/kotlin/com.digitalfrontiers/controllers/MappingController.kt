@@ -4,44 +4,30 @@ import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.transform.Transformation
-import com.digitalfrontiers.services.JsonService
-import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1")
 class MappingController @Autowired constructor(
     private val mappingService: MappingService,
-    val transformationRepository :  TransformationRepository,
-    val jsonService: JsonService
+    val transformationRepository :  TransformationRepository
 ) {
 
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
-    fun validateMapping(@RequestBody body: MappingDTO): Map<String, Boolean> =
-        mapOf("isValid" to mappingService.validate(body.source, body.sink, jsonService.jsonNodeToTransformation(body.transformation)))
-
-    @PostMapping("/invoke")
-    @ResponseStatus(HttpStatus.OK)
-    fun invokeMapping(@RequestBody body: MappingDTO): Map<String, Any> {
-        return try {
-            mappingService.map(body.source, body.sink, jsonService.jsonNodeToTransformation(body.transformation) as Record)
-            mapOf("success" to true)
-        } catch (e: Exception) {
-            mapOf(
-                "success" to false,
-                "error" to (e.message ?: "An unknown error occurred")
-            )
-        }
+    fun validateMapping(@RequestBody body: MappingDTO): Map<String, Boolean> {
+        return mapOf("isValid" to mappingService.validate(body.source, body.sink, body.transformation))
     }
 
     @PostMapping("/transformations/save")
     @ResponseStatus(HttpStatus.CREATED)
     fun saveMapping(@RequestBody body: TransformationDTO): Map<String, Any> {
         return try {
-            val transformation = jsonService.jsonNodeToTransformation(body.transformation)
+            val transformation = body.transformation
             val id = transformationRepository.save(transformation)
             mapOf(
                 "success" to true,
@@ -93,7 +79,7 @@ class MappingController @Autowired constructor(
         @RequestBody body: TransformationDTO
     ): Map<String, Any> {
         return try {
-            val transformation = jsonService.jsonNodeToTransformation(body.transformation)
+            val transformation = body.transformation
             val wasUpdated = transformationRepository.update(id, transformation)
 
             if (!wasUpdated) {
@@ -124,14 +110,27 @@ class MappingController @Autowired constructor(
     }
 }
 
+@RestControllerAdvice
+class GlobalExceptionHandler {
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleParseError(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any>> {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(mapOf(
+                "error" to "Request body could not be parsed",
+                "code" to "PARSE_ERROR"
+            ))
+    }
+}
+
 data class MappingDTO(
     val source: String,
     val sink: String,
-    val transformation: JsonNode,
+    val transformation: Record,
 )
 
 data class TransformationDTO(
-    val transformation: JsonNode
+    val transformation: Record
 )
 
 data class SourceSinkDTO(

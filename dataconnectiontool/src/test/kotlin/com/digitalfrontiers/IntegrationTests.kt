@@ -31,29 +31,6 @@ class IntegrationTests @Autowired constructor(
 
     private val BASE_URL = "/api/v1"
 
-    @Test
-    fun `invoke --- record with constant entry`() {
-        val result: MvcResult = mockMvc.post("$BASE_URL/invoke") {
-            contentType = MediaType.APPLICATION_JSON
-            content = """{"source": "Dummy", "sink": "Dummy", "transformation": $stringRecordWithConst}"""
-        }.andExpect {
-            status { isOk() }
-            jsonPath("$.success") { value("true") }
-        }.andReturn()
-
-        println(result.response.contentAsString) // {"success":true}
-
-        assertEquals(
-            mutableListOf(
-                mutableMapOf(
-                    "key1" to 123,
-                )
-            ),
-            dummySink.storage.last()
-        )
-    }
-
-
     @Nested
     inner class StoredMappingTesting {
 
@@ -91,8 +68,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $invalidTransformationString}"""
             }.andExpect {
-                status { isCreated() }
-                jsonPath("$.success") { value(false) }
+                status { isBadRequest() }
                 jsonPath("$.error") { exists() }
             }
         }
@@ -322,8 +298,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $invalidTransformation}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(false) }
+                status { isBadRequest() }
                 jsonPath("$.error") { exists() }
             }
 
