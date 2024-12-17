@@ -3,11 +3,13 @@ package com.digitalfrontiers.controllers
 import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 @RestController
 @RequestMapping("/api/v1/mappings")
@@ -26,14 +28,20 @@ class MappingController @Autowired constructor(
      * Create a new mapping
      */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun saveMapping(@RequestBody body: TransformationDTO): Map<String, Any> {
+    fun saveMapping(
+        @RequestBody body: TransformationDTO,
+        request: HttpServletRequest
+    ): ResponseEntity<Void> {
         val transformation = body.transformation
         val id = transformationRepository.save(transformation)
 
-        return mapOf(
-            "id" to id
-        )
+        val location = ServletUriComponentsBuilder
+            .fromRequest(request)
+            .path("/{id}")
+            .buildAndExpand(id)
+            .toUri()
+
+        return ResponseEntity.created(location).build()
     }
 
     /**
@@ -41,10 +49,8 @@ class MappingController @Autowired constructor(
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun getAllTransformations(): Map<String, Any> {
-        return mapOf(
-            "transformations" to transformationRepository.getAllRows()
-        )
+    fun getAllTransformations(): List<Any> {
+        return transformationRepository.getAllRows()
     }
 
     /**
@@ -82,28 +88,6 @@ class MappingController @Autowired constructor(
         mappingService.map(body.source, body.sink, transformation.data as Record) // TODO: Change type in Repository (?)
 
         // TODO: Throw and handle better error for failed mapping (e.g. missing source/sink)
-    }
-
-    @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleErrorWhileParsingRequestBody(e: HttpMessageNotReadableException): ResponseEntity<Map<String, Any>> {
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(
-                mapOf(
-                    "error" to "Request body contained invalid data"
-                )
-            )
-    }
-
-    @ExceptionHandler(IllegalArgumentException::class)
-    fun handleErrorsForInvalidIds(e: IllegalArgumentException): ResponseEntity<Map<String, Any>> {
-        return ResponseEntity
-            .status(HttpStatus.NOT_FOUND)
-            .body(
-                mapOf(
-                    "error" to (e.message ?: "Resource not found")
-                )
-            )
     }
 }
 
