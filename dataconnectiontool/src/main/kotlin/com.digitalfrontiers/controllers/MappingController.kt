@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.HandlerMapping
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
 
 @RestController
@@ -31,13 +33,16 @@ class MappingController @Autowired constructor(
      */
     @PostMapping
     fun saveMapping(
-        @RequestBody body: TransformationDTO
+        @RequestBody body: TransformationDTO,
+        request: HttpServletRequest
     ): ResponseEntity<Void> {
         val transformation = body.transformation
         val id = transformationRepository.save(transformation)
 
+        val path = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE) as String
+
         val location = ServletUriComponentsBuilder
-            .fromCurrentRequestUri()
+            .fromPath(path)
             .path("/{id}")
             .buildAndExpand(id)
             .toUri()
@@ -50,8 +55,8 @@ class MappingController @Autowired constructor(
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun getAllTransformations(): List<Transformation> { // TODO: Mapping instead of Transformation
-        return transformationRepository.getAllRows().map { it.data }
+    fun getAllTransformations(): List<Any> { // TODO: Mapping instead of Any
+        return transformationRepository.getAllRows()
     }
 
     @GetMapping("/{id}")

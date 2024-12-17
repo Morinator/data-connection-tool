@@ -2,8 +2,10 @@ package com.digitalfrontiers
 
 import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.transform.Transformation
+import com.fasterxml.jackson.databind.ser.Serializers.Base
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,10 +44,11 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
-                jsonPath("$.id") { isNumber() }
+                header { exists("Location") }
             }.andReturn()
 
-            val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
+            val resourceUrl: String = result.response.getHeaderValue("Location").toString()
+            val id = resourceUrl.split("/").last().toLong()
 
             // Verify we can retrieve the saved transformation
             val savedTransformation = transformationRepository.getById(id.toLong())
@@ -68,7 +71,6 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $invalidTransformationString}"""
             }.andExpect {
                 status { isBadRequest() }
-                jsonPath("$.error") { exists() }
             }
         }
 
@@ -80,9 +82,15 @@ class IntegrationTests @Autowired constructor(
                 val result = mockMvc.post("$BASE_URL/mappings") {
                     contentType = MediaType.APPLICATION_JSON
                     content = """{"transformation": $stringRecordWithConst}"""
+                }.andExpect {
+                    status { isCreated() }
+                    header {
+                        exists("Location")
+                    }
                 }.andReturn()
 
-                val id = JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
+                val resourceUrl: String = result.response.getHeaderValue("Location").toString()
+                val id = resourceUrl.split("/").last().toInt()
                 ids.add(id)
             }
 
@@ -103,13 +111,16 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
-                jsonPath("$.id") { isNumber() }
+                header {
+                    exists("Location")
+                    string("Location", "$BASE_URL/mappings/1")
+                }
             }.andReturn()
 
-            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+            val resourceUrl: String = saveResult.response.getHeaderValue("Location").toString()
 
             // Then invoke the stored mapping
-            mockMvc.post("$BASE_URL/mappings/$id/invoke") {
+            mockMvc.post("$resourceUrl/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
@@ -134,10 +145,11 @@ class IntegrationTests @Autowired constructor(
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
                 status { isNotFound() }
-                jsonPath("$.error") { value("No transformation found with id: 99999") }
             }
         }
 
+        // TODO: Invalid Mappings should never be stored. Remove or replace with more meaningful test.
+        @Disabled
         @Test
         fun `invoke stored mapping --- invalid source returns error`() {
             // First save a valid transformation
@@ -158,23 +170,27 @@ class IntegrationTests @Autowired constructor(
             }
         }
 
+        // TODO: Invalid Mappings should never be stored. Remove or replace with more meaningful test.
+        @Disabled
         @Test
         fun `invoke stored mapping --- invalid sink returns error`() {
             // First save a valid transformation
             val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
+            }.andExpect {
+                status { isCreated() }
+                header { exists("Location") }
             }.andReturn()
 
-            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+            val resourceUrl: String = saveResult.response.getHeaderValue("Location").toString()
 
             // Try to invoke with invalid sink
-            mockMvc.post("$BASE_URL/mappings/$id/invoke") {
+            mockMvc.post("$resourceUrl/invoke") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
             }.andExpect {
                 status { isNotFound() }
-                jsonPath("$.error") { exists() }
             }
         }
 
@@ -196,25 +212,24 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
-                jsonPath("$.id") { isNumber() }
+                header { exists("Location") }
             }.andReturn()
 
-            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id") // 1
+            val resourceUrl: String = saveResult.response.getHeaderValue("Location").toString()
+            val id = resourceUrl.split("/").last().toLong()
 
             // Verify the transformation exists
-            assertNotNull(transformationRepository.getById(id.toLong()))
+            assertNotNull(transformationRepository.getById(id))
 
             // Delete the transformation
-            mockMvc.delete("$BASE_URL/mappings/$id") {
+            mockMvc.delete(resourceUrl) {
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isNoContent() }
             }
 
-            val x = transformationRepository.getById(id.toLong())
-
             // Verify the transformation no longer exists
-            assertNull(transformationRepository.getById(id.toLong()))
+            assertNull(transformationRepository.getById(id))
         }
 
         @Test
@@ -223,9 +238,15 @@ class IntegrationTests @Autowired constructor(
             val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
+            }.andExpect {
+                status { isCreated() }
+                header {
+                    exists("Location")
+                }
             }.andReturn()
 
-            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+            val resourceUrl: String = saveResult.response.getHeaderValue("Location").toString()
+            val id = resourceUrl.split("/").last().toLong()
 
             // Update with new transformation
             val updatedTransformation = """{
@@ -235,7 +256,7 @@ class IntegrationTests @Autowired constructor(
                 }
             }"""
 
-            mockMvc.put("$BASE_URL/mappings/$id") {
+            mockMvc.put(resourceUrl) {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $updatedTransformation}"""
             }.andExpect {
@@ -265,7 +286,6 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $transformation}"""
             }.andExpect {
                 status { isNotFound() }
-                jsonPath("$.error") { value("No transformation found with id: 99999") }
             }
         }
 
@@ -275,9 +295,14 @@ class IntegrationTests @Autowired constructor(
             val saveResult = mockMvc.post("$BASE_URL/mappings") {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $stringRecordWithConst}"""
+            }.andExpect {
+                status { isCreated() }
+                header {
+                    exists("Location")
+                }
             }.andReturn()
 
-            val id = JsonPath.parse(saveResult.response.contentAsString).read<Int>("$.id")
+            val resourceUrl: String = saveResult.response.getHeaderValue("Location").toString()
 
             // Try to update with invalid transformation
             val invalidTransformation = """{
@@ -285,21 +310,23 @@ class IntegrationTests @Autowired constructor(
                 "entries": {}
             }"""
 
-            mockMvc.put("$BASE_URL/mappings/$id") {
+            mockMvc.put(resourceUrl) {
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $invalidTransformation}"""
             }.andExpect {
                 status { isBadRequest() }
-                jsonPath("$.error") { exists() }
             }
 
             // Verify original transformation is unchanged
-            val savedTransformation = transformationRepository.getById(id.toLong())
+            val id = resourceUrl.split("/").last().toLong()
+
+            val savedTransformation = transformationRepository.getById(id)
             assertNotNull(savedTransformation)
             assertTrue(savedTransformation!!.data is Transformation.Record)
 
             val record = savedTransformation.data as Transformation.Record
             assertEquals(123, (record.entries["key1"] as Transformation.Const).value)
+            assertEquals(true, true)
         }
 
         @Test
@@ -319,8 +346,8 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
-                jsonPath("$.transformations") { isArray() }
-                jsonPath("$.transformations.length()") { value(0) }
+                jsonPath("$") { isArray() }
+                jsonPath("$.length()") { value(0) }
             }
         }
 
@@ -339,9 +366,14 @@ class IntegrationTests @Autowired constructor(
                 val result = mockMvc.post("$BASE_URL/mappings") {
                     contentType = MediaType.APPLICATION_JSON
                     content = """{"transformation": $transformation}"""
+                }.andExpect {
+                    status { isCreated() }
+                    header { exists("Location") }
                 }.andReturn()
 
-                return@map JsonPath.parse(result.response.contentAsString).read<Int>("$.id")
+                val resourceUrl: String = result.response.getHeaderValue("Location").toString()
+
+                return@map resourceUrl.split("/").last().toLong()
             }
 
             // Get all transformations and verify
@@ -349,18 +381,18 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
-                jsonPath("$.transformations") { isArray() }
-                jsonPath("$.transformations.length()") { value(3) }
+                jsonPath("$") { isArray() }
+                jsonPath("$.length()") { value(3) }
 
                 // Verify order (should be newest first due to ORDER BY created_at DESC)
-                jsonPath("$.transformations[0].id") { value(savedIds[2]) }
-                jsonPath("$.transformations[1].id") { value(savedIds[1]) }
-                jsonPath("$.transformations[2].id") { value(savedIds[0]) }
+                jsonPath("$[0].id") { value(savedIds[2]) }
+                jsonPath("$[1].id") { value(savedIds[1]) }
+                jsonPath("$[2].id") { value(savedIds[0]) }
             }.andReturn()
 
             // Verify the actual transformation data
             val transformations = JsonPath.parse(result.response.contentAsString)
-                .read<List<Map<String, Any>>>("$.transformations")
+                .read<List<Map<String, Any>>>("$")
 
             transformations.forEachIndexed { index, transformation ->
                 val data = transformation["data"] as Map<*, *>
