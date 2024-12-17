@@ -19,103 +19,91 @@ class MappingController @Autowired constructor(
     @PostMapping("/validate")
     @ResponseStatus(HttpStatus.OK)
     fun validateMapping(@RequestBody body: MappingDTO): Map<String, Boolean> {
-        return mapOf("isValid" to mappingService.validate(body.source, body.sink, body.transformation))
+        return mapOf("valid" to mappingService.validate(body.source, body.sink, body.transformation))
     }
 
+    /**
+     * Create a new mapping
+     */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun saveMapping(@RequestBody body: TransformationDTO): Map<String, Any> {
-        return try {
-            val transformation = body.transformation
-            val id = transformationRepository.save(transformation)
-            mapOf(
-                "success" to true,
-                "id" to id
-            )
-        } catch (e: Exception) {
-            mapOf(
-                "success" to false,
-                "error" to (e.message ?: "An unknown error occurred")
-            )
-        }
-    }
+        val transformation = body.transformation
+        val id = transformationRepository.save(transformation)
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    fun getAllTransformations(): Map<String, Any> = try {
-        mapOf(
-            "success" to true,
-            "transformations" to transformationRepository.getAllRows()
-        )
-    } catch (e: Exception) {
-        mapOf(
-            "success" to false,
-            "error" to (e.message ?: "An unknown error occurred")
+        return mapOf(
+            "id" to id
         )
     }
 
     /**
-     * Update an existing transformation
+     * Get all existing mappings
+     */
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    fun getAllTransformations(): Map<String, Any> {
+        return mapOf(
+            "transformations" to transformationRepository.getAllRows()
+        )
+    }
+
+    /**
+     * Update an existing mapping
      */
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun updateTransformation(
         @PathVariable id: Long,
         @RequestBody body: TransformationDTO
-    ): Map<String, Any> {
-        return try {
-            val transformation = body.transformation
-            val wasUpdated = transformationRepository.update(id, transformation)
+    ) {
+        val transformation = body.transformation
+        val wasUpdated = transformationRepository.update(id, transformation)
 
-            if (!wasUpdated) {
-                throw IllegalArgumentException("No transformation found with id: $id")
-            }
-
-            mapOf("success" to true)
-        } catch (e: Exception) {
-            mapOf(
-                "success" to false,
-                "error" to (e.message ?: "An unknown error occurred")
-            )
-        }
+        require(wasUpdated) { "No transformation found with id: $id" }
     }
 
+    /**
+     * Delete an existing mapping
+     */
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    fun deleteTransformation(@PathVariable id: Long): Map<String, Boolean> {
-        val wasDeleted = transformationRepository.deleteById(id)
-        return mapOf("success" to wasDeleted)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteTransformation(@PathVariable id: Long) {
+        require(transformationRepository.deleteById(id)) { "No transformation found with id: $id" }
     }
 
     @PostMapping("/{id}/invoke")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun invokeStoredMapping(
         @PathVariable id: Long,
         @RequestBody body: SourceSinkDTO
-    ): Map<String, Any> = try {
-        val transformation = transformationRepository.getById(id)
-            ?: throw IllegalArgumentException("No transformation found with id: $id")
+    ) {
+        val transformation = requireNotNull(transformationRepository.getById(id)) { "No transformation found with id: $id" }
 
-        val record = transformation.data as? Record
-            ?: throw IllegalArgumentException("Stored transformation is not a valid Record type")
+        mappingService.map(body.source, body.sink, transformation.data as Record) // TODO: Change type in Repository (?)
 
-        mappingService.map(body.source, body.sink, record)
-        mapOf("success" to true)
-    } catch (e: Exception) {
-        mapOf(
-            "success" to false,
-            "error" to (e.message ?: "An unknown error occurred")
-        )
+        // TODO: Throw and handle better error for failed mapping (e.g. missing source/sink)
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleErrorWhileParsingRequestBody(e: HttpMessageNotReadableException): ResponseEntity<Map<String, Any>> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(mapOf(
-                "error" to "Request body could not be parsed",
-                "code" to "PARSE_ERROR"
-            ))
+            .body(
+                mapOf(
+                    "error" to "Request body contained invalid data"
+                )
+            )
+    }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleErrorsForInvalidIds(e: IllegalArgumentException): ResponseEntity<Map<String, Any>> {
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(
+                mapOf(
+                    "error" to (e.message ?: "Resource not found")
+                )
+            )
     }
 }
 

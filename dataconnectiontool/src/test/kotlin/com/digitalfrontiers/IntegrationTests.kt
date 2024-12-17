@@ -42,7 +42,6 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
-                jsonPath("$.success") { value(true) }
                 jsonPath("$.id") { isNumber() }
             }.andReturn()
 
@@ -104,7 +103,6 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
-                jsonPath("$.success") { value(true) }
                 jsonPath("$.id") { isNumber() }
             }.andReturn()
 
@@ -115,8 +113,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(true) }
+                status { isNoContent() }
             }
 
             // Verify the result in the sink
@@ -136,8 +133,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "Dummy"}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(false) }
+                status { isNotFound() }
                 jsonPath("$.error") { value("No transformation found with id: 99999") }
             }
         }
@@ -157,8 +153,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "NonExistentSource", "sink": "Dummy"}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(false) }
+                status { isNotFound() }
                 jsonPath("$.error") { exists() }
             }
         }
@@ -178,8 +173,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"source": "Dummy", "sink": "NonExistentSink"}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(false) }
+                status { isNotFound() }
                 jsonPath("$.error") { exists() }
             }
         }
@@ -202,7 +196,6 @@ class IntegrationTests @Autowired constructor(
                 content = """{"transformation": $stringRecordWithConst}"""
             }.andExpect {
                 status { isCreated() }
-                jsonPath("$.success") { value(true) }
                 jsonPath("$.id") { isNumber() }
             }.andReturn()
 
@@ -215,7 +208,7 @@ class IntegrationTests @Autowired constructor(
             mockMvc.delete("$BASE_URL/mappings/$id") {
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
-                status { isOk() }
+                status { isNoContent() }
             }
 
             val x = transformationRepository.getById(id.toLong())
@@ -246,8 +239,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $updatedTransformation}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(true) }
+                status { isNoContent() }
             }
 
             // Verify the transformation was updated
@@ -272,8 +264,7 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
                 content = """{"transformation": $transformation}"""
             }.andExpect {
-                status { isOk() }
-                jsonPath("$.success") { value(false) }
+                status { isNotFound() }
                 jsonPath("$.error") { value("No transformation found with id: 99999") }
             }
         }
@@ -328,7 +319,6 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
-                jsonPath("$.success") { value(true) }
                 jsonPath("$.transformations") { isArray() }
                 jsonPath("$.transformations.length()") { value(0) }
             }
@@ -359,7 +349,6 @@ class IntegrationTests @Autowired constructor(
                 contentType = MediaType.APPLICATION_JSON
             }.andExpect {
                 status { isOk() }
-                jsonPath("$.success") { value(true) }
                 jsonPath("$.transformations") { isArray() }
                 jsonPath("$.transformations.length()") { value(3) }
 
