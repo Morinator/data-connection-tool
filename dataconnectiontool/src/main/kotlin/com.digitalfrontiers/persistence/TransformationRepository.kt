@@ -1,90 +1,62 @@
 package com.digitalfrontiers.persistence
 
+import com.digitalfrontiers.transform.Self
 import com.digitalfrontiers.transform.Transformation
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert
-import org.springframework.stereotype.Repository
+import jakarta.persistence.*
+import org.springframework.data.repository.CrudRepository
 import java.time.LocalDateTime
 
+@Entity
+data class Entry(
 
-/**
- * Stores instances of [Transformation]
- */
-@Repository
-class TransformationRepository(
-    private val jdbcTemplate: JdbcTemplate,
-    private val objectMapper: ObjectMapper
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
+    val id: Long = 0,
+
+    val data: Transformation,
+    val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
+    protected constructor(): this(0, Self, LocalDateTime.now())
+}
 
-    data class Entry(
-        val id: Long,
-        val data: Transformation,
-        val createdAt: LocalDateTime = LocalDateTime.now()
-    )
+@Converter(autoApply = true)
+class TransformationConverter(
+    private val objectMapper: ObjectMapper
+) : AttributeConverter<Transformation, String> {
 
-    private val jdbcInsert = SimpleJdbcInsert(jdbcTemplate)
-        .withTableName("table1")
-        .usingGeneratedKeyColumns("id")
-
-    private fun stringToTransformation(jsonString: String): Transformation {
-        return objectMapper.readValue(jsonString, Transformation::class.java)
+    override fun convertToDatabaseColumn(attribute: Transformation): String {
+        return objectMapper.writeValueAsString(attribute)
     }
 
-    private fun transformationToJson(transformation: Transformation): String {
-        return objectMapper.writeValueAsString(transformation)
+    override fun convertToEntityAttribute(data: String): Transformation {
+        return objectMapper.readValue(data, Transformation::class.java)
     }
+}
 
-    private val rowMapper = RowMapper { rs, _ ->
-        val data: Transformation = stringToTransformation(rs.getString("data"))
+interface TransformationRepository: CrudRepository<Entry, Long>
 
-        Entry(
-            id = rs.getLong("id"),
-            data = data,
-            createdAt = rs.getObject("created_at", LocalDateTime::class.java)
-        )
+fun TransformationRepository.createEntry(transformation: Transformation): Long = this.save(Entry(data = transformation)).id
+
+fun TransformationRepository.updateEntry(id: Long, transformation: Transformation): Boolean {
+    val entry = this.findById(id).orElse(null)
+
+    return if (entry != null) {
+        val updatedEntry = entry.copy(data = transformation) // TODO: Add updatedAt to Schema?
+        this.save(updatedEntry)
+        true
+    } else {
+        false
     }
+}
 
-    fun save(data: Transformation): Long {
-        val parameters = mapOf(
-            "data" to transformationToJson(data),
-            "created_at" to LocalDateTime.now()
-        )
-        val id = jdbcInsert.executeAndReturnKey(parameters).toLong()
-        return id
-    }
+fun TransformationRepository.deleteEntry(id: Long): Boolean {
+    val entry = this.findById(id).orElse(null)
 
-    fun getById(id: Long): Entry? =
-        jdbcTemplate.query(
-            "SELECT * FROM table1 WHERE id = ?",
-            rowMapper,
-            id
-        ).firstOrNull()
-
-    fun getAllRows(): List<Entry> =
-        jdbcTemplate.query(
-            "SELECT * FROM table1 ORDER BY created_at DESC",
-            rowMapper
-        )
-
-    /**
-     * Deletes an entry by its ID
-     * @param id The ID of the entry to delete
-     * @return true if an entry was deleted, false if no entry with the given ID existed
-     */
-    fun deleteById(id: Long): Boolean {
-        val rowsAffected = jdbcTemplate.update("DELETE FROM table1 WHERE id = ?", id)
-        return rowsAffected > 0
-    }
-
-    fun update(id: Long, data: Transformation): Boolean {
-        val rowsAffected = jdbcTemplate.update(
-            """UPDATE table1 SET data = ?, created_at = ? WHERE id = ?""",
-            transformationToJson(data),
-            LocalDateTime.now(),
-            id
-        )
-        return rowsAffected > 0
+    return if (entry != null) {
+        this.deleteById(id)
+        true
+    } else {
+        false
     }
 }

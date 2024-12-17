@@ -1,6 +1,6 @@
 package com.digitalfrontiers.controllers
 
-import com.digitalfrontiers.persistence.TransformationJPARepository
+import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.persistence.createEntry
 import com.digitalfrontiers.persistence.deleteEntry
 import com.digitalfrontiers.persistence.updateEntry
@@ -20,7 +20,7 @@ import kotlin.jvm.optionals.getOrNull
 @RequestMapping("/api/v1/mappings")
 class MappingController @Autowired constructor(
     private val mappingService: MappingService,
-    private val transformationJPARepository: TransformationJPARepository
+    private val transformationRepository: TransformationRepository
 ) {
 
     @PostMapping("/validate")
@@ -38,7 +38,7 @@ class MappingController @Autowired constructor(
         request: HttpServletRequest
     ): ResponseEntity<Void> {
         val transformation = body.transformation
-        val id = transformationJPARepository.createEntry(transformation) // transformationRepository.save(transformation)
+        val id = transformationRepository.createEntry(transformation) // transformationRepository.save(transformation)
 
         val path = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE) as String
 
@@ -57,12 +57,12 @@ class MappingController @Autowired constructor(
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getAllTransformations(): List<Any> { // TODO: Mapping instead of Any
-        return transformationJPARepository.findAll().toList()
+        return transformationRepository.findAll().toList()
     }
 
     @GetMapping("/{id}")
     fun getOneMapping(@PathVariable id: Long): ResponseEntity<Transformation> { // TODO: Mapping instead of Transformation
-        val entry = transformationJPARepository.findById(id).getOrNull() // transformationRepository.getById(id)?.data
+        val entry = transformationRepository.findById(id).getOrNull() // transformationRepository.getById(id)?.data
 
         return if (entry != null) {
             ResponseEntity.ok(entry.data)
@@ -80,7 +80,7 @@ class MappingController @Autowired constructor(
         @RequestBody body: TransformationDTO
     ): ResponseEntity<Void> {
         val transformation = body.transformation
-        val wasUpdated = transformationJPARepository.updateEntry(id, transformation)
+        val wasUpdated = transformationRepository.updateEntry(id, transformation)
 
         return if (wasUpdated) {
             ResponseEntity.noContent().build()
@@ -94,7 +94,7 @@ class MappingController @Autowired constructor(
      */
     @DeleteMapping("/{id}")
     fun deleteTransformation(@PathVariable id: Long): ResponseEntity<Void> {
-        val wasDeleted = transformationJPARepository.deleteEntry(id)
+        val wasDeleted = transformationRepository.deleteEntry(id)
 
         return if (wasDeleted) {
             ResponseEntity.noContent().build()
@@ -108,7 +108,7 @@ class MappingController @Autowired constructor(
         @PathVariable id: Long,
         @RequestBody body: SourceSinkDTO
     ): ResponseEntity<Void> {
-        val transformation = transformationJPARepository.findById(id).getOrNull()?.data
+        val transformation = transformationRepository.findById(id).getOrNull()?.data
 
         return if (transformation != null) {
             mappingService.map(body.source, body.sink, transformation as Record) // TODO: Change type in Repository (?)
