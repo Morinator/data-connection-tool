@@ -3,7 +3,9 @@ package com.digitalfrontiers.controllers
 import com.digitalfrontiers.persistence.TransformationRepository
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
+import com.digitalfrontiers.transform.Transformation
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,14 +31,13 @@ class MappingController @Autowired constructor(
      */
     @PostMapping
     fun saveMapping(
-        @RequestBody body: TransformationDTO,
-        request: HttpServletRequest
+        @RequestBody body: TransformationDTO
     ): ResponseEntity<Void> {
         val transformation = body.transformation
         val id = transformationRepository.save(transformation)
 
         val location = ServletUriComponentsBuilder
-            .fromRequest(request)
+            .fromCurrentRequestUri()
             .path("/{id}")
             .buildAndExpand(id)
             .toUri()
@@ -49,43 +50,67 @@ class MappingController @Autowired constructor(
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun getAllTransformations(): List<Any> {
-        return transformationRepository.getAllRows()
+    fun getAllTransformations(): List<Transformation> { // TODO: Mapping instead of Transformation
+        return transformationRepository.getAllRows().map { it.data }
+    }
+
+    @GetMapping("/{id}")
+    fun getOneMapping(@PathVariable id: Long): ResponseEntity<Transformation> { // TODO: Mapping instead of Transformation
+        val t = transformationRepository.getById(id)?.data
+
+        return if (t != null) {
+            ResponseEntity.ok(t)
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 
     /**
      * Update an existing mapping
      */
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun updateTransformation(
         @PathVariable id: Long,
         @RequestBody body: TransformationDTO
-    ) {
+    ): ResponseEntity<Void> {
         val transformation = body.transformation
         val wasUpdated = transformationRepository.update(id, transformation)
 
-        require(wasUpdated) { "No transformation found with id: $id" }
+        return if (wasUpdated) {
+            ResponseEntity.noContent().build()
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 
     /**
      * Delete an existing mapping
      */
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteTransformation(@PathVariable id: Long) {
-        require(transformationRepository.deleteById(id)) { "No transformation found with id: $id" }
+    fun deleteTransformation(@PathVariable id: Long): ResponseEntity<Void> {
+        val wasDeleted = transformationRepository.deleteById(id)
+
+        return if (wasDeleted) {
+            ResponseEntity.noContent().build()
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 
     @PostMapping("/{id}/invoke")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun invokeStoredMapping(
         @PathVariable id: Long,
         @RequestBody body: SourceSinkDTO
-    ) {
-        val transformation = requireNotNull(transformationRepository.getById(id)) { "No transformation found with id: $id" }
+    ): ResponseEntity<Void> {
+        val transformation = transformationRepository.getById(id)?.data
 
-        mappingService.map(body.source, body.sink, transformation.data as Record) // TODO: Change type in Repository (?)
+        return if (transformation != null) {
+            mappingService.map(body.source, body.sink, transformation as Record) // TODO: Change type in Repository (?)
+
+            ResponseEntity.noContent().build()
+        } else {
+            ResponseEntity.notFound().build()
+        }
 
         // TODO: Throw and handle better error for failed mapping (e.g. missing source/sink)
     }
