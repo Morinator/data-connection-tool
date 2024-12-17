@@ -1,25 +1,26 @@
 package com.digitalfrontiers.controllers
 
-import com.digitalfrontiers.persistence.TransformationRepository
+import com.digitalfrontiers.persistence.TransformationJPARepository
+import com.digitalfrontiers.persistence.createEntry
+import com.digitalfrontiers.persistence.deleteEntry
+import com.digitalfrontiers.persistence.updateEntry
 import com.digitalfrontiers.services.MappingService
 import com.digitalfrontiers.transform.Record
 import com.digitalfrontiers.transform.Transformation
 import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.HandlerMapping
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
+import kotlin.jvm.optionals.getOrNull
 
 @RestController
 @RequestMapping("/api/v1/mappings")
 class MappingController @Autowired constructor(
     private val mappingService: MappingService,
-    val transformationRepository :  TransformationRepository
+    private val transformationJPARepository: TransformationJPARepository
 ) {
 
     @PostMapping("/validate")
@@ -37,7 +38,7 @@ class MappingController @Autowired constructor(
         request: HttpServletRequest
     ): ResponseEntity<Void> {
         val transformation = body.transformation
-        val id = transformationRepository.save(transformation)
+        val id = transformationJPARepository.createEntry(transformation) // transformationRepository.save(transformation)
 
         val path = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE) as String
 
@@ -56,15 +57,15 @@ class MappingController @Autowired constructor(
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     fun getAllTransformations(): List<Any> { // TODO: Mapping instead of Any
-        return transformationRepository.getAllRows()
+        return transformationJPARepository.findAll().toList()
     }
 
     @GetMapping("/{id}")
     fun getOneMapping(@PathVariable id: Long): ResponseEntity<Transformation> { // TODO: Mapping instead of Transformation
-        val t = transformationRepository.getById(id)?.data
+        val entry = transformationJPARepository.findById(id).getOrNull() // transformationRepository.getById(id)?.data
 
-        return if (t != null) {
-            ResponseEntity.ok(t)
+        return if (entry != null) {
+            ResponseEntity.ok(entry.data)
         } else {
             ResponseEntity.notFound().build()
         }
@@ -79,7 +80,7 @@ class MappingController @Autowired constructor(
         @RequestBody body: TransformationDTO
     ): ResponseEntity<Void> {
         val transformation = body.transformation
-        val wasUpdated = transformationRepository.update(id, transformation)
+        val wasUpdated = transformationJPARepository.updateEntry(id, transformation)
 
         return if (wasUpdated) {
             ResponseEntity.noContent().build()
@@ -93,7 +94,7 @@ class MappingController @Autowired constructor(
      */
     @DeleteMapping("/{id}")
     fun deleteTransformation(@PathVariable id: Long): ResponseEntity<Void> {
-        val wasDeleted = transformationRepository.deleteById(id)
+        val wasDeleted = transformationJPARepository.deleteEntry(id)
 
         return if (wasDeleted) {
             ResponseEntity.noContent().build()
@@ -107,7 +108,7 @@ class MappingController @Autowired constructor(
         @PathVariable id: Long,
         @RequestBody body: SourceSinkDTO
     ): ResponseEntity<Void> {
-        val transformation = transformationRepository.getById(id)?.data
+        val transformation = transformationJPARepository.findById(id).getOrNull()?.data
 
         return if (transformation != null) {
             mappingService.map(body.source, body.sink, transformation as Record) // TODO: Change type in Repository (?)
