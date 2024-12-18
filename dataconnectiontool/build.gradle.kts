@@ -7,18 +7,11 @@ plugins {
 
 dependencies {
 
-    implementation("com.h2database:h2:2.2.224")
-//    implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.4.0")
-    implementation("org.springframework:spring-jdbc:6.1.15")
-
     implementation(project(":datatransformlang"))
 
-    implementation("software.amazon.awssdk:s3:2.20.26")
-
-    implementation("com.networknt:json-schema-validator:1.0.76")
-
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("com.h2database:h2:2.2.224")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:3.4.0")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.0")
