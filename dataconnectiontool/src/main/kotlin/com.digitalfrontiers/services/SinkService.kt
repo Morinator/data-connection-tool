@@ -8,16 +8,20 @@ import org.springframework.stereotype.Service
 class SinkService(
     private val sinks: List<Sink>,
 ) {
+    private fun getSink(sinkId: String): Sink =
+        requireNotNull(sinks.firstOrNull { it.id == sinkId }) {
+            throw SinkNotFoundException(sinkId)
+        }
 
     /**
-     * @throws [IllegalArgumentException] if no sink exist for [sinkId]
+     * @throws [SinkNotFoundException] if no sinks exist for [sinkId]
      */
-    fun put(sinkId: String, data: List<Map<String, String>>) {
-        sinks.firstOrNull { it.id == sinkId }?.put(data)
-            ?: throw IllegalArgumentException("Unknown sink: $sinkId")
-    }
+    fun put(sinkId: String, data: List<Map<String, String>>) = getSink(sinkId).put(data)
 
-    fun getFormat(sinkId: String): Format =
-        sinks.firstOrNull { it.id == sinkId }?.format
-            ?: throw IllegalArgumentException("Unknown sink: $sinkId")
+    /**
+     * @throws [SinkNotFoundException] if no sinks exist for [sinkId]
+     */
+    fun getFormat(sinkId: String): Format = getSink(sinkId).format
 }
+
+class SinkNotFoundException(sinkId: String) : RuntimeException("Unknown sink: $sinkId")

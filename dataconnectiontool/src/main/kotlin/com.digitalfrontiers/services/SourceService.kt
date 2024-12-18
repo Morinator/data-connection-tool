@@ -9,15 +9,20 @@ class SourceService(
     private val sources: List<Source>,
 ) {
 
-    /**
-     * @throws [IllegalArgumentException] if no sources exist for [sourceId]
-     */
-    fun fetch(sourceId: String): List<Map<String, String>> {
-        return sources.firstOrNull { it.id == sourceId }?.fetch()
-            ?: throw IllegalArgumentException("Unknown source: $sourceId")
-    }
+    private fun getSource(sourceId: String): Source =
+        requireNotNull(sources.firstOrNull { it.id == sourceId }) {
+            throw SourceNotFoundException(sourceId)
+        }
 
-    fun getFormat(sourceId: String): Format =
-        sources.firstOrNull { it.id == sourceId }?.format
-            ?: throw IllegalArgumentException("Unknown source: $sourceId")
+    /**
+     * @throws [SourceNotFoundException] if no sources exist for [sourceId]
+     */
+    fun fetch(sourceId: String): List<Map<String, String>> = getSource(sourceId).fetch()
+
+    /**
+     * @throws [SourceNotFoundException] if no sources exist for [sourceId]
+     */
+    fun getFormat(sourceId: String): Format = getSource(sourceId).format
 }
+
+class SourceNotFoundException(sourceId: String) : RuntimeException("Unknown source: $sourceId")
