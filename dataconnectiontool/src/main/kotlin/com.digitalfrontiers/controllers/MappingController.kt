@@ -1,12 +1,8 @@
 package com.digitalfrontiers.controllers
 
-import com.digitalfrontiers.persistence.TransformationRepository
-import com.digitalfrontiers.persistence.createEntry
-import com.digitalfrontiers.persistence.deleteEntry
-import com.digitalfrontiers.persistence.updateEntry
-import com.digitalfrontiers.services.MappingService
-import com.digitalfrontiers.transform.Record
-import com.digitalfrontiers.transform.Transformation
+import com.digitalfrontiers.Mapping
+import com.digitalfrontiers.persistence.MappingRepository
+import com.digitalfrontiers.services.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -14,31 +10,26 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.HandlerMapping
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
-import kotlin.jvm.optionals.getOrNull
+
+internal typealias ErrorInfo = Map<String, Any?>
 
 @RestController
 @RequestMapping("/api/v1/mappings")
 class MappingController @Autowired constructor(
-    private val mappingService: MappingService,
-    private val transformationRepository: TransformationRepository
+    private val mappingService: MappingService
 ) {
 
-    @PostMapping("/validate")
-    @ResponseStatus(HttpStatus.OK)
-    fun validateMapping(@RequestBody body: MappingDTO): Map<String, Boolean> {
-        return mapOf("valid" to mappingService.validate(body.source, body.sink, body.transformation))
-    }
+    // CRUD Operations
 
     /**
      * Create a new mapping
      */
     @PostMapping
     fun saveMapping(
-        @RequestBody body: TransformationDTO,
+        @RequestBody body: Mapping,
         request: HttpServletRequest
     ): ResponseEntity<Void> {
-        val transformation = body.transformation
-        val id = transformationRepository.createEntry(transformation) // transformationRepository.save(transformation)
+        val id = mappingService.save(body) // transformationRepository.save(transformation)
 
         val path = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE) as String
 
@@ -56,83 +47,71 @@ class MappingController @Autowired constructor(
      */
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    fun getAllTransformations(): List<Any> { // TODO: Mapping instead of Any
-        return transformationRepository.findAll().toList()
+    fun getAllMappings(): List<Mapping> {
+        return mappingService.getAll()
     }
 
     @GetMapping("/{id}")
-    fun getOneMapping(@PathVariable id: Long): ResponseEntity<Transformation> { // TODO: Mapping instead of Transformation
-        val entry = transformationRepository.findById(id).getOrNull() // transformationRepository.getById(id)?.data
-
-        return if (entry != null) {
-            ResponseEntity.ok(entry.data)
-        } else {
-            ResponseEntity.notFound().build()
-        }
-    }
+    @ResponseStatus(HttpStatus.OK)
+    fun getMappingById(@PathVariable id: Long): Mapping = mappingService.getById(id)
 
     /**
      * Update an existing mapping
      */
     @PutMapping("/{id}")
-    fun updateTransformation(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun updateMapping(
         @PathVariable id: Long,
-        @RequestBody body: TransformationDTO
-    ): ResponseEntity<Void> {
-        val transformation = body.transformation
-        val wasUpdated = transformationRepository.updateEntry(id, transformation)
-
-        return if (wasUpdated) {
-            ResponseEntity.noContent().build()
-        } else {
-            ResponseEntity.notFound().build()
-        }
-    }
+        @RequestBody body: Mapping
+    ) = mappingService.update(id, body)
 
     /**
      * Delete an existing mapping
      */
     @DeleteMapping("/{id}")
-    fun deleteTransformation(@PathVariable id: Long): ResponseEntity<Void> {
-        val wasDeleted = transformationRepository.deleteEntry(id)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteMapping(@PathVariable id: Long) = mappingService.delete(id)
 
-        return if (wasDeleted) {
-            ResponseEntity.noContent().build()
-        } else {
-            ResponseEntity.notFound().build()
-        }
-    }
+    // Business Operations
 
+    /**
+     * Invoke an existing Mapping
+     */
     @PostMapping("/{id}/invoke")
-    fun invokeStoredMapping(
-        @PathVariable id: Long,
-        @RequestBody body: SourceSinkDTO
-    ): ResponseEntity<Void> {
-        val transformation = transformationRepository.findById(id).getOrNull()?.data
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun invokeMapping(@PathVariable id: Long) = mappingService.invoke(id)
 
-        return if (transformation != null) {
-            mappingService.map(body.source, body.sink, transformation as Record) // TODO: Change type in Repository (?)
+    /**
+     * Validate a given Mapping
+     */
+    @PostMapping("/validate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun validateMapping(@RequestBody body: Mapping) = mappingService.validate(body)
 
-            ResponseEntity.noContent().build()
-        } else {
-            ResponseEntity.notFound().build()
-        }
+    // Error Handling
 
-        // TODO: Throw and handle better error for failed mapping (e.g. missing source/sink)
+    // TODO: Delegate to ControllerAdvice instead?
+
+    private fun createErrorInfo(e: RuntimeException): ErrorInfo {
+        return mapOf(
+            "error" to e.message
+        )
     }
+
+    @ExceptionHandler(MappingNotFoundException::class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun handleMissingMapping(e: MappingNotFoundException): ErrorInfo = createErrorInfo(e)
+
+    @ExceptionHandler(InvalidMappingException::class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    fun handleFailedValidation(e: InvalidMappingException): ErrorInfo = createErrorInfo(e)
+
+    @ExceptionHandler(SourceNotFoundException::class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    fun handleMissingSource(e: SourceNotFoundException): ErrorInfo = createErrorInfo(e)
+
+    @ExceptionHandler(SinkNotFoundException::class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    fun handleMissingSink(e: SinkNotFoundException): ErrorInfo = createErrorInfo(e)
+
 }
-
-data class MappingDTO(
-    val source: String,
-    val sink: String,
-    val transformation: Record,
-)
-
-data class TransformationDTO(
-    val transformation: Record
-)
-
-data class SourceSinkDTO(
-    val source: String,
-    val sink: String
-)

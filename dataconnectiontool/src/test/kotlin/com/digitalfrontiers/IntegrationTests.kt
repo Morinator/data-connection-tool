@@ -1,8 +1,7 @@
 package com.digitalfrontiers
 
-import com.digitalfrontiers.persistence.TransformationRepository
+import com.digitalfrontiers.persistence.MappingRepository
 import com.digitalfrontiers.transform.Transformation
-import com.fasterxml.jackson.databind.ser.Serializers.Base
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
@@ -21,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 class IntegrationTests @Autowired constructor(
     private val mockMvc: MockMvc,
     private val dummySink: DummySink,
-    private val transformationRepository: TransformationRepository
+    private val mappingRepository: MappingRepository
 ) {
 
     private val stringRecordWithConst = """{
@@ -51,7 +50,7 @@ class IntegrationTests @Autowired constructor(
             val id = resourceUrl.split("/").last().toLong()
 
             // Verify we can retrieve the saved transformation
-            val savedTransformation = transformationRepository.getById(id.toLong())
+            val savedTransformation = mappingRepository.getById(id.toLong())
             assertNotNull(savedTransformation)
             assertTrue(savedTransformation!!.data is Transformation.Record)
 
@@ -99,7 +98,7 @@ class IntegrationTests @Autowired constructor(
 
             // Verify both transformations are retrievable
             for (id in ids) {
-                assertNotNull(transformationRepository.getById(id.toLong()))
+                assertNotNull(mappingRepository.getById(id.toLong()))
             }
         }
 
@@ -219,7 +218,7 @@ class IntegrationTests @Autowired constructor(
             val id = resourceUrl.split("/").last().toLong()
 
             // Verify the transformation exists
-            assertNotNull(transformationRepository.getById(id))
+            assertNotNull(mappingRepository.getById(id))
 
             // Delete the transformation
             mockMvc.delete(resourceUrl) {
@@ -229,7 +228,7 @@ class IntegrationTests @Autowired constructor(
             }
 
             // Verify the transformation no longer exists
-            assertNull(transformationRepository.getById(id))
+            assertNull(mappingRepository.getById(id))
         }
 
         @Test
@@ -264,7 +263,7 @@ class IntegrationTests @Autowired constructor(
             }
 
             // Verify the transformation was updated
-            val savedTransformation = transformationRepository.getById(id.toLong())
+            val savedTransformation = mappingRepository.getById(id.toLong())
             assertNotNull(savedTransformation)
             assertTrue(savedTransformation!!.data is Transformation.Record)
 
@@ -320,7 +319,7 @@ class IntegrationTests @Autowired constructor(
             // Verify original transformation is unchanged
             val id = resourceUrl.split("/").last().toLong()
 
-            val savedTransformation = transformationRepository.getById(id)
+            val savedTransformation = mappingRepository.getById(id)
             assertNotNull(savedTransformation)
             assertTrue(savedTransformation!!.data is Transformation.Record)
 
