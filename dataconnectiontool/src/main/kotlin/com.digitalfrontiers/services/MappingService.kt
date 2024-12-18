@@ -24,7 +24,7 @@ class MappingService(
         }
 
     fun save(mapping: Mapping): Long {
-        validate(mapping)
+//        validate(mapping)
 
         return this.mappingRepository.save(Entry(data = mapping)).id
     }
