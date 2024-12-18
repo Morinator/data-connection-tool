@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @Transactional
-class TransformationRepositoryTest {
+class MappingRepositoryTest {
 
     @Autowired
-    lateinit var repo: TransformationRepository
+    lateinit var repo: MappingRepository
 
     private val someRecord = Transformation.Record {
         "x" from "a"
